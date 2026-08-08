@@ -6,3 +6,51 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model Licensee {
+  id                        Int      @id @default(autoincrement())
+  mongo_id                  String   @unique @db.VarChar(24)
+  name                      String
+  email                     String?
+  phone                     String?
+  active                    Boolean  @default(true)
+  apiToken                  String   @unique
+  licenseKind               String
+  useChatbot                Boolean  @default(false)
+  chatbotDefault            String?
+  chatbotUrl                String?
+  chatbotApiToken           String?
+  messageOnResetChatbot     String?
+  messageOnCloseChat        String?
+  chatbotAuthorizationToken String?
+  whatsappDefault           String?
+  whatsappToken             String?
+  whatsappUrl               String?
+  chatDefault               String?
+  chatUrl                   String?
+  chatKey                   String?
+  chatIdentifier            String?
+  unidadeId                 String?
+  statusId                  String?
+  useWhatsappWindow         Boolean  @default(false)
+  document                  String?
+  kind                      String?
+  financial_player_fee      Float?
+  holder_name               String?
+  bank                      String?
+  branch_number             String?
+  branch_check_digit        String?
+  account_number            String?
+  account_check_digit       String?
+  holder_kind               String?
+  holder_document           String?
+  account_type              String?
+  card_information_url      String?
+  useSenderName             Boolean  @default(false)
+  useDepartments            Boolean  @default(false)
+  useFileIDYcloud           Boolean  @default(false)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  @@map("licensees")
+}

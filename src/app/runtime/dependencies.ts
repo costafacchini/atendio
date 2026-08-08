@@ -3,7 +3,8 @@ import { DepartmentRepositoryDatabase } from '../repositories/department'
 import { InboxRepositoryDatabase } from '../repositories/inbox'
 import { BodyRepositoryDatabase } from '../repositories/body'
 import { ContactRepositoryDatabase } from '../repositories/contact'
-import { LicenseeRepositoryDatabase } from '../repositories/licensee'
+import { LicenseeRepositoryDatabase, PrismaLicenseeDatabaseRepository } from '../repositories/licensee'
+import { DualWriteRepository } from '../repositories/repository'
 import { MessageRepositoryDatabase } from '../repositories/message'
 import { RoomRepositoryDatabase } from '../repositories/room'
 import { TemplateRepositoryDatabase } from '../repositories/template'
@@ -183,7 +184,9 @@ function createRuntimeDependencies(overrides: Record<string, any> = {}) {
   return buildRuntimeDependencies({
     bodyRepository: overrides.bodyRepository ?? new BodyRepositoryDatabase(),
     contactRepository,
-    licenseeRepository: overrides.licenseeRepository ?? new LicenseeRepositoryDatabase(),
+    licenseeRepository:
+      overrides.licenseeRepository ??
+      new DualWriteRepository(new LicenseeRepositoryDatabase(), new PrismaLicenseeDatabaseRepository()),
     messageRepository,
     roomRepository: overrides.roomRepository ?? new RoomRepositoryDatabase(),
     templateRepository: overrides.templateRepository ?? new TemplateRepositoryDatabase(),
