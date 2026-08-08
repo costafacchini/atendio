@@ -1,5 +1,4 @@
 import { Request, Response } from 'express'
-import mongoose from 'mongoose'
 import { IRepository } from '@repositories/repository'
 import { IQueryableRepository } from '../queries/QueryBuilder'
 import { IUser, ILicensee, IContact, IMessage, IRoom } from '../../types'
@@ -108,7 +107,7 @@ class DashboardController {
       const { startDate, endDate } = this._parseDateRange(req.query)
       const licensee = req.query.licensee || null
       const cacheKey = `dashboard:super:message-volume:${startDate.toISOString()}:${endDate.toISOString()}:${licensee || 'all'}`
-      const msgFilter = licensee ? { licensee: new mongoose.Types.ObjectId(licensee as string) } : {}
+      const msgFilter = licensee ? { licensee: licensee as string } : {}
 
       const data = await this._cached(cacheKey, async () => {
         const perDayPipeline = [
@@ -172,7 +171,7 @@ class DashboardController {
       const { startDate, endDate } = this._parseDateRange(req.query)
       const licensee = req.query.licensee || null
       const cacheKey = `dashboard:super:delivery-rate:${startDate.toISOString()}:${endDate.toISOString()}:${licensee || 'all'}`
-      const msgFilter = licensee ? { licensee: new mongoose.Types.ObjectId(licensee as string) } : {}
+      const msgFilter = licensee ? { licensee: licensee as string } : {}
 
       const data = await this._cached(cacheKey, async () => {
         const [sentCount, failedCount, failedTotal] = await Promise.all([
@@ -229,7 +228,7 @@ class DashboardController {
       const { startDate, endDate } = this._parseDateRange(req.query)
       const licensee = req.query.licensee || null
       const cacheKey = `dashboard:super:queue:${startDate.toISOString()}:${endDate.toISOString()}:${licensee || 'all'}`
-      const msgFilter = licensee ? { licensee: new mongoose.Types.ObjectId(licensee as string) } : {}
+      const msgFilter = licensee ? { licensee: licensee as string } : {}
 
       const data = await this._cached(cacheKey, async () => {
         const avgQueuePipeline: any[] = [
@@ -272,7 +271,7 @@ class DashboardController {
       const { startDate, endDate } = this._parseDateRange(req.query)
       const licensee = req.query.licensee || null
       const cacheKey = `dashboard:super:conversations:${startDate.toISOString()}:${endDate.toISOString()}:${licensee || 'all'}`
-      const msgFilter = licensee ? { licensee: new mongoose.Types.ObjectId(licensee as string) } : {}
+      const msgFilter = licensee ? { licensee: licensee as string } : {}
 
       const data = await this._cached(cacheKey, async () => {
         let roomFilter: any = {}

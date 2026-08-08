@@ -1,35 +1,29 @@
 import { MessagesQuery } from '@queries/MessagesQuery'
-import mongoServer from '../../../.jest/utils'
+import { installMemoryRepositories, resetMemoryRepositories } from '@repositories/testing'
 import { licensee as licenseeFactory } from '@factories/licensee'
 import { contact as contactFactory } from '@factories/contact'
 import { message as messageFactory } from '@factories/message'
-import { LicenseeRepositoryDatabase } from '@repositories/licensee'
-import { ContactRepositoryDatabase } from '@repositories/contact'
-import { MessageRepositoryDatabase } from '@repositories/message'
-
-const buildMessagesQuery = () => new MessagesQuery({ messageRepository: new MessageRepositoryDatabase() })
 
 describe('MessagesQuery', () => {
-  let licensee
-  let contact
+  let repos: ReturnType<typeof installMemoryRepositories>['repositories']
+  let licensee: any
+  let contact: any
 
   beforeEach(async () => {
-    await mongoServer.connect()
-
-    const licenseeRepository = new LicenseeRepositoryDatabase()
-    licensee = await licenseeRepository.create(licenseeFactory.build())
-
-    const contactRepository = new ContactRepositoryDatabase()
-    contact = await contactRepository.create(contactFactory.build({ licensee }))
+    ;({ repositories: repos } = installMemoryRepositories())
+    licensee = await repos.licenseeRepository.create(licenseeFactory.build())
+    contact = await repos.contactRepository.create(contactFactory.build({ licensee }))
   })
 
-  afterEach(async () => {
-    await mongoServer.disconnect()
+  afterEach(() => {
+    resetMemoryRepositories()
   })
+
+  const buildMessagesQuery = () => new MessagesQuery({ messageRepository: repos.messageRepository })
 
   describe('#all', () => {
     it('returns all messages ordered by createdAt', async () => {
-      const messageRepository = new MessageRepositoryDatabase()
+      const messageRepository = repos.messageRepository
       const message1 = await messageRepository.create(
         messageFactory.build({
           contact,
@@ -55,7 +49,7 @@ describe('MessagesQuery', () => {
 
     describe('about pagination', () => {
       it('returns all by page respecting the limit', async () => {
-        const messageRepository = new MessageRepositoryDatabase()
+        const messageRepository = repos.messageRepository
         const message1 = await messageRepository.create(
           messageFactory.build({
             contact,
@@ -106,7 +100,7 @@ describe('MessagesQuery', () => {
 
     describe('filterByCreatedAt', () => {
       it('returns messages filtered by createdAt', async () => {
-        const messageRepository = new MessageRepositoryDatabase()
+        const messageRepository = repos.messageRepository
         const message1 = await messageRepository.create(
           messageFactory.build({
             contact,
@@ -151,7 +145,7 @@ describe('MessagesQuery', () => {
 
     describe('filterByLicensee', () => {
       it('returns messages filtered by licensee', async () => {
-        const messageRepository = new MessageRepositoryDatabase()
+        const messageRepository = repos.messageRepository
         const message = await messageRepository.create(
           messageFactory.build({
             contact,
@@ -160,8 +154,7 @@ describe('MessagesQuery', () => {
           }),
         )
 
-        const licenseeRepository = new LicenseeRepositoryDatabase()
-        const anotherLicensee = await licenseeRepository.create(licenseeFactory.build())
+        const anotherLicensee = await repos.licenseeRepository.create(licenseeFactory.build())
         const anotherMessage = await messageRepository.create(
           messageFactory.build({
             contact,
@@ -183,7 +176,7 @@ describe('MessagesQuery', () => {
 
     describe('filterByContact', () => {
       it('returns messages filtered by licensee', async () => {
-        const messageRepository = new MessageRepositoryDatabase()
+        const messageRepository = repos.messageRepository
         const message = await messageRepository.create(
           messageFactory.build({
             contact,
@@ -192,8 +185,7 @@ describe('MessagesQuery', () => {
           }),
         )
 
-        const contactRepository = new ContactRepositoryDatabase()
-        const anotherContact = await contactRepository.create(contactFactory.build({ licensee }))
+        const anotherContact = await repos.contactRepository.create(contactFactory.build({ licensee }))
         const anotherMessage = await messageRepository.create(
           messageFactory.build({
             contact: anotherContact,
@@ -215,7 +207,7 @@ describe('MessagesQuery', () => {
 
     describe('filterByKind', () => {
       it('returns messages filtered by kind', async () => {
-        const messageRepository = new MessageRepositoryDatabase()
+        const messageRepository = repos.messageRepository
         const message1 = await messageRepository.create(
           messageFactory.build({
             kind: 'text',
@@ -248,7 +240,7 @@ describe('MessagesQuery', () => {
 
     describe('filterByDestination', () => {
       it('returns messages filtered by destination', async () => {
-        const messageRepository = new MessageRepositoryDatabase()
+        const messageRepository = repos.messageRepository
         const message1 = await messageRepository.create(
           messageFactory.build({
             contact,
@@ -277,7 +269,7 @@ describe('MessagesQuery', () => {
 
     describe('filterBySended', () => {
       it('returns messages filtered by sended', async () => {
-        const messageRepository = new MessageRepositoryDatabase()
+        const messageRepository = repos.messageRepository
         const message1 = await messageRepository.create(
           messageFactory.build({
             contact,
@@ -307,7 +299,7 @@ describe('MessagesQuery', () => {
 
     describe('sortBy', () => {
       it('returns all messages ordered by using sortBy clause', async () => {
-        const messageRepository = new MessageRepositoryDatabase()
+        const messageRepository = repos.messageRepository
         const message1 = await messageRepository.create(
           messageFactory.build({
             contact,
@@ -336,7 +328,7 @@ describe('MessagesQuery', () => {
 
   describe('#count', () => {
     it('counts all messages', async () => {
-      const messageRepository = new MessageRepositoryDatabase()
+      const messageRepository = repos.messageRepository
       await messageRepository.create(
         messageFactory.build({
           contact,
@@ -360,7 +352,7 @@ describe('MessagesQuery', () => {
 
     describe('filterByCreatedAt', () => {
       it('counts messages filtered by createdAt', async () => {
-        const messageRepository = new MessageRepositoryDatabase()
+        const messageRepository = repos.messageRepository
         await messageRepository.create(
           messageFactory.build({
             contact,
@@ -401,7 +393,7 @@ describe('MessagesQuery', () => {
 
     describe('filterByLicensee', () => {
       it('counts messages filtered by licensee', async () => {
-        const messageRepository = new MessageRepositoryDatabase()
+        const messageRepository = repos.messageRepository
         await messageRepository.create(
           messageFactory.build({
             contact,
@@ -410,8 +402,7 @@ describe('MessagesQuery', () => {
           }),
         )
 
-        const licenseeRepository = new LicenseeRepositoryDatabase()
-        const anotherLicensee = await licenseeRepository.create(licenseeFactory.build())
+        const anotherLicensee = await repos.licenseeRepository.create(licenseeFactory.build())
         await messageRepository.create(
           messageFactory.build({
             contact,
@@ -431,7 +422,7 @@ describe('MessagesQuery', () => {
 
     describe('filterByContact', () => {
       it('counts messages filtered by licensee', async () => {
-        const messageRepository = new MessageRepositoryDatabase()
+        const messageRepository = repos.messageRepository
         await messageRepository.create(
           messageFactory.build({
             contact,
@@ -440,8 +431,7 @@ describe('MessagesQuery', () => {
           }),
         )
 
-        const contactRepository = new ContactRepositoryDatabase()
-        const anotherContact = await contactRepository.create(contactFactory.build({ licensee }))
+        const anotherContact = await repos.contactRepository.create(contactFactory.build({ licensee }))
         await messageRepository.create(
           messageFactory.build({
             contact: anotherContact,
@@ -461,7 +451,7 @@ describe('MessagesQuery', () => {
 
     describe('filterByKind', () => {
       it('counts messages filtered by kind', async () => {
-        const messageRepository = new MessageRepositoryDatabase()
+        const messageRepository = repos.messageRepository
         await messageRepository.create(
           messageFactory.build({
             kind: 'text',
@@ -492,7 +482,7 @@ describe('MessagesQuery', () => {
 
     describe('filterByDestination', () => {
       it('counts messages filtered by destination', async () => {
-        const messageRepository = new MessageRepositoryDatabase()
+        const messageRepository = repos.messageRepository
         await messageRepository.create(
           messageFactory.build({
             contact,
@@ -519,7 +509,7 @@ describe('MessagesQuery', () => {
 
     describe('filterBySended', () => {
       it('counts messages filtered by sended', async () => {
-        const messageRepository = new MessageRepositoryDatabase()
+        const messageRepository = repos.messageRepository
         await messageRepository.create(
           messageFactory.build({
             contact,

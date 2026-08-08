@@ -1,6 +1,7 @@
 jest.mock('../../config/queue', () => ({ queueServer: {} }))
 jest.mock('../../config/redis', () => ({ redisConnection: { duplicate: jest.fn().mockReturnValue({}) } }))
 
+import { generateObjectId } from '@repositories/repository'
 import { transformMessengerBody } from './MessengerMessage'
 import Body from '@models/Body'
 import { Dialog } from '../plugins/messengers/Dialog'
@@ -118,7 +119,7 @@ describe('transformMessengerBody', () => {
   })
 
   it('passes departmentId extracted from body to responseToMessages', async () => {
-    const departmentObjectId = new (require('mongoose').Types.ObjectId)()
+    const departmentObjectId = generateObjectId()
 
     const messengerPluginResponseToMessages = jest
       .spyOn(Dialog.prototype, 'responseToMessages')

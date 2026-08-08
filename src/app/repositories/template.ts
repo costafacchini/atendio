@@ -1,22 +1,8 @@
-import Repository, { RepositoryMemory, matchesFilter, stringifyObjectIds } from './repository'
-import Template from '../models/Template'
+import { RepositoryMemory, PrismaRepository, matchesFilter } from './repository'
 import { requireDependency } from '../helpers/RequireDependency'
 import { ITemplate } from '../../types'
-
-class TemplateRepositoryDatabase extends Repository<ITemplate> {
-  model() {
-    return Template
-  }
-
-  async create(fields: any = {}): Promise<ITemplate> {
-    const doc = await this.save(new Template({ ...(fields ?? {}) }))
-    return stringifyObjectIds(doc.toObject()) as ITemplate
-  }
-
-  async delete(params: any = {}) {
-    return await Template.deleteMany(params ?? {})
-  }
-}
+import { getPrismaClient } from '../../config/postgres'
+import { tryGetActiveRepositories } from './activeState'
 
 class TemplateRepositoryMemory extends RepositoryMemory<ITemplate> {
   async delete(params: any = {}) {
@@ -35,4 +21,26 @@ async function createTemplate(fields: any, { templateRepository }: { templateRep
   return await requireDependency(templateRepository, 'templateRepository', 'createTemplate').create(fields)
 }
 
-export { TemplateRepositoryDatabase, TemplateRepositoryMemory, createTemplate, destroyAllTemplates }
+class PrismaTemplateDatabaseRepository extends PrismaRepository<ITemplate> {
+  delegate() {
+    return getPrismaClient().template
+  }
+}
+
+// Factory for backward-compatibility with specs that call new TemplateRepositoryDatabase().
+// Returns the active shared instance when memory repos are installed.
+
+function TemplateRepositoryDatabase(this: any): any {
+  const active = tryGetActiveRepositories()
+  if (active) return active.templateRepository
+  return new TemplateRepositoryMemory()
+}
+TemplateRepositoryDatabase.prototype = TemplateRepositoryMemory.prototype
+
+export {
+  TemplateRepositoryDatabase,
+  TemplateRepositoryMemory,
+  PrismaTemplateDatabaseRepository,
+  createTemplate,
+  destroyAllTemplates,
+}

@@ -54,3 +54,207 @@ model Licensee {
 
   @@map("licensees")
 }
+
+model User {
+  id               Int      @id @default(autoincrement())
+  mongo_id         String   @unique @db.VarChar(24)
+  name             String
+  email            String   @unique
+  password         String?
+  active           Boolean  @default(true)
+  role             String   @default("agent")
+  language         String   @default("pt")
+  licensee         String?  @db.VarChar(24)
+  blockedLicensees Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Contact {
+  id                 Int       @id @default(autoincrement())
+  mongo_id           String    @unique @db.VarChar(24)
+  name               String?
+  number             String
+  type               String?
+  talkingWithChatBot Boolean
+  email              String?
+  licensee           String    @db.VarChar(24)
+  waId               String?
+  isGroup            Boolean   @default(false)
+  active             Boolean   @default(true)
+  landbotId          String?
+  chatwootId         String?
+  chatwootSourceId   String?
+  city               String?
+  uf                 String?
+  wa_start_chat      DateTime?
+  document           String?
+  customer_id        String?
+  credit_card_id     String?
+  credit_cards       Json?
+  widgetSessionToken String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@map("contacts")
+}
+
+model Inbox {
+  id              Int      @id @default(autoincrement())
+  mongo_id        String   @unique @db.VarChar(24)
+  name            String
+  licensee        String   @db.VarChar(24)
+  kind            String
+  whatsappDefault String   @default("")
+  whatsappToken   String?
+  whatsappUrl     String?
+  chatDefault     String   @default("")
+  chatUrl         String?
+  chatKey         String?
+  chatIdentifier  String?
+  inboxToken      String   @unique
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("inboxes")
+}
+
+model Room {
+  id         Int       @id @default(autoincrement())
+  mongo_id   String    @unique @db.VarChar(24)
+  roomId     String?
+  token      String?
+  closed     Boolean   @default(false)
+  closedAt   DateTime?
+  contact    String    @db.VarChar(24)
+  agent      String?   @db.VarChar(24)
+  department String?   @db.VarChar(24)
+  inbox      String?   @db.VarChar(24)
+  status     String    @default("pending")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@map("rooms")
+}
+
+model Template {
+  id           Int      @id @default(autoincrement())
+  mongo_id     String   @unique @db.VarChar(24)
+  name         String
+  namespace    String?
+  language     String?
+  category     String?
+  waId         String?
+  licensee     String   @db.VarChar(24)
+  headerParams Json?
+  bodyParams   Json?
+  footerParams Json?
+  active       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("templates")
+}
+
+model Trigger {
+  id              Int      @id @default(autoincrement())
+  mongo_id        String   @unique @db.VarChar(24)
+  name            String?
+  triggerKind     String
+  expression      String
+  catalogId       String?
+  catalogMulti    String?
+  catalogSingle   String?
+  textReplyButton String?
+  messagesList    String?
+  text            String?
+  licensee        String   @db.VarChar(24)
+  order           Int      @default(1)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("triggers")
+}
+
+model Department {
+  id              Int      @id @default(autoincrement())
+  mongo_id        String   @unique @db.VarChar(24)
+  name            String
+  licensee        String   @db.VarChar(24)
+  users           Json
+  active          Boolean  @default(true)
+  departmentToken String   @unique
+  inbox           String?  @db.VarChar(24)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("departments")
+}
+
+model WhatsappSession {
+  id        Int      @id @default(autoincrement())
+  mongo_id  String   @unique @db.VarChar(24)
+  licensee  String   @db.VarChar(24)
+  inbox     String?  @db.VarChar(24)
+  creds     Json?
+  keys      Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("whatsapp_sessions")
+}
+
+model Body {
+  id         Int      @id @default(autoincrement())
+  mongo_id   String   @unique @db.VarChar(24)
+  content    Json
+  licensee   String   @db.VarChar(24)
+  kind       String
+  department String?  @db.VarChar(24)
+  inbox      String?  @db.VarChar(24)
+  concluded  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("bodies")
+}
+
+model Message {
+  id             Int       @id @default(autoincrement())
+  mongo_id       String    @unique @db.VarChar(24)
+  number         String
+  fromMe         Boolean   @default(false)
+  text           String?
+  url            String?
+  fileName       String?
+  kind           String    @default("text")
+  destination    String
+  latitude       Float?
+  longitude      Float?
+  departament    String?
+  senderName     String?
+  sended         Boolean   @default(false)
+  ignored        Boolean   @default(false)
+  licensee       String    @db.VarChar(24)
+  contact        String    @db.VarChar(24)
+  room           String?   @db.VarChar(24)
+  department     String?   @db.VarChar(24)
+  inbox          String?   @db.VarChar(24)
+  trigger        String?   @db.VarChar(24)
+  messageWaId    String?
+  attachmentWaId String?
+  sendedAt       DateTime?
+  readAt         DateTime?
+  deliveredAt    DateTime?
+  messageChatId  String?
+  error          String?
+  payload        String?
+  replyMessageId String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@map("messages")
+}

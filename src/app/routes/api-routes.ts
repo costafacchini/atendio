@@ -1,16 +1,16 @@
 import express from 'express'
 import v1Routes from './v1/v1-routes'
-import { LicenseeRepositoryDatabase } from '../repositories/licensee'
-import { DepartmentRepositoryDatabase } from '../repositories/department'
-import { InboxRepositoryDatabase } from '../repositories/inbox'
+import { PrismaLicenseeDatabaseRepository } from '../repositories/licensee'
+import { PrismaDepartmentDatabaseRepository } from '../repositories/department'
+import { PrismaInboxDatabaseRepository } from '../repositories/inbox'
 import { buildAuthenticateLicensee } from './authenticate-licensee'
 
 export { buildAuthenticateLicensee }
 
 const router = express.Router()
-const licenseeRepository = new LicenseeRepositoryDatabase()
-const departmentRepository = new DepartmentRepositoryDatabase()
-const inboxRepository = new InboxRepositoryDatabase()
+const licenseeRepository = new PrismaLicenseeDatabaseRepository()
+const departmentRepository = new PrismaDepartmentDatabaseRepository()
+const inboxRepository = new PrismaInboxDatabaseRepository()
 
 router.use(buildAuthenticateLicensee({ licenseeRepository, departmentRepository, inboxRepository }))
 

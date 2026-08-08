@@ -4,8 +4,8 @@ import { RedisStore } from 'rate-limit-redis'
 import jwt from 'jsonwebtoken'
 import { LoginController } from '../controllers/LoginController'
 import { OnboardingController } from '../controllers/OnboardingController'
-import { UserRepositoryDatabase } from '../repositories/user'
-import { LicenseeRepositoryDatabase } from '../repositories/licensee'
+import { PrismaUserDatabaseRepository } from '../repositories/user'
+import { PrismaLicenseeDatabaseRepository } from '../repositories/licensee'
 import { AuthenticateUser } from '../usecases/auth/AuthenticateUser'
 import { OnboardAccount } from '../usecases/onboarding/OnboardAccount'
 import { redisConnection } from '../../config/redis'
@@ -43,8 +43,8 @@ const onboardingLimiter = rateLimit({
 })
 
 const SECRET = process.env.SECRET
-const userRepository = new UserRepositoryDatabase()
-const licenseeRepository = new LicenseeRepositoryDatabase()
+const userRepository = new PrismaUserDatabaseRepository()
+const licenseeRepository = new PrismaLicenseeDatabaseRepository()
 const tokenService = {
   sign: jwt.sign,
   secret: SECRET,

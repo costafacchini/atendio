@@ -1,36 +1,25 @@
-import Department from '@models/Department'
-import mongoServer from '../../../.jest/utils'
+import { LicenseeRepositoryMemory } from '@repositories/licensee'
+import { DepartmentRepositoryMemory } from '@repositories/department'
 import { licensee as licenseeFactory } from '@factories/licensee'
-import { LicenseeRepositoryDatabase } from '@repositories/licensee'
-import { DepartmentRepositoryDatabase } from '@repositories/department'
-import mongoose from 'mongoose'
 
-describe('department repository database', () => {
-  beforeEach(async () => {
-    await mongoServer.connect()
+describe('department repository memory', () => {
+  beforeEach(() => {
     jest.clearAllMocks()
-  })
-
-  afterEach(async () => {
-    await mongoServer.disconnect()
-  })
-
-  describe('#model', () => {
-    it('returns the Department model', () => {
-      const departmentRepository = new DepartmentRepositoryDatabase()
-
-      expect(departmentRepository.model()).toEqual(Department)
-    })
   })
 
   describe('#create', () => {
     it('creates a department', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
+      const licenseeRepository = new LicenseeRepositoryMemory()
       const licensee = await licenseeRepository.create(licenseeFactory.build())
-      const userId = new mongoose.Types.ObjectId()
 
-      const departmentRepository = new DepartmentRepositoryDatabase()
-      const department = await departmentRepository.create({ name: 'Vendas', licensee, users: [userId], active: true })
+      const departmentRepository = new DepartmentRepositoryMemory()
+      const department = await departmentRepository.create({
+        name: 'Vendas',
+        licensee: licensee._id,
+        users: ['aabbccddeeff001122334455'],
+        active: true,
+        departmentToken: 'token-123',
+      })
 
       expect(department).toEqual(
         expect.objectContaining({
@@ -43,14 +32,23 @@ describe('department repository database', () => {
 
   describe('#find', () => {
     it('filters by licensee', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
+      const licenseeRepository = new LicenseeRepositoryMemory()
       const licensee = await licenseeRepository.create(licenseeFactory.build())
       const otherLicensee = await licenseeRepository.create(licenseeFactory.build())
-      const userId = new mongoose.Types.ObjectId()
 
-      const departmentRepository = new DepartmentRepositoryDatabase()
-      await departmentRepository.create({ name: 'Vendas', licensee, users: [userId] })
-      await departmentRepository.create({ name: 'Suporte', licensee: otherLicensee, users: [userId] })
+      const departmentRepository = new DepartmentRepositoryMemory()
+      await departmentRepository.create({
+        name: 'Vendas',
+        licensee: licensee._id,
+        users: [],
+        departmentToken: 'tok-1',
+      })
+      await departmentRepository.create({
+        name: 'Suporte',
+        licensee: otherLicensee._id,
+        users: [],
+        departmentToken: 'tok-2',
+      })
 
       const departments = await departmentRepository.find({ licensee: licensee._id })
 

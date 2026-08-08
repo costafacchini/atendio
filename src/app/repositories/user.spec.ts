@@ -1,35 +1,20 @@
-import mongoServer from '../../../.jest/utils'
-import User from '@models/User'
+import { UserRepositoryMemory } from '@repositories/user'
+import { LicenseeRepositoryMemory } from '@repositories/licensee'
 import { user as userFactory } from '@factories/user'
 import { licensee as licenseeFactory } from '@factories/licensee'
-import { LicenseeRepositoryDatabase } from '@repositories/licensee'
-import { UserRepositoryDatabase } from '@repositories/user'
 
-describe('user repository database', () => {
-  beforeEach(async () => {
-    await mongoServer.connect()
+describe('user repository memory', () => {
+  beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  afterEach(async () => {
-    await mongoServer.disconnect()
-  })
-
-  describe('#model', () => {
-    it('returns a model', () => {
-      const userRepository = new UserRepositoryDatabase()
-
-      expect(userRepository.model()).toEqual(User)
-    })
-  })
-
   describe('#create', () => {
-    it('creates a user', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
+    it('creates a user with hashed password', async () => {
+      const licenseeRepository = new LicenseeRepositoryMemory()
       const licensee = await licenseeRepository.create(licenseeFactory.build())
 
-      const userRepository = new UserRepositoryDatabase()
-      const user = await userRepository.create(userFactory.build({ licensee }))
+      const userRepository = new UserRepositoryMemory()
+      const user = await userRepository.create(userFactory.build({ licensee: licensee._id }))
 
       expect(user).toEqual(
         expect.objectContaining({
@@ -44,19 +29,30 @@ describe('user repository database', () => {
     })
   })
 
-  describe('#save', () => {
-    it('saves a user document', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
+  describe('#update', () => {
+    it('updates a user field', async () => {
+      const licenseeRepository = new LicenseeRepositoryMemory()
       const licensee = await licenseeRepository.create(licenseeFactory.build())
 
-      const userRepository = new UserRepositoryDatabase()
-      const user = await userRepository.create(userFactory.build({ licensee }))
+      const userRepository = new UserRepositoryMemory()
+      const user = await userRepository.create(userFactory.build({ licensee: licensee._id }))
 
       await userRepository.update(user._id, { active: false })
 
-      const userSaved = await userRepository.findFirst({ _id: user._id }, ['licensee'])
+      const userSaved = await userRepository.findFirst({ _id: user._id })
       expect(userSaved.active).toEqual(false)
-      expect(userSaved.licensee).toEqual(expect.objectContaining({ _id: licensee._id }))
+    })
+  })
+
+  describe('#save', () => {
+    it('hashes password on save when not already hashed', async () => {
+      const userRepository = new UserRepositoryMemory()
+      const user = await userRepository.create(userFactory.build())
+
+      await userRepository.save({ ...user, password: 'newpassword' })
+
+      const saved = await userRepository.findFirst({ _id: user._id })
+      expect(await saved.validPassword('newpassword')).toEqual(true)
     })
   })
 })

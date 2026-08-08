@@ -1,4 +1,5 @@
 import { Baileys } from './Baileys'
+import { generateObjectId } from '@repositories/repository'
 import { installMemoryRepositories, resetMemoryRepositories } from '@repositories/testing'
 import { licensee as licenseeFactory } from '@factories/licensee'
 import { contact as contactFactory } from '@factories/contact'
@@ -159,8 +160,7 @@ describe('Baileys plugin', () => {
             licensee,
           }),
         )
-        const mongoose = await import('mongoose')
-        const departmentId = new mongoose.default.Types.ObjectId()
+        const departmentId = generateObjectId()
         const body = {
           key: { remoteJid: REMOTE_JID, id: 'BAILEYS-MSG-SECTOR-001' },
           pushName: 'John Doe',

@@ -1,34 +1,25 @@
-import Inbox from '@models/Inbox'
-import mongoServer from '../../../.jest/utils'
+import { LicenseeRepositoryMemory } from '@repositories/licensee'
+import { InboxRepositoryMemory } from '@repositories/inbox'
 import { licensee as licenseeFactory } from '@factories/licensee'
-import { LicenseeRepositoryDatabase } from '@repositories/licensee'
-import { InboxRepositoryDatabase } from '@repositories/inbox'
 
-describe('inbox repository database', () => {
-  beforeEach(async () => {
-    await mongoServer.connect()
+describe('inbox repository memory', () => {
+  beforeEach(() => {
     jest.clearAllMocks()
-  })
-
-  afterEach(async () => {
-    await mongoServer.disconnect()
-  })
-
-  describe('#model', () => {
-    it('returns the Inbox model', () => {
-      const inboxRepository = new InboxRepositoryDatabase()
-
-      expect(inboxRepository.model()).toEqual(Inbox)
-    })
   })
 
   describe('#create', () => {
     it('creates an inbox', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
+      const licenseeRepository = new LicenseeRepositoryMemory()
       const licensee = await licenseeRepository.create(licenseeFactory.build())
 
-      const inboxRepository = new InboxRepositoryDatabase()
-      const inbox = await inboxRepository.create({ name: 'Suporte', licensee, kind: 'messenger', active: true })
+      const inboxRepository = new InboxRepositoryMemory()
+      const inbox = await inboxRepository.create({
+        name: 'Suporte',
+        licensee: licensee._id,
+        kind: 'messenger',
+        active: true,
+        inboxToken: 'token-xyz',
+      })
 
       expect(inbox).toEqual(
         expect.objectContaining({
@@ -41,13 +32,18 @@ describe('inbox repository database', () => {
 
   describe('#find', () => {
     it('filters by licensee', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
+      const licenseeRepository = new LicenseeRepositoryMemory()
       const licensee = await licenseeRepository.create(licenseeFactory.build())
       const otherLicensee = await licenseeRepository.create(licenseeFactory.build())
 
-      const inboxRepository = new InboxRepositoryDatabase()
-      await inboxRepository.create({ name: 'Suporte', licensee, kind: 'messenger' })
-      await inboxRepository.create({ name: 'Vendas', licensee: otherLicensee, kind: 'messenger' })
+      const inboxRepository = new InboxRepositoryMemory()
+      await inboxRepository.create({ name: 'Suporte', licensee: licensee._id, kind: 'messenger', inboxToken: 't1' })
+      await inboxRepository.create({
+        name: 'Vendas',
+        licensee: otherLicensee._id,
+        kind: 'messenger',
+        inboxToken: 't2',
+      })
 
       const inboxes = await inboxRepository.find({ licensee: licensee._id })
 

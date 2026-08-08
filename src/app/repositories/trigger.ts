@@ -1,41 +1,9 @@
-import Repository, { RepositoryMemory, sortRecords, stringifyObjectIds } from './repository'
+import { RepositoryMemory, PrismaRepository, sortRecords } from './repository'
 import _ from 'lodash'
-import Trigger from '../models/Trigger'
 import { requireDependency } from '../helpers/RequireDependency'
 import { ITrigger } from '../../types'
-
-class TriggerRepositoryDatabase extends Repository<ITrigger> {
-  model() {
-    return Trigger
-  }
-
-  async findFirst(params: Record<string, any> = {}, relations: any[] = []) {
-    const onlyIdFilter = Object.keys(params ?? {}).length === 1 && '_id' in (params ?? {})
-
-    if (onlyIdFilter && relations.length === 0) {
-      const doc = await Trigger.findById(params._id).lean()
-      return doc ? (stringifyObjectIds(doc) as ITrigger) : null
-    }
-
-    return await super.findFirst(params, relations)
-  }
-
-  async create(fields: any = {}): Promise<ITrigger> {
-    const doc = await this.save(new Trigger({ ...(fields ?? {}) }))
-    return stringifyObjectIds(doc.toObject()) as ITrigger
-  }
-
-  async find(params = {}, order = {}) {
-    const query = Trigger.find(params ?? {}).lean()
-
-    if (!_.isEmpty(order)) {
-      query.sort(order)
-    }
-
-    const docs = await query
-    return docs.map((doc: any) => stringifyObjectIds(doc)) as ITrigger[]
-  }
-}
+import { getPrismaClient } from '../../config/postgres'
+import { tryGetActiveRepositories } from './activeState'
 
 class TriggerRepositoryMemory extends RepositoryMemory<ITrigger> {
   async find(params = {}, orderOrRelations = {}) {
@@ -61,4 +29,26 @@ async function getAllTriggerBy(filters: any, order: any = {}, { triggerRepositor
   return await requireDependency(triggerRepository, 'triggerRepository', 'getAllTriggerBy').find(filters, order)
 }
 
-export { TriggerRepositoryDatabase, TriggerRepositoryMemory, createTrigger, getAllTriggerBy }
+class PrismaTriggerDatabaseRepository extends PrismaRepository<ITrigger> {
+  delegate() {
+    return getPrismaClient().trigger
+  }
+}
+
+// Factory for backward-compatibility with specs that call new TriggerRepositoryDatabase().
+// Returns the active shared instance when memory repos are installed.
+
+function TriggerRepositoryDatabase(this: any): any {
+  const active = tryGetActiveRepositories()
+  if (active) return active.triggerRepository
+  return new TriggerRepositoryMemory()
+}
+TriggerRepositoryDatabase.prototype = TriggerRepositoryMemory.prototype
+
+export {
+  TriggerRepositoryDatabase,
+  TriggerRepositoryMemory,
+  PrismaTriggerDatabaseRepository,
+  createTrigger,
+  getAllTriggerBy,
+}

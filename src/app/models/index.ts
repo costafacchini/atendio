@@ -1,11 +1,2 @@
-import './Body'
-import './Contact'
-import './Licensee'
-import './Message'
-import './Room'
-import './Trigger'
-import './User'
-import './Trafficlight'
-import './WhatsappSession'
-import './Department'
-import './Inbox'
+// Mongoose models have been removed as part of the MongoDB → PostgreSQL migration.
+// All data is now stored via Prisma (PostgreSQL) and Redis (Trafficlight).

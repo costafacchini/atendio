@@ -1,13 +1,7 @@
-import Repository, { RepositoryMemory, PrismaRepository } from './repository'
-import Licensee from '../models/Licensee'
+import { RepositoryMemory, PrismaRepository } from './repository'
 import { ILicensee } from '../../types'
 import { getPrismaClient } from '../../config/postgres'
-
-class LicenseeRepositoryDatabase extends Repository<ILicensee> {
-  model() {
-    return Licensee
-  }
-}
+import { tryGetActiveRepositories } from './activeState'
 
 class LicenseeRepositoryMemory extends RepositoryMemory<ILicensee> {
   async create(fields: Partial<ILicensee> = {}): Promise<ILicensee> {
@@ -72,5 +66,15 @@ class PrismaLicenseeDatabaseRepository extends PrismaRepository<ILicensee> {
     return fields
   }
 }
+
+// Factory for backward-compatibility with specs that call new LicenseeRepositoryDatabase().
+// Returns the active shared instance when memory repos are installed.
+
+function LicenseeRepositoryDatabase(this: any): any {
+  const active = tryGetActiveRepositories()
+  if (active) return active.licenseeRepository
+  return new LicenseeRepositoryMemory()
+}
+LicenseeRepositoryDatabase.prototype = LicenseeRepositoryMemory.prototype
 
 export { LicenseeRepositoryDatabase, LicenseeRepositoryMemory, PrismaLicenseeDatabaseRepository }

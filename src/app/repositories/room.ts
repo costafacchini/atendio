@@ -1,58 +1,37 @@
-import Repository, { RepositoryMemory } from './repository'
-import Room from '../models/Room'
+import { RepositoryMemory, PrismaRepository } from './repository'
 import { IRoom } from '../../types'
-
-class RoomRepositoryDatabase extends Repository<IRoom> {
-  model() {
-    return Room
-  }
-
-  async findFirst(params = {}, relations = ['contact']) {
-    return await super.findFirst(params, relations)
-  }
-
-  findOpenForContact(contactId: any) {
-    return this.findFirst({ contact: contactId, closed: false })
-  }
-
-  findForAgent(_userId: any, _licenseeId: any, departmentIds: any[] = []) {
-    const query: any = {}
-    if (departmentIds.length > 0) {
-      query.department = { $in: departmentIds }
-    }
-    return this.model().find(query)
-  }
-
-  async findForLicensee(
-    licenseeId: any,
-    { departmentIds = [], page = 1, limit = 20 }: { departmentIds?: any[]; page?: number; limit?: number } = {},
-  ) {
-    const contacts = await this.model().db.model('Contact').find({ licensee: licenseeId }).select('_id').lean()
-    const contactIds = contacts.map((c: any) => c._id)
-
-    const filter: any = { contact: { $in: contactIds }, closed: false }
-
-    if (departmentIds.length > 0) {
-      filter.department = { $in: departmentIds }
-    }
-
-    return this.model()
-      .find(filter)
-      .sort({ updatedAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit + 1)
-      .populate('contact', 'name number')
-      .lean()
-  }
-}
+import { getPrismaClient } from '../../config/postgres'
+import { tryGetActiveRepositories } from './activeState'
 
 class RoomRepositoryMemory extends RepositoryMemory<IRoom> {
   async create(fields: any = {}) {
+    const normalized = fields?.roomId != null ? { ...fields, roomId: String(fields.roomId) } : fields
     return await super.create({
       closed: false,
-      ...(fields ?? {}),
+      ...(normalized ?? {}),
     })
+  }
+
+  async findOpenForContact(contactId: any): Promise<IRoom | null> {
+    const records = await this.find({ contact: contactId, closed: false })
+    return records[0] ?? null
   }
 }
 
-export { RoomRepositoryDatabase, RoomRepositoryMemory }
+class PrismaRoomDatabaseRepository extends PrismaRepository<IRoom> {
+  delegate() {
+    return getPrismaClient().room
+  }
+}
+
+// Factory for backward-compatibility with specs that call new RoomRepositoryDatabase().
+// Returns the active shared instance when memory repos are installed.
+
+function RoomRepositoryDatabase(this: any): any {
+  const active = tryGetActiveRepositories()
+  if (active) return active.roomRepository
+  return new RoomRepositoryMemory()
+}
+RoomRepositoryDatabase.prototype = RoomRepositoryMemory.prototype
+
+export { RoomRepositoryDatabase, RoomRepositoryMemory, PrismaRoomDatabaseRepository }

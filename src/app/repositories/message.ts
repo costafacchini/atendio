@@ -1,99 +1,10 @@
 import { v4 as uuidv4 } from 'uuid'
-import Repository, { RepositoryMemory, comparableValue, sortRecords, stringifyObjectIds } from './repository'
-import Message from '../models/Message'
-import Trigger from '../models/Trigger'
+import { RepositoryMemory, PrismaRepository, comparableValue, sortRecords } from './repository'
 import { replace } from '../helpers/Emoji'
 import { requireDependency } from '../helpers/RequireDependency'
 import { IMessage, MessageKind, MessageDestination } from '../../types'
-
-class MessageRepositoryDatabase extends Repository<IMessage> {
-  parseTextDependency: any
-
-  constructor({ parseText: parseTextDependency }: { parseText?: any } = {}) {
-    super()
-    this.parseTextDependency = parseTextDependency
-  }
-
-  model() {
-    return Message
-  }
-
-  async create(fields: Partial<IMessage> = {}): Promise<IMessage> {
-    return await super.create({ number: uuidv4(), ...fields })
-  }
-
-  async findByRoom(roomId: any, options: { since?: Date } = {}) {
-    const query: Record<string, any> = { room: roomId }
-    if (options.since) {
-      query.createdAt = { $gt: options.since }
-    }
-    const docs = await Message.find(query).sort({ createdAt: 1 }).lean()
-    return docs.map((doc: any) => stringifyObjectIds(doc)) as IMessage[]
-  }
-
-  async createInteractiveMessages(fields: any) {
-    const messages: IMessage[] = []
-
-    const text = replace(fields.text)
-
-    const triggers = await Trigger.find({ expression: text, licensee: fields.licensee }).sort({ order: 'asc' })
-    if (triggers.length > 0) {
-      for (const trigger of triggers) {
-        messages.push(
-          await this.create({
-            ...fields,
-            kind: MessageKind.Interactive,
-            text,
-            trigger: trigger._id,
-          }),
-        )
-      }
-    } else {
-      messages.push(
-        await this.create({
-          ...fields,
-          kind: MessageKind.Text,
-          text,
-        }),
-      )
-    }
-
-    return messages
-  }
-
-  async createTextMessageInsteadInteractive(fields: any) {
-    let { kind, text, contact } = fields
-
-    if (kind === MessageKind.Interactive) {
-      kind = MessageKind.Text
-      text = await requireDependency(this.parseTextDependency, 'parseText', 'MessageRepositoryDatabase')(text, contact)
-    }
-
-    return await this.create({ ...fields, kind, text, contact })
-  }
-
-  async createMessageToWarnAboutWindowOfWhatsassHasExpired(contact: any, licensee: any) {
-    return await this.create({
-      number: uuidv4(),
-      kind: MessageKind.Text,
-      contact,
-      licensee,
-      destination: MessageDestination.ToChat,
-      text: '🚨 ATENÇÃO\nO período de 24h para manter conversas expirou. Envie um Template para voltar a interagir com esse contato.',
-    })
-  }
-
-  async createMessageToWarnAboutWindowOfWhatsassIsEnding(contact: any, licensee: any) {
-    return await this.create({
-      number: uuidv4(),
-      kind: MessageKind.Text,
-      contact,
-      licensee,
-      destination: MessageDestination.ToChat,
-      text: '🚨 ATENÇÃO\nO período de 24h para manter conversas está quase expirando. Faltam apenas 10 minutos para encerrar.',
-    })
-  }
-}
+import { getPrismaClient } from '../../config/postgres'
+import { tryGetActiveRepositories } from './activeState'
 
 class MessageRepositoryMemory extends RepositoryMemory<IMessage> {
   triggerRepository: any
@@ -190,4 +101,28 @@ class MessageRepositoryMemory extends RepositoryMemory<IMessage> {
   }
 }
 
-export { MessageRepositoryDatabase, MessageRepositoryMemory }
+class PrismaMessageDatabaseRepository extends PrismaRepository<IMessage> {
+  delegate() {
+    return getPrismaClient().message
+  }
+
+  // Cart was removed by the remove-pdv plan; strip it from the payload if somehow still present.
+  protected toData(fields: any = {}): Record<string, unknown> {
+    const result = super.toData(fields)
+    delete result.cart
+    return result
+  }
+}
+
+// Factory for backward-compatibility with specs that call new MessageRepositoryDatabase().
+// Returns the active shared instance when memory repos are installed, so all
+// patched methods (find, findFirst, etc.) are inherited from the shared instance.
+
+function MessageRepositoryDatabase(this: any): any {
+  const active = tryGetActiveRepositories()
+  if (active) return active.messageRepository
+  return new MessageRepositoryMemory()
+}
+MessageRepositoryDatabase.prototype = MessageRepositoryMemory.prototype
+
+export { MessageRepositoryDatabase, MessageRepositoryMemory, PrismaMessageDatabaseRepository }

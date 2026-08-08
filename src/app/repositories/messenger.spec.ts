@@ -1,7 +1,10 @@
 import { scheduleSendMessageToMessenger } from '@repositories/messenger'
 import { queueServer } from '@config/queue'
 
-describe('#scheduleSendMessageToMessenger', () => {
+const runRedisTests = process.env.RUN_REDIS_TESTS === 'true'
+const describeIfRedis = runRedisTests ? describe : describe.skip
+
+describeIfRedis('#scheduleSendMessageToMessenger', () => {
   const queueSendMessageToMessenger = queueServer.queues.find((queue) => queue.name === 'send-message-to-messenger')
 
   beforeEach(async () => {
