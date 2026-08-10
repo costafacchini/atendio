@@ -1,8 +1,8 @@
-import { UserRepositoryDatabase } from '../app/repositories/user'
+import { PrismaUserDatabaseRepository } from '../app/repositories/user'
 
 const DEFAULT_USER = process.env.DEFAULT_USER
 const DEFAULT_PASSWORD = process.env.DEFAULT_PASSWORD
-const userRepository = new UserRepositoryDatabase()
+const userRepository = new PrismaUserDatabaseRepository()
 
 async function createDefaultUser() {
   try {

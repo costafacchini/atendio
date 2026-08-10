@@ -88,7 +88,7 @@ describe('Crisp plugin', () => {
 
       expect(messages[0].licensee).toEqual(licensee._id)
       expect(messages[0].contact).toEqual(contact._id)
-      expect(messages[0].room._id).toEqual(room._id)
+      expect(messages[0].room).toEqual(room._id)
       expect(messages[0].kind).toEqual('text')
       expect(messages[0].number).toEqual('150bdb15-4c55-42ac-bc6c-970d620fdb6d')
       expect(messages[0].destination).toEqual('to-messenger')
@@ -182,7 +182,7 @@ describe('Crisp plugin', () => {
 
       expect(messages[0].licensee).toEqual(licensee._id)
       expect(messages[0].contact).toEqual(contact._id)
-      expect(messages[0].room._id).toEqual(room._id)
+      expect(messages[0].room).toEqual(room._id)
       expect(messages[0].kind).toEqual('text')
       expect(messages[0].number).toEqual('150bdb15-4c55-42ac-bc6c-970d620fdb6d')
       expect(messages[0].destination).toEqual('to-messenger')
@@ -229,7 +229,7 @@ describe('Crisp plugin', () => {
 
       expect(messages[0].licensee).toEqual(licensee._id)
       expect(messages[0].contact).toEqual(contact._id)
-      expect(messages[0].room._id).toEqual(room._id)
+      expect(messages[0].room).toEqual(room._id)
       expect(messages[0].kind).toEqual('text')
       expect(messages[0].number).toEqual('150bdb15-4c55-42ac-bc6c-970d620fdb6d')
       expect(messages[0].destination).toEqual('to-messenger')

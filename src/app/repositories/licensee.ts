@@ -1,12 +1,7 @@
-import Repository, { RepositoryMemory } from './repository'
-import Licensee from '../models/Licensee'
+import { RepositoryMemory, PrismaRepository } from './repository'
 import { ILicensee } from '../../types'
-
-class LicenseeRepositoryDatabase extends Repository<ILicensee> {
-  model() {
-    return Licensee
-  }
-}
+import { getPrismaClient } from '../../config/postgres'
+import { tryGetActiveRepositories } from './activeState'
 
 class LicenseeRepositoryMemory extends RepositoryMemory<ILicensee> {
   async create(fields: Partial<ILicensee> = {}): Promise<ILicensee> {
@@ -44,4 +39,42 @@ class LicenseeRepositoryMemory extends RepositoryMemory<ILicensee> {
   }
 }
 
-export { LicenseeRepositoryDatabase, LicenseeRepositoryMemory }
+const WHATSAPP_URLS: Record<string, string> = {
+  utalk: 'https://v1.utalk.chat/send/',
+  dialog: 'https://waba.360dialog.io/',
+  ycloud: 'https://api.ycloud.com/v2/',
+}
+
+class PrismaLicenseeDatabaseRepository extends PrismaRepository<ILicensee> {
+  delegate() {
+    return getPrismaClient().licensee
+  }
+
+  async create(fields: Partial<ILicensee> = {}): Promise<ILicensee> {
+    return await super.create(this.applyWhatsappUrl(fields))
+  }
+
+  async save(document: ILicensee): Promise<ILicensee> {
+    return await super.save(this.applyWhatsappUrl(document) as ILicensee)
+  }
+
+  private applyWhatsappUrl<F extends Partial<ILicensee>>(fields: F): F {
+    const whatsappDefault = (fields as any).whatsappDefault as string | undefined
+    if (whatsappDefault && WHATSAPP_URLS[whatsappDefault]) {
+      return { ...fields, whatsappUrl: WHATSAPP_URLS[whatsappDefault] }
+    }
+    return fields
+  }
+}
+
+// Factory for backward-compatibility with specs that call new LicenseeRepositoryDatabase().
+// Returns the active shared instance when memory repos are installed.
+
+function LicenseeRepositoryDatabase(this: any): any {
+  const active = tryGetActiveRepositories()
+  if (active) return active.licenseeRepository
+  return new LicenseeRepositoryMemory()
+}
+LicenseeRepositoryDatabase.prototype = LicenseeRepositoryMemory.prototype
+
+export { LicenseeRepositoryDatabase, LicenseeRepositoryMemory, PrismaLicenseeDatabaseRepository }

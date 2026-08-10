@@ -1,33 +1,26 @@
-import mongoServer from '../../../.jest/utils'
+import { installMemoryRepositories, resetMemoryRepositories } from '@repositories/testing'
 import { MessagesFailedQuery } from './MessagesFailed'
 import { licensee as licenseeFactory } from '@factories/licensee'
 import { contact as contactFactory } from '@factories/contact'
 import { message as messageFactory } from '@factories/message'
-import { LicenseeRepositoryDatabase } from '@repositories/licensee'
-import { ContactRepositoryDatabase } from '@repositories/contact'
-import { MessageRepositoryDatabase } from '@repositories/message'
 
 describe('MessagesFailedQuery', () => {
-  let licensee
-  let contact
+  let repos: ReturnType<typeof installMemoryRepositories>['repositories']
+  let licensee: any
+  let contact: any
 
   beforeEach(async () => {
-    await mongoServer.connect()
-
-    const licenseeRepository = new LicenseeRepositoryDatabase()
-    licensee = await licenseeRepository.create(licenseeFactory.build())
-
-    const contactRepository = new ContactRepositoryDatabase()
-    contact = await contactRepository.create(contactFactory.build({ licensee }))
+    ;({ repositories: repos } = installMemoryRepositories())
+    licensee = await repos.licenseeRepository.create(licenseeFactory.build())
+    contact = await repos.contactRepository.create(contactFactory.build({ licensee }))
   })
 
-  afterEach(async () => {
-    await mongoServer.disconnect()
+  afterEach(() => {
+    resetMemoryRepositories()
   })
 
   it('returns the messages that not sended filtered by licensee and period', async () => {
-    const messageRepository = new MessageRepositoryDatabase()
-    const filteredMessageNotSended1 = await messageRepository.create(
+    const filteredMessageNotSended1 = await repos.messageRepository.create(
       messageFactory.build({
         contact,
         licensee,
@@ -35,7 +28,7 @@ describe('MessagesFailedQuery', () => {
         createdAt: new Date(2021, 6, 3, 0, 0, 0),
       }),
     )
-    const filteredMessageNotSended2 = await messageRepository.create(
+    const filteredMessageNotSended2 = await repos.messageRepository.create(
       messageFactory.build({
         contact,
         licensee,
@@ -43,7 +36,7 @@ describe('MessagesFailedQuery', () => {
         createdAt: new Date(2021, 6, 3, 23, 59, 58),
       }),
     )
-    const filteredMessageSended = await messageRepository.create(
+    const filteredMessageSended = await repos.messageRepository.create(
       messageFactory.build({
         contact,
         licensee,
@@ -51,7 +44,7 @@ describe('MessagesFailedQuery', () => {
         createdAt: new Date(2021, 6, 3, 23, 59, 58),
       }),
     )
-    const filteredMessageBefore = await messageRepository.create(
+    const filteredMessageBefore = await repos.messageRepository.create(
       messageFactory.build({
         contact,
         licensee,
@@ -59,7 +52,7 @@ describe('MessagesFailedQuery', () => {
         createdAt: new Date(2021, 6, 2, 23, 59, 59),
       }),
     )
-    const filteredMessageAfter = await messageRepository.create(
+    const filteredMessageAfter = await repos.messageRepository.create(
       messageFactory.build({
         contact,
         licensee,
@@ -67,9 +60,8 @@ describe('MessagesFailedQuery', () => {
         createdAt: new Date(2021, 6, 4, 0, 0, 0),
       }),
     )
-    const licenseeRepository = new LicenseeRepositoryDatabase()
-    const anotherLicensee = await licenseeRepository.create(licenseeFactory.build())
-    const messageSendedAnotherLicensee = await messageRepository.create(
+    const anotherLicensee = await repos.licenseeRepository.create(licenseeFactory.build())
+    const messageSendedAnotherLicensee = await repos.messageRepository.create(
       messageFactory.build({
         contact,
         licensee: anotherLicensee,
@@ -77,7 +69,7 @@ describe('MessagesFailedQuery', () => {
         createdAt: new Date(2021, 6, 3, 0, 0, 0),
       }),
     )
-    const filteredMessageNotSendedChatEndedByAgent = await messageRepository.create(
+    const filteredMessageNotSendedChatEndedByAgent = await repos.messageRepository.create(
       messageFactory.build({
         text: 'Chat encerrado pelo agente',
         contact,
@@ -92,7 +84,7 @@ describe('MessagesFailedQuery', () => {
       new Date(2021, 6, 3, 23, 59, 59),
       licensee._id,
       {
-        messageRepository,
+        messageRepository: repos.messageRepository,
       },
     )
     const records = await messagesFailedQuery.all()

@@ -1,5 +1,4 @@
 import moment from 'moment-timezone'
-import mongoose from 'mongoose'
 import { IQueryableRepository } from './QueryBuilder'
 import { IRepository } from '@repositories/repository'
 import { ILicensee, IMessage } from '../../types'
@@ -70,7 +69,7 @@ class LicenseeMessagesByDayQuery {
     }
 
     if (this.licenseeClause) {
-      match.licensee = new mongoose.Types.ObjectId(this.licenseeClause.toString())
+      match.licensee = this.licenseeClause.toString()
     }
 
     return [

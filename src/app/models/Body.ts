@@ -1,53 +1,14 @@
-import mongoose from 'mongoose'
-import { IBody } from '../../types'
+// Stub: Mongoose has been removed. This shim delegates to the active RepositoryMemory
+// so that spec files using Body.create/findById continue to work during test runs.
+import { getActiveRepositories, createMemoryModelAdapter } from '@repositories/testing'
 
-const Schema = mongoose.Schema
-const ObjectId = Schema.ObjectId
-
-const bodySchema = new Schema(
-  {
-    _id: ObjectId,
-    content: {
-      type: Object,
-      required: [true, 'Conteúdo: Você deve preencher o campo'],
-    },
-    licensee: {
-      type: ObjectId,
-      ref: 'Licensee',
-      required: [true, 'Licensee: Você deve preencher o campo'],
-    },
-    kind: {
-      type: String,
-      enum: ['normal', 'webhook'],
-      required: [true, 'Tipo de Body: Você deve informar um valor ( normal | webhook )'],
-    },
-    department: {
-      type: ObjectId,
-      ref: 'Department',
-      default: null,
-    },
-    inbox: {
-      type: ObjectId,
-      ref: 'Inbox',
-      default: null,
-    },
-    concluded: { type: Boolean, default: false },
+const Body = {
+  create: async (fields: Record<string, any> = {}) => {
+    return await getActiveRepositories().bodyRepository.create(fields)
   },
-  { timestamps: true },
-)
-
-bodySchema.pre('save', function () {
-  const body = this
-
-  if (!body._id) {
-    body._id = new mongoose.Types.ObjectId()
-  }
-})
-
-bodySchema.set('toJSON', {
-  virtuals: true,
-})
-
-const Body = mongoose.model<IBody>('Body', bodySchema)
+  findById: (id: any) => {
+    return createMemoryModelAdapter(getActiveRepositories().bodyRepository).findById(id)
+  },
+}
 
 export default Body

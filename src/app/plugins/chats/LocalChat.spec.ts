@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import { generateObjectId } from '@repositories/repository'
 import { LocalChat } from './LocalChat'
 import { installMemoryRepositories, resetMemoryRepositories } from '@repositories/testing'
 import { licensee as licenseeFactory } from '@factories/licensee'
@@ -106,7 +106,7 @@ describe('LocalChat plugin', () => {
     })
 
     it("creates a room with the message's department when no open room exists", async () => {
-      const departmentId = new mongoose.Types.ObjectId()
+      const departmentId = generateObjectId()
       const message = await messageRepository.create(
         messageFactory.build({ contact, licensee, sended: false, department: departmentId }),
       )
@@ -168,7 +168,7 @@ describe('LocalChat plugin', () => {
 
   describe('#responseToMessages', () => {
     it('sets department on message when room has a department', async () => {
-      const departmentId = new mongoose.Types.ObjectId()
+      const departmentId = generateObjectId()
       const room = await roomRepository.create({ contact: contact._id, status: 'open', department: departmentId })
       const fullPlugin = new LocalChat(licensee, {
         messageRepository,

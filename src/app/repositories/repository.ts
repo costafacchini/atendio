@@ -1,4 +1,9 @@
-import mongoose from 'mongoose'
+import { randomBytes } from 'crypto'
+
+// 24-hex-char string used as a legacy identifier for in-memory records.
+function generateObjectId(): string {
+  return randomBytes(12).toString('hex')
+}
 
 export interface IRepository<T> {
   findFirst(params?: Record<string, unknown>, relations?: string[]): Promise<T | null>
@@ -59,7 +64,8 @@ function isObject(value: any) {
 }
 
 function isObjectIdLike(value: any) {
-  return value instanceof mongoose.Types.ObjectId || value?._bsontype === 'ObjectId'
+  // Checks for the bsontype tag left on ObjectId-like values from legacy mongo data.
+  return value?._bsontype === 'ObjectId'
 }
 
 function stringifyObjectIds(value: any): any {
@@ -154,6 +160,9 @@ function matchValue(actual: any, expected: any): any {
     return Object.entries(expected).every(([key, value]) => matchValue(actual?.[key], value))
   }
 
+  // Treat null and undefined as equivalent — absent fields may be stored as either.
+  if (actual == null && expected == null) return true
+
   const normalizedExpected = normalizeExpectedValue(actual, expected)
   return comparableValue(actual) === comparableValue(normalizedExpected)
 }
@@ -203,7 +212,7 @@ function sortRecords(records: any[] = [], order: any = {}) {
 function buildMemoryRecord(fields: Record<string, any> = {}) {
   const now = new Date()
   const record: Record<string, any> = {
-    _id: fields?._id ?? new mongoose.Types.ObjectId(),
+    _id: fields?._id ?? generateObjectId(),
     ...(fields ?? {}),
   }
 
@@ -309,7 +318,7 @@ class RepositoryMemory<T> extends Repository<T> implements IRepository<T> {
     return await Promise.resolve(this.hydrate(storedRecord))
   }
 
-  async prepareRecord(fields: any = {}, { existingRecord = null }: { existingRecord?: any } = {}) {
+  prepareRecord(fields: any = {}, { existingRecord = null }: { existingRecord?: any } = {}) {
     if (!this.modelClass) {
       if (existingRecord) {
         return {
@@ -323,21 +332,9 @@ class RepositoryMemory<T> extends Repository<T> implements IRepository<T> {
       return buildMemoryRecord(fields)
     }
 
-    const payload = this.serializeInput(fields)
-    const now = new Date()
-    const document = new this.modelClass({
-      ...(payload ?? {}),
-      _id: payload?._id ?? existingRecord?._id ?? new mongoose.Types.ObjectId(),
-      createdAt: payload?.createdAt ?? existingRecord?.createdAt ?? now,
-      updatedAt: now,
-    })
-    await document.validate()
-
-    const record = this.serializeInput(document)
-    record.createdAt = payload?.createdAt ?? existingRecord?.createdAt ?? record.createdAt ?? now
-    record.updatedAt = now
-
-    return record
+    // modelClass was previously used for Mongoose schema validation; Mongoose has been removed.
+    // Fall through to plain record construction.
+    return buildMemoryRecord(fields)
   }
 
   serializeInput(value: any) {
@@ -442,11 +439,114 @@ class RepositoryMemory<T> extends Repository<T> implements IRepository<T> {
 
     const comparable = comparableValue(value)
 
-    if (typeof comparable === 'string' && !mongoose.isValidObjectId(comparable)) {
-      throw new mongoose.Error.CastError('ObjectId', comparable, path)
+    // Validates a 24-hex-char ObjectId string (legacy in-memory record IDs).
+    if (typeof comparable === 'string' && !/^[0-9a-fA-F]{24}$/.test(comparable)) {
+      throw new Error(`Cast to ObjectId failed for value "${comparable}" at path "${path}"`)
     }
   }
 }
 
+class PrismaRepository<T> implements IRepository<T> {
+  delegate(): any {
+    throw new Error('PrismaRepository.delegate() must be implemented by subclass')
+  }
+
+  // Subclasses list FK integer field names so toWhere/toData can coerce them.
+  protected fkFields(): string[] {
+    return []
+  }
+
+  async findFirst(params: Record<string, unknown> = {}): Promise<T | null> {
+    return this.fromDB(await this.delegate().findFirst({ where: this.toWhere(params) }))
+  }
+
+  async find(params: Record<string, unknown> = {}): Promise<T[]> {
+    return this.fromDBMany(await this.delegate().findMany({ where: this.toWhere(params) }))
+  }
+
+  async create(fields: Partial<T> = {}): Promise<T> {
+    return this.fromDB(await this.delegate().create({ data: this.toData(fields) })) as T
+  }
+
+  async update(id: string, fields: Partial<T> = {}): Promise<{ acknowledged: boolean }> {
+    await this.delegate().updateMany({ where: { id: parseInt(id, 10) }, data: this.toData(fields) })
+    return { acknowledged: true }
+  }
+
+  async updateMany(params: Record<string, unknown> = {}, fields: Partial<T> = {}): Promise<{ acknowledged: boolean }> {
+    await this.delegate().updateMany({ where: this.toWhere(params), data: this.toData(fields) })
+    return { acknowledged: true }
+  }
+
+  async delete(params: Record<string, unknown> = {}): Promise<{ acknowledged: boolean }> {
+    await this.delegate().deleteMany({ where: this.toWhere(params) })
+    return { acknowledged: true }
+  }
+
+  async save(document: T): Promise<T> {
+    const doc = document as any
+    const rawId = doc.id ?? doc._id
+    const id = rawId != null ? parseInt(String(rawId), 10) : undefined
+    const data = this.toData(doc)
+    if (id && !isNaN(id)) {
+      return this.fromDB(await this.delegate().upsert({ where: { id }, create: data, update: data })) as T
+    }
+    return this.fromDB(await this.delegate().create({ data })) as T
+  }
+
+  // _id is the stringified integer id so existing application code keeps working
+  protected fromDB<R>(record: R | null): R | null {
+    if (!record) return null
+    return { ...(record as any), _id: String((record as any).id) } as R
+  }
+
+  protected fromDBMany<R>(records: R[]): R[] {
+    return records.map((r) => this.fromDB(r) as R)
+  }
+
+  // Maps _id → id (integer) and coerces FK fields to integers
+  protected toWhere(params: Record<string, unknown> = {}): Record<string, unknown> {
+    const fks = this.fkFields()
+    const result: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(params ?? {})) {
+      if (key === '_id') {
+        result['id'] = value != null ? parseInt(String(value), 10) : value
+      } else if (fks.includes(key) && value != null) {
+        result[key] = parseInt(String(value), 10)
+      } else {
+        result[key] = value
+      }
+    }
+    return result
+  }
+
+  // Strips internal fields; coerces FK fields to integers
+  protected toData(fields: any = {}): Record<string, unknown> {
+    const plain = fields?.toObject
+      ? fields.toObject({ depopulate: true, versionKey: false, virtuals: false })
+      : { ...(fields ?? {}) }
+    const result: Record<string, unknown> = { ...plain }
+    delete result._id
+    delete result.__v
+    delete result.id
+    const fks = this.fkFields()
+    for (const field of fks) {
+      if (result[field] != null) {
+        result[field] = parseInt(String(result[field]), 10)
+      }
+    }
+    return result
+  }
+}
+
 export default Repository
-export { RepositoryMemory, buildMemoryRecord, comparableValue, matchesFilter, sortRecords, stringifyObjectIds }
+export {
+  RepositoryMemory,
+  PrismaRepository,
+  buildMemoryRecord,
+  comparableValue,
+  generateObjectId,
+  matchesFilter,
+  sortRecords,
+  stringifyObjectIds,
+}

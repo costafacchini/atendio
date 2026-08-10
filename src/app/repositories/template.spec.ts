@@ -1,41 +1,34 @@
-import mongoServer from '../../../.jest/utils'
-import { createTemplate } from '@repositories/template'
+import { TemplateRepositoryMemory, createTemplate } from '@repositories/template'
+import { LicenseeRepositoryMemory } from '@repositories/licensee'
 import { licensee as licenseeFactory } from '@factories/licensee'
-import { LicenseeRepositoryDatabase } from '@repositories/licensee'
-import { TemplateRepositoryDatabase } from '@repositories/template'
 
-describe('#createTemplate', () => {
-  beforeEach(async () => {
-    await mongoServer.connect()
+describe('template repository memory', () => {
+  beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  afterEach(async () => {
-    await mongoServer.disconnect()
-  })
+  describe('#createTemplate', () => {
+    it('creates a template', async () => {
+      const licenseeRepository = new LicenseeRepositoryMemory()
+      const licensee = await licenseeRepository.create(licenseeFactory.build())
+      const templateRepository = new TemplateRepositoryMemory()
 
-  it('creates a template', async () => {
-    const licenseeRepository = new LicenseeRepositoryDatabase()
-    const licensee = await licenseeRepository.create(licenseeFactory.build())
-    const templateRepository = new TemplateRepositoryDatabase()
+      const template = await createTemplate(
+        {
+          licensee: licensee._id,
+          name: 'template',
+          namespace: 'Namespace',
+        },
+        { templateRepository },
+      )
 
-    const template = await createTemplate(
-      {
-        licensee,
-        name: 'template',
-        namespace: 'Namespace',
-      },
-      {
-        templateRepository,
-      },
-    )
-
-    expect(template).toEqual(
-      expect.objectContaining({
-        licensee: licensee._id,
-        name: 'template',
-        namespace: 'Namespace',
-      }),
-    )
+      expect(template).toEqual(
+        expect.objectContaining({
+          licensee: licensee._id,
+          name: 'template',
+          namespace: 'Namespace',
+        }),
+      )
+    })
   })
 })

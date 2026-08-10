@@ -91,7 +91,7 @@ describe('Rocketchat plugin', () => {
 
       expect(messages[0].licensee).toEqual(licensee._id)
       expect(messages[0].contact).toEqual(contact._id)
-      expect(messages[0].room._id).toEqual(room._id)
+      expect(messages[0].room).toEqual(room._id)
       expect(messages[0].kind).toEqual('text')
       expect(messages[0].number).toEqual('150bdb15-4c55-42ac-bc6c-970d620fdb6d')
       expect(messages[0].destination).toEqual('to-messenger')
@@ -105,7 +105,7 @@ describe('Rocketchat plugin', () => {
 
       expect(messages[1].licensee).toEqual(licensee._id)
       expect(messages[1].contact).toEqual(contact._id)
-      expect(messages[1].room._id).toEqual(room._id)
+      expect(messages[1].room).toEqual(room._id)
       expect(messages[1].kind).toEqual('file')
       expect(messages[1].number).toEqual('150bdb15-4c55-42ac-bc6c-970d620fdb6d')
       expect(messages[1].destination).toEqual('to-messenger')
@@ -119,7 +119,7 @@ describe('Rocketchat plugin', () => {
 
       expect(messages[2].licensee).toEqual(licensee._id)
       expect(messages[2].contact).toEqual(contact._id)
-      expect(messages[2].room._id).toEqual(room._id)
+      expect(messages[2].room).toEqual(room._id)
       expect(messages[2].kind).toEqual('interactive')
       expect(messages[2].number).toEqual('150bdb15-4c55-42ac-bc6c-970d620fdb6d')
       expect(messages[2].destination).toEqual('to-messenger')
@@ -133,7 +133,7 @@ describe('Rocketchat plugin', () => {
 
       expect(messages[3].licensee).toEqual(licensee._id)
       expect(messages[3].contact).toEqual(contact._id)
-      expect(messages[3].room._id).toEqual(room._id)
+      expect(messages[3].room).toEqual(room._id)
       expect(messages[3].kind).toEqual('interactive')
       expect(messages[3].number).toEqual('150bdb15-4c55-42ac-bc6c-970d620fdb6d')
       expect(messages[3].destination).toEqual('to-messenger')
@@ -211,7 +211,7 @@ describe('Rocketchat plugin', () => {
 
         expect(messages[0].licensee).toEqual(licensee._id)
         expect(messages[0].contact).toEqual(contact._id)
-        expect(messages[0].room._id).toEqual(room._id)
+        expect(messages[0].room).toEqual(room._id)
         expect(messages[0].kind).toEqual('text')
         expect(messages[0].number).toEqual('150bdb15-4c55-42ac-bc6c-970d620fdb6d')
         expect(messages[0].destination).toEqual('to-messenger')
@@ -1021,7 +1021,7 @@ describe('Rocketchat plugin', () => {
           expect(messageUpdated.sended).toEqual(true)
           expect(messageUpdated.room).not.toEqual(room)
 
-          const newRoom = await Room.findById(messageUpdated.room._id)
+          const newRoom = await Room.findById(messageUpdated.room)
           expect(newRoom.closed).toEqual(false)
 
           const roomClosed = await Room.findById(room._id)

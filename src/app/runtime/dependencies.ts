@@ -1,15 +1,16 @@
-import { WhatsappSessionRepositoryDatabase } from '../repositories/whatsappsession'
-import { DepartmentRepositoryDatabase } from '../repositories/department'
-import { InboxRepositoryDatabase } from '../repositories/inbox'
-import { BodyRepositoryDatabase } from '../repositories/body'
-import { ContactRepositoryDatabase } from '../repositories/contact'
-import { LicenseeRepositoryDatabase } from '../repositories/licensee'
-import { MessageRepositoryDatabase } from '../repositories/message'
-import { RoomRepositoryDatabase } from '../repositories/room'
-import { TemplateRepositoryDatabase } from '../repositories/template'
-import { TrafficlightRepositoryDatabase } from '../repositories/trafficlight'
-import { TriggerRepositoryDatabase } from '../repositories/trigger'
-import { UserRepositoryDatabase } from '../repositories/user'
+import { PrismaWhatsappSessionDatabaseRepository } from '../repositories/whatsappsession'
+import { PrismaDepartmentDatabaseRepository } from '../repositories/department'
+import { PrismaInboxDatabaseRepository } from '../repositories/inbox'
+import { PrismaBodyDatabaseRepository } from '../repositories/body'
+import { PrismaContactDatabaseRepository } from '../repositories/contact'
+import { PrismaLicenseeDatabaseRepository } from '../repositories/licensee'
+import { PrismaMessageDatabaseRepository } from '../repositories/message'
+import { PrismaRoomDatabaseRepository } from '../repositories/room'
+import { PrismaTemplateDatabaseRepository } from '../repositories/template'
+import { RedisTrafficlightRepository } from '../repositories/trafficlight'
+import { PrismaTriggerDatabaseRepository } from '../repositories/trigger'
+import { PrismaUserDatabaseRepository } from '../repositories/user'
+import { tryGetActiveRepositories } from '../repositories/activeState'
 import { parseText as parseTextHelper } from '../helpers/ParseTriggerText'
 import { createChatPlugin as createChatPluginFactory } from '../plugins/chats/factory'
 import { createChatbotPlugin as createChatbotPluginFactory } from '../plugins/chatbots/factory'
@@ -175,24 +176,26 @@ function buildRuntimeDependencies({
 }
 
 function createRuntimeDependencies(overrides: Record<string, any> = {}) {
-  const triggerRepository = overrides.triggerRepository ?? new TriggerRepositoryDatabase()
-  const parseText = overrides.parseText ?? ((text: any, contact: any) => parseTextHelper(text, contact, {}))
-  const messageRepository = overrides.messageRepository ?? new MessageRepositoryDatabase({ parseText })
-  const contactRepository = overrides.contactRepository ?? new ContactRepositoryDatabase({ messageRepository })
+  // When memory repositories are active (e.g. in tests), use them as defaults
+  // so callers don't need to pass every repo explicitly.
+  const memRepos = tryGetActiveRepositories()
+
+  const mem = (key: string, fallback: () => any) =>
+    overrides[key] ?? memRepos?.[key as keyof typeof memRepos] ?? fallback()
 
   return buildRuntimeDependencies({
-    bodyRepository: overrides.bodyRepository ?? new BodyRepositoryDatabase(),
-    contactRepository,
-    licenseeRepository: overrides.licenseeRepository ?? new LicenseeRepositoryDatabase(),
-    messageRepository,
-    roomRepository: overrides.roomRepository ?? new RoomRepositoryDatabase(),
-    templateRepository: overrides.templateRepository ?? new TemplateRepositoryDatabase(),
-    trafficlightRepository: overrides.trafficlightRepository ?? new TrafficlightRepositoryDatabase(),
-    triggerRepository,
-    userRepository: overrides.userRepository ?? new UserRepositoryDatabase(),
-    departmentRepository: overrides.departmentRepository ?? new DepartmentRepositoryDatabase(),
-    inboxRepository: overrides.inboxRepository ?? new InboxRepositoryDatabase(),
-    whatsappSessionRepository: overrides.whatsappSessionRepository ?? new WhatsappSessionRepositoryDatabase(),
+    bodyRepository: mem('bodyRepository', () => new PrismaBodyDatabaseRepository()),
+    contactRepository: mem('contactRepository', () => new PrismaContactDatabaseRepository()),
+    licenseeRepository: mem('licenseeRepository', () => new PrismaLicenseeDatabaseRepository()),
+    messageRepository: mem('messageRepository', () => new PrismaMessageDatabaseRepository()),
+    roomRepository: mem('roomRepository', () => new PrismaRoomDatabaseRepository()),
+    templateRepository: mem('templateRepository', () => new PrismaTemplateDatabaseRepository()),
+    trafficlightRepository: mem('trafficlightRepository', () => new RedisTrafficlightRepository()),
+    triggerRepository: mem('triggerRepository', () => new PrismaTriggerDatabaseRepository()),
+    userRepository: mem('userRepository', () => new PrismaUserDatabaseRepository()),
+    departmentRepository: mem('departmentRepository', () => new PrismaDepartmentDatabaseRepository()),
+    inboxRepository: mem('inboxRepository', () => new PrismaInboxDatabaseRepository()),
+    whatsappSessionRepository: mem('whatsappSessionRepository', () => new PrismaWhatsappSessionDatabaseRepository()),
   })
 }
 

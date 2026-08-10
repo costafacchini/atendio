@@ -1,29 +1,28 @@
-import mongoServer from '../../../.jest/utils'
+import { installMemoryRepositories, resetMemoryRepositories } from '@repositories/testing'
 import { MessagesSendedYesterday } from './MessagesSendedYesterday'
 import moment from 'moment'
 import { licensee as licenseeFactory } from '@factories/licensee'
 import { contact as contactFactory } from '@factories/contact'
 import { message as messageFactory } from '@factories/message'
-import { LicenseeRepositoryDatabase } from '@repositories/licensee'
-import { ContactRepositoryDatabase } from '@repositories/contact'
-import { MessageRepositoryDatabase } from '@repositories/message'
 
 describe('MessagesSendedYesterday', () => {
-  beforeEach(async () => {
-    await mongoServer.connect()
+  let repos: ReturnType<typeof installMemoryRepositories>['repositories']
+
+  beforeEach(() => {
+    ;({ repositories: repos } = installMemoryRepositories())
   })
 
-  afterEach(async () => {
-    await mongoServer.disconnect()
+  afterEach(() => {
+    resetMemoryRepositories()
   })
 
   it('returns the resume os messages sended yesterday', async () => {
-    const licenseeRepository = new LicenseeRepositoryDatabase()
+    const licenseeRepository = repos.licenseeRepository
     const licensee1 = await licenseeRepository.create(licenseeFactory.build({ name: 'Alcateia', licenseKind: 'paid' }))
 
-    const contactRepository = new ContactRepositoryDatabase()
+    const contactRepository = repos.contactRepository
     const contact1 = await contactRepository.create(contactFactory.build({ licensee: licensee1 }))
-    const messageRepository = new MessageRepositoryDatabase()
+    const messageRepository = repos.messageRepository
     const messageOfYesterday1 = await messageRepository.create(
       messageFactory.build({
         contact: contact1,

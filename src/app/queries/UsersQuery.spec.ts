@@ -1,36 +1,32 @@
 import { UsersQuery } from '@queries/UsersQuery'
-import mongoServer from '../../../.jest/utils'
+import { installMemoryRepositories, resetMemoryRepositories } from '@repositories/testing'
 import { user as userFactory } from '@factories/user'
 import { licensee as licenseeFactory } from '@factories/licensee'
-import { UserRepositoryDatabase } from '@repositories/user'
-import { LicenseeRepositoryDatabase } from '@repositories/licensee'
-
-const buildUsersQuery = () => new UsersQuery({ userRepository: new UserRepositoryDatabase() })
 
 describe('UsersQuery', () => {
-  let licensee
+  let repos: ReturnType<typeof installMemoryRepositories>['repositories']
+  let licensee: any
 
   beforeEach(async () => {
-    await mongoServer.connect()
-
-    const licenseeRepository = new LicenseeRepositoryDatabase()
-    licensee = await licenseeRepository.create(licenseeFactory.build())
+    ;({ repositories: repos } = installMemoryRepositories())
+    licensee = await repos.licenseeRepository.create(licenseeFactory.build())
   })
 
-  afterEach(async () => {
-    await mongoServer.disconnect()
+  afterEach(() => {
+    resetMemoryRepositories()
   })
+
+  const buildUsersQuery = () => new UsersQuery({ userRepository: repos.userRepository })
 
   it('returns all users ordered by createdAt asc', async () => {
-    const userRepository = new UserRepositoryDatabase()
-    const user1 = await userRepository.create(
+    const user1 = await repos.userRepository.create(
       userFactory.build({
         licensee: licensee._id,
         email: 'user1@test.com',
         createdAt: new Date(2021, 6, 3, 0, 0, 0),
       }),
     )
-    const user2 = await userRepository.create(
+    const user2 = await repos.userRepository.create(
       userFactory.build({
         licensee: licensee._id,
         email: 'user2@test.com',
@@ -48,22 +44,21 @@ describe('UsersQuery', () => {
 
   describe('about pagination', () => {
     it('returns all by page respecting the limit', async () => {
-      const userRepository = new UserRepositoryDatabase()
-      const user1 = await userRepository.create(
+      const user1 = await repos.userRepository.create(
         userFactory.build({
           licensee: licensee._id,
           email: 'user1@test.com',
           createdAt: new Date(2021, 6, 3, 0, 0, 0),
         }),
       )
-      const user2 = await userRepository.create(
+      const user2 = await repos.userRepository.create(
         userFactory.build({
           licensee: licensee._id,
           email: 'user2@test.com',
           createdAt: new Date(2021, 6, 3, 0, 0, 1),
         }),
       )
-      const licensee3 = await userRepository.create(
+      const user3 = await repos.userRepository.create(
         userFactory.build({
           licensee: licensee._id,
           email: 'user3@test.com',
@@ -85,7 +80,7 @@ describe('UsersQuery', () => {
       records = await usersQuery.all()
 
       expect(records.length).toEqual(1)
-      expect(records[0]).toEqual(expect.objectContaining({ _id: licensee3._id }))
+      expect(records[0]).toEqual(expect.objectContaining({ _id: user3._id }))
 
       usersQuery.page(1)
       usersQuery.limit(1)
@@ -99,17 +94,15 @@ describe('UsersQuery', () => {
 
   describe('filterByLicensee', () => {
     it('returns users filtered by licensee', async () => {
-      const contactRepository = new UserRepositoryDatabase()
-      const user1 = await contactRepository.create(
+      const user1 = await repos.userRepository.create(
         userFactory.build({
           licensee,
           createdAt: new Date(2021, 6, 3, 0, 0, 0),
         }),
       )
 
-      const licenseeRepository = new LicenseeRepositoryDatabase()
-      const anotherLicensee = await licenseeRepository.create(licenseeFactory.build({ name: 'Wolf e cia' }))
-      const user2 = await contactRepository.create(
+      const anotherLicensee = await repos.licenseeRepository.create(licenseeFactory.build({ name: 'Wolf e cia' }))
+      const user2 = await repos.userRepository.create(
         userFactory.build({
           licensee: anotherLicensee._id,
           createdAt: new Date(2021, 6, 3, 0, 0, 1),
@@ -129,15 +122,14 @@ describe('UsersQuery', () => {
 
   describe('filterByExpression', () => {
     it('returns users filtered by expression on name and email', async () => {
-      const userRepository = new UserRepositoryDatabase()
-      const user1 = await userRepository.create(
+      const user1 = await repos.userRepository.create(
         userFactory.build({
           licensee: licensee._id,
           name: 'Mary Ltda',
           email: 'maryltda@china.com',
         }),
       )
-      const user2 = await userRepository.create(
+      const user2 = await repos.userRepository.create(
         userFactory.build({
           licensee: licensee._id,
           name: 'Doeland',

@@ -1,31 +1,29 @@
-import Body from '../models/Body'
-import Contact from '../models/Contact'
-import Licensee from '../models/Licensee'
-import Message from '../models/Message'
-import Room from '../models/Room'
-import Template from '../models/Template'
-import Trigger from '../models/Trigger'
-import User from '../models/User'
-import WhatsappSession from '../models/WhatsappSession'
-import Department from '../models/Department'
-import Inbox from '../models/Inbox'
-import { BodyRepositoryDatabase, BodyRepositoryMemory } from './body'
-import { ContactRepositoryDatabase, ContactRepositoryMemory } from './contact'
-import { LicenseeRepositoryDatabase, LicenseeRepositoryMemory } from './licensee'
-import { MessageRepositoryDatabase, MessageRepositoryMemory } from './message'
-import { RoomRepositoryDatabase, RoomRepositoryMemory } from './room'
-import { TemplateRepositoryDatabase, TemplateRepositoryMemory } from './template'
+import { BodyRepositoryMemory } from './body'
+import { ContactRepositoryMemory } from './contact'
+import { LicenseeRepositoryMemory } from './licensee'
+import { MessageRepositoryMemory } from './message'
+import { RoomRepositoryMemory } from './room'
+import { TemplateRepositoryMemory } from './template'
 import { TrafficlightRepositoryMemory } from './trafficlight'
-import { TriggerRepositoryDatabase, TriggerRepositoryMemory } from './trigger'
-import { UserRepositoryDatabase, UserRepositoryMemory } from './user'
-import { WhatsappSessionRepositoryDatabase, WhatsappSessionRepositoryMemory } from './whatsappsession'
-import { DepartmentRepositoryDatabase, DepartmentRepositoryMemory } from './department'
-import { InboxRepositoryDatabase, InboxRepositoryMemory } from './inbox'
-import { RepositoryMemory, matchesFilter, sortRecords, comparableValue } from './repository'
+import { TriggerRepositoryMemory } from './trigger'
+import { UserRepositoryMemory } from './user'
+import { WhatsappSessionRepositoryMemory } from './whatsappsession'
+import { DepartmentRepositoryMemory } from './department'
+import { InboxRepositoryMemory } from './inbox'
+import { matchesFilter, sortRecords, comparableValue } from './repository'
 import { parseText as parseTextHelper } from '../helpers/ParseTriggerText'
 import { MessageKind } from '../../types'
+import { setActiveRepositories } from './activeState'
 
 let activeRestore: any = null
+let activeRepositories: ReturnType<typeof createMemoryRepositories> | null = null
+
+function getActiveRepositories(): ReturnType<typeof createMemoryRepositories> {
+  if (!activeRepositories) {
+    throw new Error('No active memory repositories — call installMemoryRepositories() first')
+  }
+  return activeRepositories
+}
 
 function serializeRelations(record: any, relations: any[] = []) {
   if (!record) {
@@ -148,6 +146,12 @@ class MemoryQuery {
     return this
   }
 
+  nin(values: any[]) {
+    const field = this.currentField
+    this.predicates.push((record: any) => matchesFilter(record, { [field]: { $nin: values } }))
+    return this
+  }
+
   gt(value: any) {
     const field = this.currentField
     this.predicates.push((record: any) => matchesFilter(record, { [field]: { $gt: value } }))
@@ -174,6 +178,16 @@ class MemoryQuery {
 
   or(filters: any[] = []) {
     this.predicates.push((record: any) => filters.some((filter: any) => matchesFilter(record, filter)))
+    return this
+  }
+
+  lean() {
+    // No-op in memory — records are already plain objects.
+    return this
+  }
+
+  select(_fields: any) {
+    // Field projection not needed for in-memory records.
     return this
   }
 
@@ -248,9 +262,11 @@ function aggregateMessageCounts(repository: any, pipeline: any[] = []) {
       return left._id.day > right._id.day ? 1 : -1
     })
     .forEach((entry: any) => {
+      // Use the comparable (string) ID as both the map key and the _id value so that
+      // callers can do `current._id.toString()` and get the licensee ID string back.
       const licenseeKey = comparableValue(entry._id.licensee)
       const current = groupedByLicensee.get(licenseeKey) ?? {
-        _id: entry._id.licensee,
+        _id: licenseeKey,
         days: [],
       }
 
@@ -271,37 +287,6 @@ function createMemoryModelAdapter(repository: any, { aggregate }: { aggregate?: 
     where: (params = {}) => new MemoryQuery(repository).where(params),
     aggregate: async (pipeline: any[] = []) => (aggregate ? await aggregate(repository, pipeline) : []),
   }
-}
-
-function bindModelToRepository(model: any, repository: any, restores: any) {
-  const adapter = createMemoryModelAdapter(repository)
-
-  patchMember(model, 'create', adapter.create, restores)
-  patchMember(model, 'find', adapter.find, restores)
-  patchMember(model, 'findById', adapter.findById, restores)
-  patchMember(model, 'findOne', adapter.findOne, restores)
-  patchMember(model, 'deleteMany', adapter.deleteMany, restores)
-  patchMember(model, 'where', adapter.where, restores)
-}
-
-function bindRepositoryPrototype(prototype: any, repository: any, restores: any) {
-  // Stable base CRUD API — explicitly listed to avoid patching Repository internals like model().
-  const baseMethods = ['findFirst', 'create', 'update', 'updateMany', 'find', 'delete', 'save']
-
-  // Custom business methods defined directly on the concrete Memory subclass are discovered
-  // dynamically so new methods are auto-patched without requiring updates here.
-  // RepositoryMemory internals (hydrate, prepareRecord, populateRecords, etc.) are excluded
-  // to prevent them from leaking onto Database prototypes.
-  const repositoryMemoryOwnMethods = new Set(Object.getOwnPropertyNames(RepositoryMemory.prototype))
-  const customMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(repository)).filter(
-    (name) => name !== 'constructor' && !repositoryMemoryOwnMethods.has(name),
-  )
-
-  ;[...baseMethods, ...customMethods].forEach((method) => {
-    if (typeof repository[method] === 'function' && method in prototype) {
-      patchMember(prototype, method, repository[method].bind(repository), restores)
-    }
-  })
 }
 
 function patchMember(target: any, key: any, replacement: any, restores: any) {
@@ -386,18 +371,6 @@ function installMemoryRepositories() {
     return populatedRoom
   }
 
-  repositories.bodyRepository.modelClass = Body
-  repositories.contactRepository.modelClass = Contact
-  repositories.licenseeRepository.modelClass = Licensee
-  repositories.messageRepository.modelClass = Message
-  repositories.roomRepository.modelClass = Room
-  repositories.templateRepository.modelClass = Template
-  repositories.triggerRepository.modelClass = Trigger
-  repositories.userRepository.modelClass = User
-  repositories.whatsappSessionRepository.modelClass = WhatsappSession
-  repositories.departmentRepository.modelClass = Department
-  repositories.inboxRepository.modelClass = Inbox
-
   repositories.bodyRepository.relationLoaders = {
     licensee: loadRelation(repositories.licenseeRepository),
   }
@@ -433,106 +406,84 @@ function installMemoryRepositories() {
     licensee: loadRelation(repositories.licenseeRepository),
   }
 
-  bindRepositoryPrototype(BodyRepositoryDatabase.prototype, repositories.bodyRepository, restores)
-  bindRepositoryPrototype(ContactRepositoryDatabase.prototype, repositories.contactRepository, restores)
-  bindRepositoryPrototype(LicenseeRepositoryDatabase.prototype, repositories.licenseeRepository, restores)
-  bindRepositoryPrototype(MessageRepositoryDatabase.prototype, repositories.messageRepository, restores)
-  bindRepositoryPrototype(RoomRepositoryDatabase.prototype, repositories.roomRepository, restores)
-  bindRepositoryPrototype(TemplateRepositoryDatabase.prototype, repositories.templateRepository, restores)
-  bindRepositoryPrototype(TriggerRepositoryDatabase.prototype, repositories.triggerRepository, restores)
-  bindRepositoryPrototype(UserRepositoryDatabase.prototype, repositories.userRepository, restores)
-  bindRepositoryPrototype(WhatsappSessionRepositoryDatabase.prototype, repositories.whatsappSessionRepository, restores)
-  bindRepositoryPrototype(DepartmentRepositoryDatabase.prototype, repositories.departmentRepository, restores)
-  bindRepositoryPrototype(InboxRepositoryDatabase.prototype, repositories.inboxRepository, restores)
-
+  // Patch MemoryQuery adapters onto the memory repositories so that use-cases
+  // and queries that call Model.find(...).sort(...).lean() style chains still work.
   patchMember(
-    BodyRepositoryDatabase.prototype,
+    repositories.bodyRepository,
     'model',
     () => createMemoryModelAdapter(repositories.bodyRepository),
     restores,
   )
   patchMember(
-    ContactRepositoryDatabase.prototype,
+    repositories.contactRepository,
     'model',
     () => createMemoryModelAdapter(repositories.contactRepository),
     restores,
   )
   patchMember(
-    LicenseeRepositoryDatabase.prototype,
+    repositories.licenseeRepository,
     'model',
     () => createMemoryModelAdapter(repositories.licenseeRepository),
     restores,
   )
   patchMember(
-    MessageRepositoryDatabase.prototype,
+    repositories.messageRepository,
     'model',
     () => createMemoryModelAdapter(repositories.messageRepository, { aggregate: aggregateMessageCounts }),
     restores,
   )
   patchMember(
-    RoomRepositoryDatabase.prototype,
+    repositories.roomRepository,
     'model',
     () => createMemoryModelAdapter(repositories.roomRepository),
     restores,
   )
   patchMember(
-    TemplateRepositoryDatabase.prototype,
+    repositories.templateRepository,
     'model',
     () => createMemoryModelAdapter(repositories.templateRepository),
     restores,
   )
   patchMember(
-    TriggerRepositoryDatabase.prototype,
+    repositories.triggerRepository,
     'model',
     () => createMemoryModelAdapter(repositories.triggerRepository),
     restores,
   )
   patchMember(
-    UserRepositoryDatabase.prototype,
+    repositories.userRepository,
     'model',
     () => createMemoryModelAdapter(repositories.userRepository),
     restores,
   )
   patchMember(
-    WhatsappSessionRepositoryDatabase.prototype,
+    repositories.whatsappSessionRepository,
     'model',
     () => createMemoryModelAdapter(repositories.whatsappSessionRepository),
     restores,
   )
   patchMember(
-    DepartmentRepositoryDatabase.prototype,
+    repositories.departmentRepository,
     'model',
     () => createMemoryModelAdapter(repositories.departmentRepository),
     restores,
   )
   patchMember(
-    InboxRepositoryDatabase.prototype,
+    repositories.inboxRepository,
     'model',
     () => createMemoryModelAdapter(repositories.inboxRepository),
     restores,
   )
 
-  bindModelToRepository(Body, repositories.bodyRepository, restores)
-  bindModelToRepository(Contact, repositories.contactRepository, restores)
-  bindModelToRepository(Licensee, repositories.licenseeRepository, restores)
-  bindModelToRepository(Message, repositories.messageRepository, restores)
-  bindModelToRepository(Room, repositories.roomRepository, restores)
-  bindModelToRepository(Template, repositories.templateRepository, restores)
-  bindModelToRepository(Trigger, repositories.triggerRepository, restores)
-  bindModelToRepository(User, repositories.userRepository, restores)
-  bindModelToRepository(WhatsappSession, repositories.whatsappSessionRepository, restores)
-  bindModelToRepository(Department, repositories.departmentRepository, restores)
-  bindModelToRepository(Inbox, repositories.inboxRepository, restores)
-
   patchMember(
-    Room,
+    repositories.roomRepository,
     'findById',
     async (id: any) =>
       serializeRelations(await repositories.roomRepository.findFirst({ _id: id?._id ?? id }, []), ['contact']),
     restores,
   )
   patchMember(
-    Room,
+    repositories.roomRepository,
     'findOne',
     async (params = {}) => serializeRelations(await repositories.roomRepository.findFirst(params, []), ['contact']),
     restores,
@@ -545,6 +496,9 @@ function installMemoryRepositories() {
     }
   }
 
+  activeRepositories = repositories
+  setActiveRepositories(repositories)
+
   return { repositories, restore: activeRestore }
 }
 
@@ -553,6 +507,20 @@ function resetMemoryRepositories() {
     activeRestore()
     activeRestore = null
   }
+  activeRepositories = null
+  setActiveRepositories(null)
 }
 
-export { createMemoryRepositories, installMemoryRepositories, resetMemoryRepositories }
+// Returns the active repos, or null if none are installed (non-throwing variant for internal use).
+function tryGetActiveRepositories(): ReturnType<typeof createMemoryRepositories> | null {
+  return activeRepositories
+}
+
+export {
+  createMemoryRepositories,
+  createMemoryModelAdapter,
+  installMemoryRepositories,
+  resetMemoryRepositories,
+  getActiveRepositories,
+  tryGetActiveRepositories,
+}

@@ -1,32 +1,28 @@
 import { ContactsQuery } from '@queries/ContactsQuery'
-import mongoServer from '../../../.jest/utils'
+import { installMemoryRepositories, resetMemoryRepositories } from '@repositories/testing'
 import { licensee as licenseeFactory } from '@factories/licensee'
 import { contact as contactFactory } from '@factories/contact'
-import { LicenseeRepositoryDatabase } from '@repositories/licensee'
-import { ContactRepositoryDatabase } from '@repositories/contact'
-
-const buildContactsQuery = () => new ContactsQuery({ contactRepository: new ContactRepositoryDatabase() })
 
 describe('ContactsQuery', () => {
-  let licensee
+  let repos: ReturnType<typeof installMemoryRepositories>['repositories']
+  let licensee: any
 
   beforeEach(async () => {
-    await mongoServer.connect()
-
-    const licenseeRepository = new LicenseeRepositoryDatabase()
-    licensee = await licenseeRepository.create(licenseeFactory.build())
+    ;({ repositories: repos } = installMemoryRepositories())
+    licensee = await repos.licenseeRepository.create(licenseeFactory.build())
   })
 
-  afterEach(async () => {
-    await mongoServer.disconnect()
+  afterEach(() => {
+    resetMemoryRepositories()
   })
+
+  const buildContactsQuery = () => new ContactsQuery({ contactRepository: repos.contactRepository })
 
   it('returns only active contacts', async () => {
-    const contactRepository = new ContactRepositoryDatabase()
-    const active = await contactRepository.create(
+    const active = await repos.contactRepository.create(
       contactFactory.build({ licensee, active: true, createdAt: new Date(2021, 6, 3, 0, 0, 0) }),
     )
-    await contactRepository.create(
+    await repos.contactRepository.create(
       contactFactory.build({
         number: '551183847642',
         licensee,
@@ -43,11 +39,10 @@ describe('ContactsQuery', () => {
   })
 
   it('returns all contacts ordered by createdAt asc', async () => {
-    const contactRepository = new ContactRepositoryDatabase()
-    const contact1 = await contactRepository.create(
+    const contact1 = await repos.contactRepository.create(
       contactFactory.build({ licensee, createdAt: new Date(2021, 6, 3, 0, 0, 0) }),
     )
-    const contact2 = await contactRepository.create(
+    const contact2 = await repos.contactRepository.create(
       contactFactory.build({
         number: '551183847642',
         licensee,
@@ -65,21 +60,20 @@ describe('ContactsQuery', () => {
 
   describe('about pagination', () => {
     it('returns all by page respecting the limit', async () => {
-      const contactRepository = new ContactRepositoryDatabase()
-      const contact1 = await contactRepository.create(
+      const contact1 = await repos.contactRepository.create(
         contactFactory.build({
           licensee,
           createdAt: new Date(2021, 6, 3, 0, 0, 0),
         }),
       )
-      const contact2 = await contactRepository.create(
+      const contact2 = await repos.contactRepository.create(
         contactFactory.build({
           number: '551183847642',
           licensee,
           createdAt: new Date(2021, 6, 3, 0, 0, 1),
         }),
       )
-      const contact3 = await contactRepository.create(
+      const contact3 = await repos.contactRepository.create(
         contactFactory.build({
           number: '551164839723',
           licensee,
@@ -115,15 +109,14 @@ describe('ContactsQuery', () => {
 
   describe('filterByType', () => {
     it('returns contacts filtered by type', async () => {
-      const contactRepository = new ContactRepositoryDatabase()
-      const contact1 = await contactRepository.create(
+      const contact1 = await repos.contactRepository.create(
         contactFactory.build({
           type: '@c.us',
           licensee,
           createdAt: new Date(2021, 6, 3, 0, 0, 0),
         }),
       )
-      const contact2 = await contactRepository.create(
+      const contact2 = await repos.contactRepository.create(
         contactFactory.build({
           type: '@g.us',
           licensee,
@@ -143,8 +136,7 @@ describe('ContactsQuery', () => {
 
   describe('filterByTalkingWithChatbot', () => {
     it('returns contacts filtered by talking with chatbot', async () => {
-      const contactRepository = new ContactRepositoryDatabase()
-      const contact1 = await contactRepository.create(
+      const contact1 = await repos.contactRepository.create(
         contactFactory.build({
           number: '551190283745',
           talkingWithChatBot: false,
@@ -152,7 +144,7 @@ describe('ContactsQuery', () => {
           createdAt: new Date(2021, 6, 3, 0, 0, 0),
         }),
       )
-      const contact2 = await contactRepository.create(
+      const contact2 = await repos.contactRepository.create(
         contactFactory.build({
           talkingWithChatBot: true,
           licensee,
@@ -172,17 +164,15 @@ describe('ContactsQuery', () => {
 
   describe('filterByLicensee', () => {
     it('returns contacts filtered by licensee', async () => {
-      const contactRepository = new ContactRepositoryDatabase()
-      const contact1 = await contactRepository.create(
+      const contact1 = await repos.contactRepository.create(
         contactFactory.build({
           licensee,
           createdAt: new Date(2021, 6, 3, 0, 0, 0),
         }),
       )
 
-      const licenseeRepository = new LicenseeRepositoryDatabase()
-      const anotherLicensee = await licenseeRepository.create(licenseeFactory.build({ name: 'Wolf e cia' }))
-      const contact2 = await contactRepository.create(
+      const anotherLicensee = await repos.licenseeRepository.create(licenseeFactory.build({ name: 'Wolf e cia' }))
+      const contact2 = await repos.contactRepository.create(
         contactFactory.build({
           licensee: anotherLicensee._id,
           createdAt: new Date(2021, 6, 3, 0, 0, 1),
@@ -202,8 +192,7 @@ describe('ContactsQuery', () => {
 
   describe('filterByExpression', () => {
     it('returns contacts filtered by expression on name, email, number, waId and landbotId', async () => {
-      const contactRepository = new ContactRepositoryDatabase()
-      const contact1 = await contactRepository.create(
+      const contact1 = await repos.contactRepository.create(
         contactFactory.build({
           name: 'John Doe',
           email: 'john@nothing.com',
@@ -213,7 +202,7 @@ describe('ContactsQuery', () => {
           createdAt: new Date(2021, 6, 3, 0, 0, 0),
         }),
       )
-      const contact2 = await contactRepository.create(
+      const contact2 = await repos.contactRepository.create(
         contactFactory.build({
           name: 'Mary Jane',
           email: 'mary@doe.com',
@@ -225,7 +214,7 @@ describe('ContactsQuery', () => {
           createdAt: new Date(2021, 6, 3, 0, 0, 1),
         }),
       )
-      const contact3 = await contactRepository.create(
+      const contact3 = await repos.contactRepository.create(
         contactFactory.build({
           name: 'Lizzy Black List',
           email: 'lizzy@blacklist.com',
@@ -275,22 +264,21 @@ describe('ContactsQuery', () => {
 
   describe('filterIntervalWaStartChat', () => {
     it('returns contacts filtered by wa start chat by interval', async () => {
-      const contactRepository = new ContactRepositoryDatabase()
-      const contact1 = await contactRepository.create(
+      const contact1 = await repos.contactRepository.create(
         contactFactory.build({
           licensee,
           wa_start_chat: new Date(2021, 6, 5, 0, 0, 1),
           createdAt: new Date(2021, 6, 3, 0, 0, 0),
         }),
       )
-      const contact2 = await contactRepository.create(
+      const contact2 = await repos.contactRepository.create(
         contactFactory.build({
           licensee,
           wa_start_chat: new Date(2021, 6, 5, 23, 59, 58),
           createdAt: new Date(2021, 6, 3, 0, 0, 1),
         }),
       )
-      const contact3 = await contactRepository.create(
+      const contact3 = await repos.contactRepository.create(
         contactFactory.build({
           licensee,
           wa_start_chat: new Date(2021, 6, 6, 0, 0, 0),
@@ -300,7 +288,7 @@ describe('ContactsQuery', () => {
 
       const contactsQuery = buildContactsQuery()
       contactsQuery.filterIntervalWaStartChat(new Date(2021, 6, 5, 0, 0, 0), new Date(2021, 6, 5, 23, 59, 59))
-      let records = await contactsQuery.all()
+      const records = await contactsQuery.all()
 
       expect(records.length).toEqual(2)
       expect(records).toEqual(expect.arrayContaining([expect.objectContaining({ _id: contact1._id })]))
@@ -311,15 +299,14 @@ describe('ContactsQuery', () => {
 
   describe('filterWaStartChatLessThan', () => {
     it('returns contacts filtered by start chat less than date', async () => {
-      const contactRepository = new ContactRepositoryDatabase()
-      const contact1 = await contactRepository.create(
+      const contact1 = await repos.contactRepository.create(
         contactFactory.build({
           licensee,
           wa_start_chat: new Date(2021, 6, 5, 0, 0, 0),
           createdAt: new Date(2021, 6, 3, 0, 0, 0),
         }),
       )
-      const contact2 = await contactRepository.create(
+      const contact2 = await repos.contactRepository.create(
         contactFactory.build({
           licensee,
           wa_start_chat: new Date(2021, 6, 5, 0, 0, 1),
@@ -329,7 +316,7 @@ describe('ContactsQuery', () => {
 
       const contactsQuery = buildContactsQuery()
       contactsQuery.filterWaStartChatLessThan(new Date(2021, 6, 5, 0, 0, 1))
-      let records = await contactsQuery.all()
+      const records = await contactsQuery.all()
 
       expect(records.length).toEqual(1)
       expect(records).toEqual(expect.arrayContaining([expect.objectContaining({ _id: contact1._id })]))
@@ -339,15 +326,14 @@ describe('ContactsQuery', () => {
 
   describe('filterByIsGroup', () => {
     it('returns only group contacts when isGroup is true', async () => {
-      const contactRepository = new ContactRepositoryDatabase()
-      const contact1 = await contactRepository.create(
+      const contact1 = await repos.contactRepository.create(
         contactFactory.build({
           licensee,
           isGroup: true,
           createdAt: new Date(2021, 6, 3, 0, 0, 0),
         }),
       )
-      const contact2 = await contactRepository.create(
+      const contact2 = await repos.contactRepository.create(
         contactFactory.build({
           number: '551183847642',
           licensee,
@@ -366,15 +352,14 @@ describe('ContactsQuery', () => {
     })
 
     it('returns only non-group contacts when isGroup is false', async () => {
-      const contactRepository = new ContactRepositoryDatabase()
-      const contact1 = await contactRepository.create(
+      const contact1 = await repos.contactRepository.create(
         contactFactory.build({
           licensee,
           isGroup: true,
           createdAt: new Date(2021, 6, 3, 0, 0, 0),
         }),
       )
-      const contact2 = await contactRepository.create(
+      const contact2 = await repos.contactRepository.create(
         contactFactory.build({
           number: '551183847642',
           licensee,
@@ -395,17 +380,18 @@ describe('ContactsQuery', () => {
 
   describe('filterByUpdatedAtStart and filterByUpdatedAtEnd', () => {
     it('returns contacts updated within the interval when both bounds are provided', async () => {
-      const contactRepository = new ContactRepositoryDatabase()
-      const contact1 = await contactRepository.create(
+      const contact1 = await repos.contactRepository.create(
         contactFactory.build({
           licensee,
+          updatedAt: new Date(2021, 6, 1, 0, 0, 0),
           createdAt: new Date(2021, 6, 1, 0, 0, 0),
         }),
       )
-      const contact2 = await contactRepository.create(
+      const contact2 = await repos.contactRepository.create(
         contactFactory.build({
           number: '551183847642',
           licensee,
+          updatedAt: new Date(2021, 6, 10, 0, 0, 0),
           createdAt: new Date(2021, 6, 10, 0, 0, 0),
         }),
       )
@@ -420,17 +406,18 @@ describe('ContactsQuery', () => {
     })
 
     it('returns contacts updated after start when only updatedAtStart is provided', async () => {
-      const contactRepository = new ContactRepositoryDatabase()
-      const contact1 = await contactRepository.create(
+      const contact1 = await repos.contactRepository.create(
         contactFactory.build({
           licensee,
+          updatedAt: new Date(2021, 6, 1, 0, 0, 0),
           createdAt: new Date(2021, 6, 1, 0, 0, 0),
         }),
       )
-      const contact2 = await contactRepository.create(
+      const contact2 = await repos.contactRepository.create(
         contactFactory.build({
           number: '551183847642',
           licensee,
+          updatedAt: new Date(2021, 6, 10, 0, 0, 0),
           createdAt: new Date(2021, 6, 10, 0, 0, 0),
         }),
       )
@@ -444,17 +431,18 @@ describe('ContactsQuery', () => {
     })
 
     it('returns contacts updated before end when only updatedAtEnd is provided', async () => {
-      const contactRepository = new ContactRepositoryDatabase()
-      const contact1 = await contactRepository.create(
+      const contact1 = await repos.contactRepository.create(
         contactFactory.build({
           licensee,
+          updatedAt: new Date(2021, 6, 1, 0, 0, 0),
           createdAt: new Date(2021, 6, 1, 0, 0, 0),
         }),
       )
-      const contact2 = await contactRepository.create(
+      const contact2 = await repos.contactRepository.create(
         contactFactory.build({
           number: '551183847642',
           licensee,
+          updatedAt: new Date(2021, 6, 10, 0, 0, 0),
           createdAt: new Date(2021, 6, 10, 0, 0, 0),
         }),
       )

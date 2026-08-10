@@ -1,27 +1,27 @@
 import { LicenseesQuery } from '@queries/LicenseesQuery'
-import mongoServer from '../../../.jest/utils'
+import { installMemoryRepositories, resetMemoryRepositories } from '@repositories/testing'
 import { licensee as licenseeFactory } from '@factories/licensee'
-import { LicenseeRepositoryDatabase } from '@repositories/licensee'
-
-const buildLicenseesQuery = () => new LicenseesQuery({ licenseeRepository: new LicenseeRepositoryDatabase() })
 
 describe('LicenseesQuery', () => {
-  beforeEach(async () => {
-    await mongoServer.connect()
+  let repos: ReturnType<typeof installMemoryRepositories>['repositories']
+
+  beforeEach(() => {
+    ;({ repositories: repos } = installMemoryRepositories())
   })
 
-  afterEach(async () => {
-    await mongoServer.disconnect()
+  afterEach(() => {
+    resetMemoryRepositories()
   })
+
+  const buildLicenseesQuery = () => new LicenseesQuery({ licenseeRepository: repos.licenseeRepository })
 
   it('returns all licensees ordered by createdAt asc', async () => {
-    const licenseeRepository = new LicenseeRepositoryDatabase()
-    const licensee1 = await licenseeRepository.create(
+    const licensee1 = await repos.licenseeRepository.create(
       licenseeFactory.build({
         createdAt: new Date(2021, 6, 3, 0, 0, 0),
       }),
     )
-    const licensee2 = await licenseeRepository.create(
+    const licensee2 = await repos.licenseeRepository.create(
       licenseeFactory.build({
         createdAt: new Date(2021, 6, 3, 0, 0, 1),
       }),
@@ -37,18 +37,17 @@ describe('LicenseesQuery', () => {
 
   describe('about pagination', () => {
     it('returns all by page respecting the limit', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
-      const licensee1 = await licenseeRepository.create(
+      const licensee1 = await repos.licenseeRepository.create(
         licenseeFactory.build({
           createdAt: new Date(2021, 6, 3, 0, 0, 0),
         }),
       )
-      const licensee2 = await licenseeRepository.create(
+      const licensee2 = await repos.licenseeRepository.create(
         licenseeFactory.build({
           createdAt: new Date(2021, 6, 3, 0, 0, 1),
         }),
       )
-      const licensee3 = await licenseeRepository.create(
+      const licensee3 = await repos.licenseeRepository.create(
         licenseeFactory.build({
           createdAt: new Date(2021, 6, 3, 0, 0, 2),
         }),
@@ -82,8 +81,7 @@ describe('LicenseesQuery', () => {
 
   describe('filterByChatDefault', () => {
     it('returns licensees filtered by chat default', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
-      const licensee1 = await licenseeRepository.create(
+      const licensee1 = await repos.licenseeRepository.create(
         licenseeFactory.build({
           chatDefault: 'crisp',
           chatUrl: 'http://chat.com',
@@ -91,7 +89,7 @@ describe('LicenseesQuery', () => {
           chatIdentifier: 'identifier',
         }),
       )
-      const licensee2 = await licenseeRepository.create(
+      const licensee2 = await repos.licenseeRepository.create(
         licenseeFactory.build({
           chatDefault: 'rocketchat',
           chatUrl: 'http://chat.com',
@@ -111,8 +109,7 @@ describe('LicenseesQuery', () => {
 
   describe('filterByChatbotDefault', () => {
     it('returns licensees filtered by chatbot default', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
-      const licensee1 = await licenseeRepository.create(
+      const licensee1 = await repos.licenseeRepository.create(
         licenseeFactory.build({
           useChatbot: true,
           chatbotDefault: 'landbot',
@@ -120,7 +117,7 @@ describe('LicenseesQuery', () => {
           chatbotAuthorizationToken: 'key',
         }),
       )
-      const licensee2 = await licenseeRepository.create(
+      const licensee2 = await repos.licenseeRepository.create(
         licenseeFactory.build({
           useChatbot: false,
         }),
@@ -138,15 +135,14 @@ describe('LicenseesQuery', () => {
 
   describe('filterByWhatsappDefault', () => {
     it('returns licensees filtered by whatsapp default', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
-      const licensee1 = await licenseeRepository.create(
+      const licensee1 = await repos.licenseeRepository.create(
         licenseeFactory.build({
           whatsappDefault: 'utalk',
           whatsappUrl: 'https://v1.utalk.chat/send/',
           whatsappToken: 'key',
         }),
       )
-      const licensee2 = await licenseeRepository.create(
+      const licensee2 = await repos.licenseeRepository.create(
         licenseeFactory.build({
           whatsappDefault: 'dialog',
           whatsappUrl: 'https://waba.360dialog.io/',
@@ -166,21 +162,20 @@ describe('LicenseesQuery', () => {
 
   describe('filterByExpression', () => {
     it('returns licensees filtered by expression on name, email and phone', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
-      const licensee1 = await licenseeRepository.create(
+      const licensee1 = await repos.licenseeRepository.create(
         licenseeFactory.build({
           email: 'alcateia@gmail.com',
           phone: '551123459',
         }),
       )
-      const licensee2 = await licenseeRepository.create(
+      const licensee2 = await repos.licenseeRepository.create(
         licenseeFactory.build({
           name: 'Doeland',
           email: 'doeland@china.com',
           phone: '56009234687',
         }),
       )
-      const licensee3 = await licenseeRepository.create(
+      const licensee3 = await repos.licenseeRepository.create(
         licenseeFactory.build({
           name: 'Mary Ltda',
           email: 'maryltda@china.com',
@@ -209,9 +204,8 @@ describe('LicenseesQuery', () => {
 
   describe('filterByActive', () => {
     it('returns only active licensees', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
-      const licensee1 = await licenseeRepository.create(licenseeFactory.build())
-      const licenseeInactive = await licenseeRepository.create(licenseeFactory.build({ active: false }))
+      const licensee1 = await repos.licenseeRepository.create(licenseeFactory.build())
+      const licenseeInactive = await repos.licenseeRepository.create(licenseeFactory.build({ active: false }))
 
       const licenseesQuery = buildLicenseesQuery()
       licenseesQuery.filterByActive()
@@ -225,10 +219,9 @@ describe('LicenseesQuery', () => {
 
   describe('filterExcludeLicensees', () => {
     it('excludes licensees whose ids are in the blocked list', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
-      const licensee1 = await licenseeRepository.create(licenseeFactory.build())
-      const licensee2 = await licenseeRepository.create(licenseeFactory.build())
-      const licensee3 = await licenseeRepository.create(licenseeFactory.build())
+      const licensee1 = await repos.licenseeRepository.create(licenseeFactory.build())
+      const licensee2 = await repos.licenseeRepository.create(licenseeFactory.build())
+      const licensee3 = await repos.licenseeRepository.create(licenseeFactory.build())
 
       const licenseesQuery = buildLicenseesQuery()
       licenseesQuery.filterExcludeLicensees([licensee2._id])
@@ -241,9 +234,8 @@ describe('LicenseesQuery', () => {
     })
 
     it('returns all licensees when the excluded list is empty', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
-      await licenseeRepository.create(licenseeFactory.build())
-      await licenseeRepository.create(licenseeFactory.build())
+      await repos.licenseeRepository.create(licenseeFactory.build())
+      await repos.licenseeRepository.create(licenseeFactory.build())
 
       const licenseesQuery = buildLicenseesQuery()
       licenseesQuery.filterExcludeLicensees([])

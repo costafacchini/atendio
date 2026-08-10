@@ -16,3 +16,9 @@ newrelic_agent.log
 docs/kb/sessions/*.md
 !docs/kb/sessions/.gitkeep
 .claude/settings.local.json
+
+/generated/prisma
+/skills-lock.json
+/.windsurf
+/.agents/skills/prisma-*
+/.claude/skills/prisma-*

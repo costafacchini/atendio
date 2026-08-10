@@ -1,44 +1,27 @@
-import mongoServer from '../../../.jest/utils'
-import Contact from '@models/Contact'
+import { LicenseeRepositoryMemory } from '@repositories/licensee'
+import { ContactRepositoryMemory } from '@repositories/contact'
+import { MessageRepositoryMemory } from '@repositories/message'
 import { licensee as licenseeFactory } from '@factories/licensee'
 import { contact as contactFactory } from '@factories/contact'
 import { message as messageFactory } from '@factories/message'
-import { LicenseeRepositoryDatabase } from '@repositories/licensee'
-import { ContactRepositoryDatabase } from '@repositories/contact'
-import { MessageRepositoryDatabase } from '@repositories/message'
 import moment from 'moment-timezone'
 
-describe('contact repository database', () => {
-  beforeEach(async () => {
-    await mongoServer.connect()
+describe('contact repository memory', () => {
+  beforeEach(() => {
     jest.clearAllMocks()
-  })
-
-  afterEach(async () => {
-    await mongoServer.disconnect()
-  })
-
-  describe('#model', () => {
-    it('returns a model', () => {
-      const contactRepository = new ContactRepositoryDatabase()
-
-      expect(contactRepository.model()).toEqual(Contact)
-    })
   })
 
   describe('#create', () => {
     it('creates a new contact', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
+      const licenseeRepository = new LicenseeRepositoryMemory()
       const licensee = await licenseeRepository.create(licenseeFactory.build())
 
-      const contactData = {
-        licensee,
+      const contactRepository = new ContactRepositoryMemory()
+      const contactSaved = await contactRepository.create({
+        licensee: licensee._id,
         number: '5511990283745',
         talkingWithChatBot: false,
-      }
-
-      const contactRepository = new ContactRepositoryDatabase()
-      const contactSaved = await contactRepository.create(contactData)
+      })
 
       expect(contactSaved._id).toBeDefined()
       expect(contactSaved.number).toEqual('5511990283745')
@@ -46,30 +29,30 @@ describe('contact repository database', () => {
       expect(contactSaved.licensee).toEqual(licensee._id)
     })
 
-    describe('when is invalid contact', () => {
-      it('generate exception with error', async () => {
-        const contactRepository = new ContactRepositoryDatabase()
-
-        await expect(async () => {
-          await contactRepository.create()
-        }).rejects.toThrow(
-          'Contact validation failed: licensee: Licensee: Você deve preencher o campo, talkingWithChatBot: Talking with chatbot: Você deve preencher o campo, number: Numero: Você deve preencher o campo',
-        )
+    it('normalizes phone number when it includes @', async () => {
+      const contactRepository = new ContactRepositoryMemory()
+      const contact = await contactRepository.create({
+        number: '5511990283745@s.whatsapp.net',
+        talkingWithChatBot: false,
+        licensee: 'aabbccddeeff001122334455',
       })
+
+      expect(contact.number).toEqual('5511990283745')
+      expect(contact.type).toBeDefined()
     })
   })
 
   describe('#findFirst', () => {
     it('finds a contact', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
+      const licenseeRepository = new LicenseeRepositoryMemory()
       const licensee = await licenseeRepository.create(licenseeFactory.build())
 
-      const contactRepository = new ContactRepositoryDatabase()
+      const contactRepository = new ContactRepositoryMemory()
       await contactRepository.create(
-        contactFactory.build({ number: '5511990283745', talkingWithChatBot: true, licensee }),
+        contactFactory.build({ number: '5511990283745', talkingWithChatBot: true, licensee: licensee._id }),
       )
       await contactRepository.create(
-        contactFactory.build({ number: '5511990283745', talkingWithChatBot: false, licensee }),
+        contactFactory.build({ number: '5511990283745', talkingWithChatBot: false, licensee: licensee._id }),
       )
 
       let result = await contactRepository.findFirst()
@@ -81,72 +64,57 @@ describe('contact repository database', () => {
   })
 
   describe('#getContactByNumber', () => {
-    it('returns one record by filter', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
+    it('returns one record matching normalized phone and licensee', async () => {
+      const licenseeRepository = new LicenseeRepositoryMemory()
       const licensee = await licenseeRepository.create(licenseeFactory.build())
 
-      const contactRepository = new ContactRepositoryDatabase()
-      await contactRepository.create({
-        number: '5511990283745',
-        talkingWithChatBot: false,
-        licensee,
-      })
+      const contactRepository = new ContactRepositoryMemory()
+      await contactRepository.create({ number: '5511990283745', talkingWithChatBot: false, licensee: licensee._id })
 
       const anotherLicensee = await licenseeRepository.create(licenseeFactory.build())
       await contactRepository.create({
         number: '5511990283745',
         talkingWithChatBot: false,
-        licensee: anotherLicensee,
+        licensee: anotherLicensee._id,
       })
 
       const contact = await contactRepository.getContactByNumber('11990283745', licensee._id)
 
-      expect(contact).toEqual(
-        expect.objectContaining({
-          number: '5511990283745',
-          licensee: licensee._id,
-        }),
-      )
-
-      expect(contact).not.toEqual(
-        expect.objectContaining({
-          number: '5511990283745',
-          licensee: anotherLicensee._id,
-        }),
-      )
+      expect(contact).toEqual(expect.objectContaining({ number: '5511990283745', licensee: licensee._id }))
+      expect(contact).not.toEqual(expect.objectContaining({ licensee: anotherLicensee._id }))
     })
   })
 
   describe('#find', () => {
-    it('finds messages', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
+    it('finds contacts by filter', async () => {
+      const licenseeRepository = new LicenseeRepositoryMemory()
       const licensee = await licenseeRepository.create(licenseeFactory.build())
 
-      const contactRepository = new ContactRepositoryDatabase()
+      const contactRepository = new ContactRepositoryMemory()
       await contactRepository.create(
-        contactFactory.build({ number: '5511990283745', talkingWithChatBot: true, licensee }),
+        contactFactory.build({ number: '5511990283745', talkingWithChatBot: true, licensee: licensee._id }),
       )
       await contactRepository.create(
-        contactFactory.build({ number: '5511990283745', talkingWithChatBot: false, licensee }),
+        contactFactory.build({ number: '5511990283745', talkingWithChatBot: false, licensee: licensee._id }),
       )
 
-      let result = await contactRepository.find({ number: '5511990283745' })
-      expect(result.length).toEqual(2)
+      const allResult = await contactRepository.find({ number: '5511990283745' })
+      expect(allResult.length).toEqual(2)
 
-      result = await contactRepository.find({ talkingWithChatBot: false })
-      expect(result.length).toEqual(1)
+      const filtered = await contactRepository.find({ talkingWithChatBot: false })
+      expect(filtered.length).toEqual(1)
     })
   })
 
   describe('#contactWithWhatsappWindowClosed', () => {
-    it('returns true if the last message of contact sended to chat is greather than 24 hours', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
+    it('returns true if the last message was sent more than 24 hours ago', async () => {
+      const licenseeRepository = new LicenseeRepositoryMemory()
       const licensee = await licenseeRepository.create(licenseeFactory.build())
 
-      const messageRepository = new MessageRepositoryDatabase()
-      const contactRepository = new ContactRepositoryDatabase({ messageRepository })
+      const messageRepository = new MessageRepositoryMemory()
+      const contactRepository = new ContactRepositoryMemory({ messageRepository })
       const contact = await contactRepository.create({
-        licensee,
+        licensee: licensee._id,
         number: '5511990283745',
         talkingWithChatBot: false,
       })
@@ -155,33 +123,36 @@ describe('contact repository database', () => {
 
       await messageRepository.create(
         messageFactory.build({
-          licensee,
-          contact,
+          licensee: licensee._id,
+          contact: contact._id,
           destination: 'to-chat',
-          createdAt: now.subtract('24', 'hours').subtract('1', 'minutes'),
+          createdAt: now.clone().subtract(24, 'hours').subtract(1, 'minutes').toDate(),
         }),
       )
 
-      await messageRepository.create(
-        messageFactory.build({
-          licensee,
-          contact,
-          destination: 'to-chat',
-          createdAt: new Date(2021, 6, 5, 0, 0, 1),
-        }),
-      )
-
-      expect(await contactRepository.contactWithWhatsappWindowClosed(contact.id)).toEqual(true)
+      expect(await contactRepository.contactWithWhatsappWindowClosed(contact._id)).toEqual(true)
     })
 
-    it('returns true if the last message of contact sended to chat is equal 24 hours', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
+    it('returns true if the contact has no messages sent to chat', async () => {
+      const messageRepository = new MessageRepositoryMemory()
+      const contactRepository = new ContactRepositoryMemory({ messageRepository })
+      const contact = await contactRepository.create({
+        number: '5511990283745',
+        talkingWithChatBot: false,
+        licensee: 'aabbccddeeff001122334455',
+      })
+
+      expect(await contactRepository.contactWithWhatsappWindowClosed(contact._id)).toEqual(true)
+    })
+
+    it('returns false if the last message was sent less than 24 hours ago', async () => {
+      const licenseeRepository = new LicenseeRepositoryMemory()
       const licensee = await licenseeRepository.create(licenseeFactory.build())
 
-      const messageRepository = new MessageRepositoryDatabase()
-      const contactRepository = new ContactRepositoryDatabase({ messageRepository })
+      const messageRepository = new MessageRepositoryMemory()
+      const contactRepository = new ContactRepositoryMemory({ messageRepository })
       const contact = await contactRepository.create({
-        licensee,
+        licensee: licensee._id,
         number: '5511990283745',
         talkingWithChatBot: false,
       })
@@ -190,73 +161,14 @@ describe('contact repository database', () => {
 
       await messageRepository.create(
         messageFactory.build({
-          licensee,
-          contact,
+          licensee: licensee._id,
+          contact: contact._id,
           destination: 'to-chat',
-          createdAt: now.subtract('24', 'hours'),
+          createdAt: now.clone().subtract(23, 'hours').subtract(59, 'minutes').toDate(),
         }),
       )
 
-      await messageRepository.create(
-        messageFactory.build({
-          licensee,
-          contact,
-          destination: 'to-chat',
-          createdAt: new Date(2021, 6, 5, 0, 0, 1),
-        }),
-      )
-
-      expect(await contactRepository.contactWithWhatsappWindowClosed(contact.id)).toEqual(true)
-    })
-
-    it('returns true if the contact has no sended message to chat', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
-      const licensee = await licenseeRepository.create(licenseeFactory.build())
-
-      const messageRepository = new MessageRepositoryDatabase()
-      const contactRepository = new ContactRepositoryDatabase({ messageRepository })
-      const contact = await contactRepository.create({
-        licensee,
-        number: '5511990283745',
-        talkingWithChatBot: false,
-      })
-
-      expect(await contactRepository.contactWithWhatsappWindowClosed(contact.id)).toEqual(true)
-    })
-
-    it('returns false if the last message of contact sended to chat is less than 24 hours', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
-      const licensee = await licenseeRepository.create(licenseeFactory.build())
-
-      const messageRepository = new MessageRepositoryDatabase()
-      const contactRepository = new ContactRepositoryDatabase({ messageRepository })
-      const contact = await contactRepository.create({
-        licensee,
-        number: '5511990283745',
-        talkingWithChatBot: false,
-      })
-
-      const now = moment.tz(new Date(), 'UTC')
-
-      await messageRepository.create(
-        messageFactory.build({
-          licensee,
-          contact,
-          destination: 'to-chat',
-          createdAt: now.subtract('23', 'hours').subtract('59', 'minutes'),
-        }),
-      )
-
-      await messageRepository.create(
-        messageFactory.build({
-          licensee,
-          contact,
-          destination: 'to-chat',
-          createdAt: new Date(2021, 6, 5, 0, 0, 1),
-        }),
-      )
-
-      expect(await contactRepository.contactWithWhatsappWindowClosed(contact.id)).toEqual(false)
+      expect(await contactRepository.contactWithWhatsappWindowClosed(contact._id)).toEqual(false)
     })
   })
 })

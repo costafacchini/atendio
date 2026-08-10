@@ -1,49 +1,17 @@
-import mongoose from 'mongoose'
-import { ITemplate } from '../../types'
+// Stub: Mongoose has been removed. This shim delegates to the active RepositoryMemory
+// so that spec files using Template.create/findById/where continue to work during test runs.
+import { getActiveRepositories, createMemoryModelAdapter } from '@repositories/testing'
 
-const Schema = mongoose.Schema
-const ObjectId = Schema.ObjectId
-
-const paramsSchema = new Schema({
-  number: String,
-  format: String,
-})
-const templateSchema = new Schema(
-  {
-    _id: ObjectId,
-    name: {
-      type: String,
-      required: [true, 'Nome: Você deve preencher o campo'],
-    }, // Apenas alfanuméricos minúsculos e underline, sem espaços
-    namespace: String,
-    language: String,
-    category: String,
-    waId: String,
-    licensee: {
-      type: ObjectId,
-      ref: 'Licensee',
-      required: [true, 'Licensee: Você deve preencher o campo'],
-    },
-    headerParams: [paramsSchema],
-    bodyParams: [paramsSchema],
-    footerParams: [paramsSchema],
-    active: { type: Boolean, default: false },
+const Template = {
+  create: async (fields: Record<string, any> = {}) => {
+    return await getActiveRepositories().templateRepository.create(fields)
   },
-  { timestamps: true },
-)
-
-templateSchema.pre('save', function () {
-  const template = this
-
-  if (!template._id) {
-    template._id = new mongoose.Types.ObjectId()
-  }
-})
-
-templateSchema.set('toJSON', {
-  virtuals: true,
-})
-
-const Template = mongoose.model<ITemplate>('Template', templateSchema)
+  findById: (id: any) => {
+    return createMemoryModelAdapter(getActiveRepositories().templateRepository).findById(id)
+  },
+  where: (params: Record<string, any> = {}) => {
+    return createMemoryModelAdapter(getActiveRepositories().templateRepository).where(params)
+  },
+}
 
 export default Template

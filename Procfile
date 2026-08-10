@@ -1,3 +1,4 @@
+release: npx prisma migrate deploy
 web: node --require source-map-support/register --require './appsignal.cjs' dist/server.js
 scaler: tsx scaler.ts
 worker: node --require source-map-support/register --require './appsignal.cjs' dist/worker.js

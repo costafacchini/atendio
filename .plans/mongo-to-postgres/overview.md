@@ -1,8 +1,8 @@
 # Plan: MongoDB → PostgreSQL Migration
 
-**Status**: not-started
+**Status**: complete
 **Created**: 2026-05-29
-**Last Updated**: 2026-08-07 (refined: +Inbox +Department, prerequisites updated, .js→.ts paths)
+**Last Updated**: 2026-08-08
 **Estimated Demo Date**: TBD
 **Assigned Dev**: Alan
 **Assigned QA**: unassigned

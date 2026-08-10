@@ -1,4 +1,16 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ecomanda_delivery
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   mongo:
     image: mongo
     restart: always
@@ -48,6 +60,7 @@ services:
       - uploads:/app/uploads
 
 volumes:
+  postgres_data:
   mongo_data:
   redis_data:
   uploads:

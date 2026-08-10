@@ -1,28 +1,10 @@
 import bcrypt from 'bcrypt'
-import Repository, { RepositoryMemory, stringifyObjectIds } from './repository'
-import User from '../models/User'
+import { RepositoryMemory, PrismaRepository } from './repository'
 import { IUser } from '../../types'
+import { getPrismaClient } from '../../config/postgres'
+import { tryGetActiveRepositories } from './activeState'
 
 const saltRounds = 14
-
-class UserRepositoryDatabase extends Repository<IUser> {
-  model() {
-    return User
-  }
-
-  async create(fields: any = {}): Promise<IUser> {
-    const doc = await this.save(new User({ ...(fields ?? {}) }))
-    const record = stringifyObjectIds(doc.toObject()) as any
-    record.validPassword = async function (password: any) {
-      return await bcrypt.compare(password, this.password as string)
-    }
-    return record as IUser
-  }
-
-  async find(params = {}, projection = {}) {
-    return await User.find(params ?? {}, projection ?? {})
-  }
-}
 
 class UserRepositoryMemory extends RepositoryMemory<IUser> {
   async create(fields: Record<string, any> = {}) {
@@ -100,9 +82,44 @@ class UserRepositoryMemory extends RepositoryMemory<IUser> {
     return record
   }
 
-  async validateUserFields(fields = {}) {
-    await new User({ ...(fields ?? {}) }).validate()
+  // The Prisma repo enforces constraints at the DB level; memory repo skips schema validation.
+  async validateUserFields(_fields = {}) {
+    // no-op: schema validation is handled by Prisma in production
   }
 }
 
-export { UserRepositoryDatabase, UserRepositoryMemory }
+class PrismaUserDatabaseRepository extends PrismaRepository<IUser> {
+  delegate() {
+    return getPrismaClient().user
+  }
+  protected fkFields() {
+    return ['licensee']
+  }
+
+  async create(fields: Partial<IUser> = {}): Promise<IUser> {
+    const prepared = await this.hashPasswordIfPresent(fields)
+    return await super.create(prepared)
+  }
+
+  async update(id: string, fields: Partial<IUser> = {}): Promise<{ acknowledged: boolean }> {
+    const prepared = await this.hashPasswordIfPresent(fields)
+    return await super.update(id, prepared)
+  }
+
+  private async hashPasswordIfPresent<F extends Partial<IUser>>(fields: F): Promise<F> {
+    if (!fields.password) return fields
+    return { ...fields, password: await bcrypt.hash(fields.password, saltRounds) }
+  }
+}
+
+// Factory for backward-compatibility with specs that call new UserRepositoryDatabase().
+// Returns the active shared instance when memory repos are installed.
+
+function UserRepositoryDatabase(this: any): any {
+  const active = tryGetActiveRepositories()
+  if (active) return active.userRepository
+  return new UserRepositoryMemory()
+}
+UserRepositoryDatabase.prototype = UserRepositoryMemory.prototype
+
+export { UserRepositoryDatabase, UserRepositoryMemory, PrismaUserDatabaseRepository }

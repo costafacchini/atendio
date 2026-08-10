@@ -1,0 +1,249 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Licensee {
+  id                        Int      @id @default(autoincrement())
+  name                      String
+  email                     String?
+  phone                     String?
+  active                    Boolean  @default(true)
+  apiToken                  String   @unique
+  licenseKind               String
+  useChatbot                Boolean  @default(false)
+  chatbotDefault            String?
+  chatbotUrl                String?
+  chatbotApiToken           String?
+  messageOnResetChatbot     String?
+  messageOnCloseChat        String?
+  chatbotAuthorizationToken String?
+  whatsappDefault           String?
+  whatsappToken             String?
+  whatsappUrl               String?
+  chatDefault               String?
+  chatUrl                   String?
+  chatKey                   String?
+  chatIdentifier            String?
+  unidadeId                 String?
+  statusId                  String?
+  useWhatsappWindow         Boolean  @default(false)
+  document                  String?
+  kind                      String?
+  financial_player_fee      Float?
+  holder_name               String?
+  bank                      String?
+  branch_number             String?
+  branch_check_digit        String?
+  account_number            String?
+  account_check_digit       String?
+  holder_kind               String?
+  holder_document           String?
+  account_type              String?
+  card_information_url      String?
+  useSenderName             Boolean  @default(false)
+  useDepartments            Boolean  @default(false)
+  useFileIDYcloud           Boolean  @default(false)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  @@map("licensees")
+}
+
+model User {
+  id               Int      @id @default(autoincrement())
+  name             String
+  email            String   @unique
+  password         String?
+  active           Boolean  @default(true)
+  role             String   @default("agent")
+  language         String   @default("pt")
+  licensee         Int?
+  blockedLicensees Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Contact {
+  id                 Int       @id @default(autoincrement())
+  name               String?
+  number             String
+  type               String?
+  talkingWithChatBot Boolean
+  email              String?
+  licensee           Int
+  waId               String?
+  isGroup            Boolean   @default(false)
+  active             Boolean   @default(true)
+  landbotId          String?
+  chatwootId         String?
+  chatwootSourceId   String?
+  city               String?
+  uf                 String?
+  wa_start_chat      DateTime?
+  document           String?
+  customer_id        String?
+  credit_card_id     String?
+  credit_cards       Json?
+  widgetSessionToken String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@map("contacts")
+}
+
+model Inbox {
+  id              Int      @id @default(autoincrement())
+  name            String
+  licensee        Int
+  kind            String
+  whatsappDefault String   @default("")
+  whatsappToken   String?
+  whatsappUrl     String?
+  chatDefault     String   @default("")
+  chatUrl         String?
+  chatKey         String?
+  chatIdentifier  String?
+  inboxToken      String   @unique
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("inboxes")
+}
+
+model Room {
+  id         Int       @id @default(autoincrement())
+  roomId     String?
+  token      String?
+  closed     Boolean   @default(false)
+  closedAt   DateTime?
+  contact    Int
+  agent      Int?
+  department Int?
+  inbox      Int?
+  status     String    @default("pending")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@map("rooms")
+}
+
+model Template {
+  id           Int      @id @default(autoincrement())
+  name         String
+  namespace    String?
+  language     String?
+  category     String?
+  waId         String?
+  licensee     Int
+  headerParams Json?
+  bodyParams   Json?
+  footerParams Json?
+  active       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("templates")
+}
+
+model Trigger {
+  id              Int      @id @default(autoincrement())
+  name            String?
+  triggerKind     String
+  expression      String
+  catalogId       String?
+  catalogMulti    String?
+  catalogSingle   String?
+  textReplyButton String?
+  messagesList    String?
+  text            String?
+  licensee        Int
+  order           Int      @default(1)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("triggers")
+}
+
+model Department {
+  id              Int      @id @default(autoincrement())
+  name            String
+  licensee        Int
+  users           Json
+  active          Boolean  @default(true)
+  departmentToken String   @unique
+  inbox           Int?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("departments")
+}
+
+model WhatsappSession {
+  id        Int      @id @default(autoincrement())
+  licensee  Int
+  inbox     Int?
+  creds     Json?
+  keys      Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("whatsapp_sessions")
+}
+
+model Body {
+  id         Int      @id @default(autoincrement())
+  content    Json
+  licensee   Int
+  kind       String
+  department Int?
+  inbox      Int?
+  concluded  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("bodies")
+}
+
+model Message {
+  id             Int       @id @default(autoincrement())
+  number         String
+  fromMe         Boolean   @default(false)
+  text           String?
+  url            String?
+  fileName       String?
+  kind           String    @default("text")
+  destination    String
+  latitude       Float?
+  longitude      Float?
+  departament    String?
+  senderName     String?
+  sended         Boolean   @default(false)
+  ignored        Boolean   @default(false)
+  licensee       Int
+  contact        Int
+  room           Int?
+  department     Int?
+  inbox          Int?
+  trigger        Int?
+  messageWaId    String?
+  attachmentWaId String?
+  sendedAt       DateTime?
+  readAt         DateTime?
+  deliveredAt    DateTime?
+  messageChatId  String?
+  error          String?
+  payload        String?
+  replyMessageId String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@map("messages")
+}

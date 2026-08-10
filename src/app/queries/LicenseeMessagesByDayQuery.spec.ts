@@ -1,29 +1,27 @@
 import { LicenseeMessagesByDayQuery } from '@queries/LicenseeMessagesByDayQuery'
-import mongoServer from '../../../.jest/utils'
+import { installMemoryRepositories, resetMemoryRepositories } from '@repositories/testing'
 import { licensee as licenseeFactory } from '@factories/licensee'
 import { contact as contactFactory } from '@factories/contact'
 import { message as messageFactory } from '@factories/message'
-import { LicenseeRepositoryDatabase } from '@repositories/licensee'
-import { ContactRepositoryDatabase } from '@repositories/contact'
-import { MessageRepositoryDatabase } from '@repositories/message'
 import moment from 'moment-timezone'
 
 describe('LicenseeMessagesByDayQuery', () => {
+  let repos: ReturnType<typeof installMemoryRepositories>['repositories']
   const startDate = moment.tz('2022-01-01T00:00:00', 'UTC').toDate()
   const endDate = moment.tz('2022-01-03T23:59:59', 'UTC').toDate()
 
-  beforeEach(async () => {
-    await mongoServer.connect()
+  beforeEach(() => {
+    ;({ repositories: repos } = installMemoryRepositories())
   })
 
-  afterEach(async () => {
-    await mongoServer.disconnect()
+  afterEach(() => {
+    resetMemoryRepositories()
   })
 
   it('returns messages grouped by licensee and day inside the period', async () => {
-    const licenseeRepository = new LicenseeRepositoryDatabase()
-    const contactRepository = new ContactRepositoryDatabase()
-    const messageRepository = new MessageRepositoryDatabase()
+    const licenseeRepository = repos.licenseeRepository
+    const contactRepository = repos.contactRepository
+    const messageRepository = repos.messageRepository
 
     const licenseeAlpha = await licenseeRepository.create(licenseeFactory.build({ name: 'Alpha' }))
     const contactAlpha = await contactRepository.create(contactFactory.build({ licensee: licenseeAlpha }))
@@ -99,9 +97,9 @@ describe('LicenseeMessagesByDayQuery', () => {
   })
 
   it('filters the report by licensee when configured', async () => {
-    const licenseeRepository = new LicenseeRepositoryDatabase()
-    const contactRepository = new ContactRepositoryDatabase()
-    const messageRepository = new MessageRepositoryDatabase()
+    const licenseeRepository = repos.licenseeRepository
+    const contactRepository = repos.contactRepository
+    const messageRepository = repos.messageRepository
 
     const licenseeOne = await licenseeRepository.create(licenseeFactory.build({ name: 'Ones' }))
     const contactOne = await contactRepository.create(contactFactory.build({ licensee: licenseeOne }))

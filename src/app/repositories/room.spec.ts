@@ -1,49 +1,29 @@
-import mongoServer from '../../../.jest/utils'
-import Room from '@models/Room'
-import { RoomRepositoryDatabase } from '@repositories/room'
+import { RoomRepositoryMemory } from '@repositories/room'
+import { LicenseeRepositoryMemory } from '@repositories/licensee'
+import { ContactRepositoryMemory } from '@repositories/contact'
 import { licensee as licenseeFactory } from '@factories/licensee'
 import { contact as contactFactory } from '@factories/contact'
-import { department as sectorFactory } from '@factories/department'
-import { user as userFactory } from '@factories/user'
-import { LicenseeRepositoryDatabase } from '@repositories/licensee'
-import { ContactRepositoryDatabase } from '@repositories/contact'
-import { DepartmentRepositoryDatabase } from '@repositories/department'
-import { UserRepositoryDatabase } from '@repositories/user'
 
-describe('room repository', () => {
-  beforeEach(async () => {
-    await mongoServer.connect()
+describe('room repository memory', () => {
+  beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  afterEach(async () => {
-    await mongoServer.disconnect()
-  })
-
-  describe('#model', () => {
-    it('returns a model', () => {
-      const roomRepository = new RoomRepositoryDatabase()
-
-      expect(roomRepository.model()).toEqual(Room)
-    })
-  })
-
   describe('#create', () => {
-    it('creates a room', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
+    it('creates a room with closed=false by default', async () => {
+      const licenseeRepository = new LicenseeRepositoryMemory()
       const licensee = await licenseeRepository.create(licenseeFactory.build())
 
-      const contactRepository = new ContactRepositoryDatabase()
-      const contact = await contactRepository.create(contactFactory.build({ licensee }))
-      const roomRepository = new RoomRepositoryDatabase()
+      const contactRepository = new ContactRepositoryMemory()
+      const contact = await contactRepository.create(contactFactory.build({ licensee: licensee._id }))
 
-      const room = await roomRepository.create({
-        contact,
-      })
+      const roomRepository = new RoomRepositoryMemory()
+      const room = await roomRepository.create({ contact: contact._id })
 
       expect(room).toEqual(
         expect.objectContaining({
           contact: contact._id,
+          closed: false,
         }),
       )
     })
@@ -51,111 +31,43 @@ describe('room repository', () => {
 
   describe('#findFirst', () => {
     it('returns one record by filter', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
+      const licenseeRepository = new LicenseeRepositoryMemory()
       const licensee = await licenseeRepository.create(licenseeFactory.build())
 
-      const contactRepository = new ContactRepositoryDatabase()
-      const contact = await contactRepository.create(contactFactory.build({ licensee }))
-      const roomRepository = new RoomRepositoryDatabase()
+      const contactRepository = new ContactRepositoryMemory()
+      const contact = await contactRepository.create(contactFactory.build({ licensee: licensee._id }))
+      const anotherContact = await contactRepository.create(contactFactory.build({ licensee: licensee._id }))
 
-      await roomRepository.create({
-        roomId: '1234',
-        contact,
-      })
-
-      const anotherContact = await contactRepository.create(contactFactory.build({ licensee }))
-      await roomRepository.create({
-        roomId: '1234',
-        contact: anotherContact,
-      })
+      const roomRepository = new RoomRepositoryMemory()
+      await roomRepository.create({ roomId: '1234', contact: contact._id })
+      await roomRepository.create({ roomId: '1234', contact: anotherContact._id })
 
       const room = await roomRepository.findFirst({ roomId: '1234', contact: contact._id })
 
       expect(room).toEqual(
         expect.objectContaining({
           roomId: '1234',
-          contact: expect.objectContaining({
-            _id: contact._id,
-          }),
-        }),
-      )
-
-      expect(room.contact).not.toEqual(
-        expect.objectContaining({
-          contact: expect.objectContaining({
-            _id: anotherContact._id,
-          }),
+          contact: contact._id,
         }),
       )
     })
   })
 
-  describe('#save', () => {
-    it('saves a room document', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
+  describe('#update', () => {
+    it('updates a room', async () => {
+      const licenseeRepository = new LicenseeRepositoryMemory()
       const licensee = await licenseeRepository.create(licenseeFactory.build())
 
-      const contactRepository = new ContactRepositoryDatabase()
-      const contact = await contactRepository.create(contactFactory.build({ licensee }))
+      const contactRepository = new ContactRepositoryMemory()
+      const contact = await contactRepository.create(contactFactory.build({ licensee: licensee._id }))
 
-      const roomRepository = new RoomRepositoryDatabase()
-      const room = await roomRepository.create({
-        roomId: '1234',
-        contact,
-      })
+      const roomRepository = new RoomRepositoryMemory()
+      const room = await roomRepository.create({ roomId: '1234', contact: contact._id })
 
       await roomRepository.update(room._id, { closed: true })
 
       const roomSaved = await roomRepository.findFirst({ _id: room._id })
       expect(roomSaved.closed).toEqual(true)
-    })
-  })
-
-  describe('#findForAgent', () => {
-    it('returns only rooms matching the provided departmentIds', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
-      const licensee = await licenseeRepository.create(licenseeFactory.build())
-
-      const contactRepository = new ContactRepositoryDatabase()
-      const contact = await contactRepository.create(contactFactory.build({ licensee }))
-
-      const userRepository = new UserRepositoryDatabase()
-      const user = await userRepository.create(userFactory.build({ licensee }))
-
-      const departmentRepository = new DepartmentRepositoryDatabase()
-      const department = await departmentRepository.create(sectorFactory.build({ licensee, users: [user] }))
-      const otherSector = await departmentRepository.create(sectorFactory.build({ licensee, users: [user] }))
-
-      const roomRepository = new RoomRepositoryDatabase()
-      await roomRepository.create({ contact, department: department })
-      await roomRepository.create({ contact, department: otherSector })
-
-      const rooms = await roomRepository.findForAgent(null, licensee._id, [department._id])
-
-      expect(rooms.length).toEqual(1)
-      expect(rooms[0].department.toString()).toEqual(department._id.toString())
-    })
-
-    it('returns all rooms when departmentIds is empty', async () => {
-      const licenseeRepository = new LicenseeRepositoryDatabase()
-      const licensee = await licenseeRepository.create(licenseeFactory.build())
-
-      const contactRepository = new ContactRepositoryDatabase()
-      const contact = await contactRepository.create(contactFactory.build({ licensee }))
-
-      const userRepository = new UserRepositoryDatabase()
-      const user = await userRepository.create(userFactory.build({ licensee }))
-
-      const departmentRepository = new DepartmentRepositoryDatabase()
-      const department = await departmentRepository.create(sectorFactory.build({ licensee, users: [user] }))
-
-      const roomRepository = new RoomRepositoryDatabase()
-      await roomRepository.create({ contact, department: department })
-      await roomRepository.create({ contact })
-
-      const rooms = await roomRepository.findForAgent(null, licensee._id, [])
-
-      expect(rooms.length).toEqual(2)
     })
   })
 })
