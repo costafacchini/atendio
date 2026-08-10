@@ -23,7 +23,7 @@ describeIf('PrismaUserDatabaseRepository', () => {
   })
 
   afterEach(async () => {
-    await getPrismaClient().user.deleteMany({})
+    await getPrismaClient().user.deleteMany({ where: { licensee: licenseeId } })
   })
 
   const repo = new PrismaUserDatabaseRepository()

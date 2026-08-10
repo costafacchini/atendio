@@ -22,7 +22,7 @@ describeIf('PrismaWhatsappSessionDatabaseRepository', () => {
   })
 
   afterEach(async () => {
-    await getPrismaClient().whatsappSession.deleteMany({})
+    await getPrismaClient().whatsappSession.deleteMany({ where: { licensee: licenseeId } })
   })
 
   const repo = new PrismaWhatsappSessionDatabaseRepository()

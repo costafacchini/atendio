@@ -22,7 +22,7 @@ describeIf('PrismaTriggerDatabaseRepository', () => {
   })
 
   afterEach(async () => {
-    await getPrismaClient().trigger.deleteMany({})
+    await getPrismaClient().trigger.deleteMany({ where: { licensee: licenseeId } })
   })
 
   const repo = new PrismaTriggerDatabaseRepository()

@@ -22,7 +22,7 @@ describeIf('PrismaTemplateDatabaseRepository', () => {
   })
 
   afterEach(async () => {
-    await getPrismaClient().template.deleteMany({})
+    await getPrismaClient().template.deleteMany({ where: { licensee: licenseeId } })
   })
 
   const repo = new PrismaTemplateDatabaseRepository()

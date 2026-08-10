@@ -28,7 +28,7 @@ describeIf('PrismaMessageDatabaseRepository', () => {
   })
 
   afterEach(async () => {
-    await getPrismaClient().message.deleteMany({})
+    await getPrismaClient().message.deleteMany({ where: { contact: contactId } })
   })
 
   const repo = new PrismaMessageDatabaseRepository()

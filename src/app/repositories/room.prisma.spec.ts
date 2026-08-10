@@ -28,7 +28,7 @@ describeIf('PrismaRoomDatabaseRepository', () => {
   })
 
   afterEach(async () => {
-    await getPrismaClient().room.deleteMany({})
+    await getPrismaClient().room.deleteMany({ where: { contact: contactId } })
   })
 
   const repo = new PrismaRoomDatabaseRepository()

@@ -15,7 +15,9 @@ describeIf('PrismaLicenseeDatabaseRepository', () => {
   })
 
   afterEach(async () => {
-    await getPrismaClient().licensee.deleteMany({})
+    await getPrismaClient().licensee.deleteMany({
+      where: { apiToken: { in: ['test-token-prisma', 'test-token-prisma-2', 'test-token-prisma-3', 'tok2'] } },
+    })
   })
 
   const repo = new PrismaLicenseeDatabaseRepository()
