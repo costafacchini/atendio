@@ -125,7 +125,7 @@
     "shell-quote": "1.10.0",
     "postcss": "8.5.26",
     "undici": "8.10.0",
-    "ip-address": "10.4.0",
+    "ip-address": "10.5.0",
     "protobufjs": "8.7.2",
     "@opentelemetry/core": "2.10.0",
     "@opentelemetry/propagator-jaeger": "2.10.0",
