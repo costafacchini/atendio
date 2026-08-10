@@ -10,6 +10,9 @@ class PrismaInboxDatabaseRepository extends PrismaRepository<IInbox> {
   delegate() {
     return getPrismaClient().inbox
   }
+  protected fkFields() {
+    return ['licensee']
+  }
 
   async create(fields: Partial<IInbox> = {}): Promise<IInbox> {
     const withToken = (fields as any).inboxToken ? fields : { ...fields, inboxToken: uuidv4() }

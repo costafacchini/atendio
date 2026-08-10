@@ -22,6 +22,9 @@ class PrismaRoomDatabaseRepository extends PrismaRepository<IRoom> {
   delegate() {
     return getPrismaClient().room
   }
+  protected fkFields() {
+    return ['contact', 'agent', 'department', 'inbox']
+  }
 }
 
 // Factory for backward-compatibility with specs that call new RoomRepositoryDatabase().

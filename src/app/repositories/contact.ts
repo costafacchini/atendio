@@ -81,6 +81,9 @@ class PrismaContactDatabaseRepository extends PrismaRepository<IContact> {
   delegate() {
     return getPrismaClient().contact
   }
+  protected fkFields() {
+    return ['licensee']
+  }
 
   async create(fields: Partial<IContact> = {}): Promise<IContact> {
     const normalized = this.normalizeNumber(fields)

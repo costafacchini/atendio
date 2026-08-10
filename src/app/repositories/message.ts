@@ -105,6 +105,9 @@ class PrismaMessageDatabaseRepository extends PrismaRepository<IMessage> {
   delegate() {
     return getPrismaClient().message
   }
+  protected fkFields() {
+    return ['licensee', 'contact', 'room', 'department', 'inbox', 'trigger']
+  }
 
   // Cart was removed by the remove-pdv plan; strip it from the payload if somehow still present.
   protected toData(fields: any = {}): Record<string, unknown> {

@@ -9,6 +9,9 @@ class PrismaWhatsappSessionDatabaseRepository extends PrismaRepository<IWhatsapp
   delegate() {
     return getPrismaClient().whatsappSession
   }
+  protected fkFields() {
+    return ['licensee', 'inbox']
+  }
 }
 
 // Factory for backward-compatibility with specs that call new WhatsappSessionRepositoryDatabase().

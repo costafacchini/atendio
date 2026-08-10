@@ -9,7 +9,6 @@ datasource db {
 
 model Licensee {
   id                        Int      @id @default(autoincrement())
-  mongo_id                  String   @unique @db.VarChar(24)
   name                      String
   email                     String?
   phone                     String?
@@ -57,14 +56,13 @@ model Licensee {
 
 model User {
   id               Int      @id @default(autoincrement())
-  mongo_id         String   @unique @db.VarChar(24)
   name             String
   email            String   @unique
   password         String?
   active           Boolean  @default(true)
   role             String   @default("agent")
   language         String   @default("pt")
-  licensee         String?  @db.VarChar(24)
+  licensee         Int?
   blockedLicensees Json?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -74,13 +72,12 @@ model User {
 
 model Contact {
   id                 Int       @id @default(autoincrement())
-  mongo_id           String    @unique @db.VarChar(24)
   name               String?
   number             String
   type               String?
   talkingWithChatBot Boolean
   email              String?
-  licensee           String    @db.VarChar(24)
+  licensee           Int
   waId               String?
   isGroup            Boolean   @default(false)
   active             Boolean   @default(true)
@@ -103,9 +100,8 @@ model Contact {
 
 model Inbox {
   id              Int      @id @default(autoincrement())
-  mongo_id        String   @unique @db.VarChar(24)
   name            String
-  licensee        String   @db.VarChar(24)
+  licensee        Int
   kind            String
   whatsappDefault String   @default("")
   whatsappToken   String?
@@ -124,15 +120,14 @@ model Inbox {
 
 model Room {
   id         Int       @id @default(autoincrement())
-  mongo_id   String    @unique @db.VarChar(24)
   roomId     String?
   token      String?
   closed     Boolean   @default(false)
   closedAt   DateTime?
-  contact    String    @db.VarChar(24)
-  agent      String?   @db.VarChar(24)
-  department String?   @db.VarChar(24)
-  inbox      String?   @db.VarChar(24)
+  contact    Int
+  agent      Int?
+  department Int?
+  inbox      Int?
   status     String    @default("pending")
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -142,13 +137,12 @@ model Room {
 
 model Template {
   id           Int      @id @default(autoincrement())
-  mongo_id     String   @unique @db.VarChar(24)
   name         String
   namespace    String?
   language     String?
   category     String?
   waId         String?
-  licensee     String   @db.VarChar(24)
+  licensee     Int
   headerParams Json?
   bodyParams   Json?
   footerParams Json?
@@ -161,7 +155,6 @@ model Template {
 
 model Trigger {
   id              Int      @id @default(autoincrement())
-  mongo_id        String   @unique @db.VarChar(24)
   name            String?
   triggerKind     String
   expression      String
@@ -171,7 +164,7 @@ model Trigger {
   textReplyButton String?
   messagesList    String?
   text            String?
-  licensee        String   @db.VarChar(24)
+  licensee        Int
   order           Int      @default(1)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -181,13 +174,12 @@ model Trigger {
 
 model Department {
   id              Int      @id @default(autoincrement())
-  mongo_id        String   @unique @db.VarChar(24)
   name            String
-  licensee        String   @db.VarChar(24)
+  licensee        Int
   users           Json
   active          Boolean  @default(true)
   departmentToken String   @unique
-  inbox           String?  @db.VarChar(24)
+  inbox           Int?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -196,9 +188,8 @@ model Department {
 
 model WhatsappSession {
   id        Int      @id @default(autoincrement())
-  mongo_id  String   @unique @db.VarChar(24)
-  licensee  String   @db.VarChar(24)
-  inbox     String?  @db.VarChar(24)
+  licensee  Int
+  inbox     Int?
   creds     Json?
   keys      Json?
   createdAt DateTime @default(now())
@@ -209,12 +200,11 @@ model WhatsappSession {
 
 model Body {
   id         Int      @id @default(autoincrement())
-  mongo_id   String   @unique @db.VarChar(24)
   content    Json
-  licensee   String   @db.VarChar(24)
+  licensee   Int
   kind       String
-  department String?  @db.VarChar(24)
-  inbox      String?  @db.VarChar(24)
+  department Int?
+  inbox      Int?
   concluded  Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -224,7 +214,6 @@ model Body {
 
 model Message {
   id             Int       @id @default(autoincrement())
-  mongo_id       String    @unique @db.VarChar(24)
   number         String
   fromMe         Boolean   @default(false)
   text           String?
@@ -238,12 +227,12 @@ model Message {
   senderName     String?
   sended         Boolean   @default(false)
   ignored        Boolean   @default(false)
-  licensee       String    @db.VarChar(24)
-  contact        String    @db.VarChar(24)
-  room           String?   @db.VarChar(24)
-  department     String?   @db.VarChar(24)
-  inbox          String?   @db.VarChar(24)
-  trigger        String?   @db.VarChar(24)
+  licensee       Int
+  contact        Int
+  room           Int?
+  department     Int?
+  inbox          Int?
+  trigger        Int?
   messageWaId    String?
   attachmentWaId String?
   sendedAt       DateTime?

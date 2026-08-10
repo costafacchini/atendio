@@ -452,6 +452,11 @@ class PrismaRepository<T> implements IRepository<T> {
     throw new Error('PrismaRepository.delegate() must be implemented by subclass')
   }
 
+  // Subclasses list FK integer field names so toWhere/toData can coerce them.
+  protected fkFields(): string[] {
+    return []
+  }
+
   async findFirst(params: Record<string, unknown> = {}): Promise<T | null> {
     return this.fromDB(await this.delegate().findFirst({ where: this.toWhere(params) }))
   }
@@ -465,12 +470,12 @@ class PrismaRepository<T> implements IRepository<T> {
   }
 
   async update(id: string, fields: Partial<T> = {}): Promise<{ acknowledged: boolean }> {
-    await this.delegate().updateMany({ where: { mongo_id: id.toString() }, data: fields ?? {} })
+    await this.delegate().updateMany({ where: { id: parseInt(id, 10) }, data: this.toData(fields) })
     return { acknowledged: true }
   }
 
   async updateMany(params: Record<string, unknown> = {}, fields: Partial<T> = {}): Promise<{ acknowledged: boolean }> {
-    await this.delegate().updateMany({ where: this.toWhere(params), data: fields ?? {} })
+    await this.delegate().updateMany({ where: this.toWhere(params), data: this.toData(fields) })
     return { acknowledged: true }
   }
 
@@ -481,42 +486,57 @@ class PrismaRepository<T> implements IRepository<T> {
 
   async save(document: T): Promise<T> {
     const doc = document as any
-    const mongoId = (doc._id ?? doc.mongo_id)?.toString()
+    const rawId = doc.id ?? doc._id
+    const id = rawId != null ? parseInt(String(rawId), 10) : undefined
     const data = this.toData(doc)
-    return this.fromDB(await this.delegate().upsert({ where: { mongo_id: mongoId }, create: data, update: data })) as T
+    if (id && !isNaN(id)) {
+      return this.fromDB(await this.delegate().upsert({ where: { id }, create: data, update: data })) as T
+    }
+    return this.fromDB(await this.delegate().create({ data })) as T
   }
 
-  // Adds _id = mongo_id so application code using record._id keeps working
+  // _id is the stringified integer id so existing application code keeps working
   protected fromDB<R>(record: R | null): R | null {
     if (!record) return null
-    return { ...(record as any), _id: (record as any).mongo_id } as R
+    return { ...(record as any), _id: String((record as any).id) } as R
   }
 
   protected fromDBMany<R>(records: R[]): R[] {
     return records.map((r) => this.fromDB(r) as R)
   }
 
-  // Maps _id → mongo_id for Prisma where clauses
+  // Maps _id → id (integer) and coerces FK fields to integers
   protected toWhere(params: Record<string, unknown> = {}): Record<string, unknown> {
+    const fks = this.fkFields()
     const result: Record<string, unknown> = {}
     for (const [key, value] of Object.entries(params ?? {})) {
-      result[key === '_id' ? 'mongo_id' : key] = key === '_id' ? ((value as any)?.toString?.() ?? value) : value
+      if (key === '_id') {
+        result['id'] = value != null ? parseInt(String(value), 10) : value
+      } else if (fks.includes(key) && value != null) {
+        result[key] = parseInt(String(value), 10)
+      } else {
+        result[key] = value
+      }
     }
     return result
   }
 
-  // Strips Mongoose internals and maps _id → mongo_id for Prisma data payloads.
-  // Auto-generates mongo_id when neither _id nor mongo_id is present.
+  // Strips internal fields; coerces FK fields to integers
   protected toData(fields: any = {}): Record<string, unknown> {
     const plain = fields?.toObject
       ? fields.toObject({ depopulate: true, versionKey: false, virtuals: false })
       : { ...(fields ?? {}) }
     const result: Record<string, unknown> = { ...plain }
-    const mongoId = (plain._id ?? fields.mongo_id)?.toString() ?? randomBytes(12).toString('hex')
     delete result._id
     delete result.__v
     delete result.id
-    result.mongo_id = mongoId
+    delete result.mongo_id
+    const fks = this.fkFields()
+    for (const field of fks) {
+      if (result[field] != null) {
+        result[field] = parseInt(String(result[field]), 10)
+      }
+    }
     return result
   }
 }

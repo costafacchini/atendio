@@ -10,6 +10,9 @@ class PrismaDepartmentDatabaseRepository extends PrismaRepository<IDepartment> {
   delegate() {
     return getPrismaClient().department
   }
+  protected fkFields() {
+    return ['licensee', 'inbox']
+  }
 
   async create(fields: Partial<IDepartment> = {}): Promise<IDepartment> {
     const withToken = (fields as any).departmentToken ? fields : { ...fields, departmentToken: uuidv4() }

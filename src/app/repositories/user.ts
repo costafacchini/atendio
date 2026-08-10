@@ -93,6 +93,9 @@ class PrismaUserDatabaseRepository extends PrismaRepository<IUser> {
   delegate() {
     return getPrismaClient().user
   }
+  protected fkFields() {
+    return ['licensee']
+  }
 
   async create(fields: Partial<IUser> = {}): Promise<IUser> {
     const prepared = await this.hashPasswordIfPresent(fields)

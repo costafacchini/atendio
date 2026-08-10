@@ -25,6 +25,9 @@ class PrismaTemplateDatabaseRepository extends PrismaRepository<ITemplate> {
   delegate() {
     return getPrismaClient().template
   }
+  protected fkFields() {
+    return ['licensee']
+  }
 }
 
 // Factory for backward-compatibility with specs that call new TemplateRepositoryDatabase().

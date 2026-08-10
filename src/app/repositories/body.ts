@@ -9,6 +9,9 @@ class PrismaBodyDatabaseRepository extends PrismaRepository<IBody> {
   delegate() {
     return getPrismaClient().body
   }
+  protected fkFields() {
+    return ['licensee', 'department', 'inbox']
+  }
 }
 
 // Factory for backward-compatibility with specs that call new BodyRepositoryDatabase().

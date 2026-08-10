@@ -33,6 +33,9 @@ class PrismaTriggerDatabaseRepository extends PrismaRepository<ITrigger> {
   delegate() {
     return getPrismaClient().trigger
   }
+  protected fkFields() {
+    return ['licensee']
+  }
 }
 
 // Factory for backward-compatibility with specs that call new TriggerRepositoryDatabase().

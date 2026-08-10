@@ -1,7 +1,7 @@
 # Status: Resolve FK columns to native PG ids, drop mongo_id
 
-**Current Status**: deferred
-**Last Updated**: 2026-08-08
+**Current Status**: complete
+**Last Updated**: 2026-08-10
 **Agent**: claude-sonnet-4-6
 **Branch**: —
 **PR**: —
