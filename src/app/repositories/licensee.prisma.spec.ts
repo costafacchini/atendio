@@ -21,7 +21,6 @@ describeIf('PrismaLicenseeDatabaseRepository', () => {
   const repo = new PrismaLicenseeDatabaseRepository()
 
   const baseFields = {
-    mongo_id: '507f1f77bcf86cd799439011',
     name: 'Alcateia Ltds',
     licenseKind: 'demo',
     apiToken: 'test-token-prisma',
@@ -39,7 +38,6 @@ describeIf('PrismaLicenseeDatabaseRepository', () => {
       const result = await repo.create({
         ...baseFields,
         apiToken: 'test-token-prisma-2',
-        mongo_id: '507f1f77bcf86cd799439012',
         whatsappDefault: 'utalk',
         whatsappToken: 'tok',
       } as any)
@@ -50,7 +48,6 @@ describeIf('PrismaLicenseeDatabaseRepository', () => {
       const result = await repo.create({
         ...baseFields,
         apiToken: 'test-token-prisma-3',
-        mongo_id: '507f1f77bcf86cd799439013',
         whatsappDefault: 'dialog',
         whatsappToken: 'tok',
       } as any)
@@ -59,15 +56,15 @@ describeIf('PrismaLicenseeDatabaseRepository', () => {
   })
 
   describe('#findFirst', () => {
-    it('finds a licensee by mongo_id', async () => {
+    it('finds a licensee by apiToken', async () => {
       await repo.create(baseFields as any)
-      const found = await repo.findFirst({ mongo_id: baseFields.mongo_id })
+      const found = await repo.findFirst({ apiToken: baseFields.apiToken })
       expect(found).not.toBeNull()
       expect((found as any).name).toEqual('Alcateia Ltds')
     })
 
     it('returns null when not found', async () => {
-      const found = await repo.findFirst({ mongo_id: 'nonexistent000000000000' })
+      const found = await repo.findFirst({ apiToken: 'nonexistent-token' })
       expect(found).toBeNull()
     })
   })
@@ -75,17 +72,17 @@ describeIf('PrismaLicenseeDatabaseRepository', () => {
   describe('#find', () => {
     it('returns all matching licensees', async () => {
       await repo.create(baseFields as any)
-      await repo.create({ ...baseFields, apiToken: 'tok2', mongo_id: '507f1f77bcf86cd799439099' } as any)
+      await repo.create({ ...baseFields, apiToken: 'tok2' } as any)
       const results = await repo.find({ active: true })
       expect(results.length).toBeGreaterThanOrEqual(2)
     })
   })
 
   describe('#update', () => {
-    it('updates a licensee by mongo_id', async () => {
-      await repo.create(baseFields as any)
-      await repo.update(baseFields.mongo_id, { name: 'Updated Name' } as any)
-      const found = await repo.findFirst({ mongo_id: baseFields.mongo_id })
+    it('updates a licensee by id', async () => {
+      const created = await repo.create(baseFields as any)
+      await repo.update((created as any)._id, { name: 'Updated Name' } as any)
+      const found = await repo.findFirst({ apiToken: baseFields.apiToken })
       expect((found as any).name).toEqual('Updated Name')
     })
   })
@@ -95,16 +92,16 @@ describeIf('PrismaLicenseeDatabaseRepository', () => {
       const created = await repo.create(baseFields as any)
       ;(created as any).name = 'Upserted Name'
       await repo.save(created as any)
-      const found = await repo.findFirst({ mongo_id: baseFields.mongo_id })
+      const found = await repo.findFirst({ apiToken: baseFields.apiToken })
       expect((found as any).name).toEqual('Upserted Name')
     })
   })
 
   describe('#delete', () => {
-    it('removes a licensee by mongo_id', async () => {
+    it('removes a licensee by apiToken', async () => {
       await repo.create(baseFields as any)
-      await repo.delete({ mongo_id: baseFields.mongo_id })
-      const found = await repo.findFirst({ mongo_id: baseFields.mongo_id })
+      await repo.delete({ apiToken: baseFields.apiToken })
+      const found = await repo.findFirst({ apiToken: baseFields.apiToken })
       expect(found).toBeNull()
     })
   })

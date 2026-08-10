@@ -529,7 +529,6 @@ class PrismaRepository<T> implements IRepository<T> {
     delete result._id
     delete result.__v
     delete result.id
-    delete result.mongo_id
     const fks = this.fkFields()
     for (const field of fks) {
       if (result[field] != null) {
