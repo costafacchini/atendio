@@ -8,7 +8,7 @@ if (process.env.NODE_ENV === 'production') {
   import('newrelic')
 }
 
-const errorDebug = debug('ecomanda-delivery:server')
+const errorDebug = debug('atendio:server')
 
 const PORT = process.env.PORT || '5000'
 

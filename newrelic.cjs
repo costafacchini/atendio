@@ -6,7 +6,7 @@ import 'dotenv/config'
  * description of configuration variables and their potential values.
  */
 exports.config = {
-  app_name: ['ecomanda-delivery'],
+  app_name: ['atendio'],
   license_key: process.env.NEW_RELIC_LICENSE_KEY,
   /* ... rest of configuration .. */
   distributed_tracing: {

@@ -1,4 +1,4 @@
-# Project Overview — Ecomanda Delivery
+# Project Overview — atend.io
 
 **Last Updated**: 2026-06-01
 **Context**: Read when working on any part of this codebase. Covers project purpose, folder layout, entry points, plugin architecture, API structure, and deployment.
@@ -7,7 +7,7 @@
 
 ## What This Project Is
 
-Ecomanda Delivery is a WhatsApp-Chat-Chatbot integration platform. It routes messages between:
+atend.io is a WhatsApp-Chat-Chatbot integration platform. It routes messages between:
 - **WhatsApp** providers (Dialog/360dialog, Twilio, etc.)
 - **Chat platforms** (Crisp, Chatwoot, etc.)
 - **Chatbot services** (Landbot, etc.)

@@ -1,5 +1,5 @@
 ---
-name: eComanda
+name: atend.io
 description: WhatsApp operations hub for support agents and admins
 colors:
   primary: "#fa5619"
@@ -89,17 +89,17 @@ components:
     padding: "3px 8px"
 ---
 
-# Design System: eComanda
+# Design System: atend.io
 
 ## 1. Overview
 
 **Creative North Star: "The Steady Operator"**
 
-eComanda's visual system is built for people who are always on. Support agents cycle through dozens of conversations in a shift; admins configure a system that other people depend on. The design does not try to impress either of them — it tries to disappear. Flat surfaces, a restrained palette, and a single moment of orange energy at the top of the viewport: that's the whole idea. The interface should feel like a trusted tool that has been used for years, not a product demo.
+atend.io's visual system is built for people who are always on. Support agents cycle through dozens of conversations in a shift; admins configure a system that other people depend on. The design does not try to impress either of them — it tries to disappear. Flat surfaces, a restrained palette, and a single moment of orange energy at the top of the viewport: that's the whole idea. The interface should feel like a trusted tool that has been used for years, not a product demo.
 
 The orange (`#fa5619`, Signal Orange) is the system's one committed voice. It anchors the navigation bar, marks primary actions, and then steps back completely. Everything else lives in warm neutral territory: the Fieldwork Gray body text (`#52665a`) carries a green undertone that stops it feeling cold, and the Clearline Teal (`#18BC9C`) handles confirmations and outbound chat messages — a functional accent, not a decorative one. Neither surface competes for attention. They work.
 
-The system explicitly rejects the two failure modes named in the product brief: the heavy enterprise gray of committee-built software (Salesforce, SAP — cold, dense, designed for procurement, not for people), and the performative polish of hyped SaaS products (Intercom, Notion — gradient text, hero metrics, surfaces that announce themselves). eComanda is neither. It is warm without being casual. It is operational without being cold.
+The system explicitly rejects the two failure modes named in the product brief: the heavy enterprise gray of committee-built software (Salesforce, SAP — cold, dense, designed for procurement, not for people), and the performative polish of hyped SaaS products (Intercom, Notion — gradient text, hero metrics, surfaces that announce themselves). atend.io is neither. It is warm without being casual. It is operational without being cold.
 
 **Key Characteristics:**
 - Flat surfaces — no drop shadows, tonal layering through background shifts only

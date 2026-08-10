@@ -5,7 +5,7 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: pwk372ew
-      MONGO_INITDB_DATABASE: ecomanda-delivery
+      MONGO_INITDB_DATABASE: atendio
     volumes:
       - smoke_mongo_data:/var/lib/mongodb/data
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro

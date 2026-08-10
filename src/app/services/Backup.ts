@@ -13,7 +13,7 @@ async function backup() {
   const mongoURI = process.env.MONGODB_URI
 
   const date = new Date()
-  const folderDate = `backups-ecomanda/${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
+  const folderDate = `backups-atendio/${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
   const filename = `${folderDate}/${date.toISOString()}.zip`
 
   try {
@@ -53,7 +53,7 @@ function zipBackup(file: any) {
 
 function doBackup(mongoURI: any) {
   return new Promise(function (resolve, reject) {
-    var fileName = 'ecomanda-delivery'
+    var fileName = 'atendio'
     var output = path.join(os.tmpdir(), fileName)
 
     const args = []

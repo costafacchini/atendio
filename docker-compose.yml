@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: ecomanda_delivery
+      POSTGRES_DB: atendio
     ports:
       - "5432:5432"
     volumes:

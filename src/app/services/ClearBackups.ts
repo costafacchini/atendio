@@ -7,7 +7,7 @@ async function clearBackups() {
 
   const date = new Date()
   date.setDate(date.getDate() - 1)
-  const folderDate = `backups-ecomanda/${date.getFullYear()}-${date.getMonth()}-${date.getDate()}/`
+  const folderDate = `backups-atendio/${date.getFullYear()}-${date.getMonth()}-${date.getDate()}/`
 
   const pluginAWS = new S3Client({
     region: 'us-east-1',

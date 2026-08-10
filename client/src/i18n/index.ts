@@ -3,7 +3,7 @@ import { initReactI18next } from 'react-i18next'
 import pt from './locales/pt.json'
 import en from './locales/en.json'
 
-const LANGUAGE_KEY = '@ecomanda-delivery-language'
+const LANGUAGE_KEY = '@atendio-language'
 
 export function saveLanguage(lang: 'pt' | 'en'): void {
   localStorage.setItem(LANGUAGE_KEY, lang)

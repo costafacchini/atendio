@@ -15,7 +15,7 @@ const rawLang = scriptEl?.dataset.language
 const defaultLanguage: Language = rawLang === 'en' ? 'en' : 'pt'
 
 type InitData = { name: string; email: string; phone?: string; language?: Language }
-interface EcomandaWidgetAPI {
+interface AtendioWidgetAPI {
   init: (data: InitData) => void
   reset: () => void
   _handler: ((data: InitData) => void) | null
@@ -23,21 +23,21 @@ interface EcomandaWidgetAPI {
   _pending: InitData | null
 }
 
-;(window as any).EcomandaWidget = {
-  init(this: EcomandaWidgetAPI, data: InitData) {
+;(window as any).AtendioWidget = {
+  init(this: AtendioWidgetAPI, data: InitData) {
     if (this._handler) {
       this._handler(data)
     } else {
       this._pending = data
     }
   },
-  reset(this: EcomandaWidgetAPI) {
+  reset(this: AtendioWidgetAPI) {
     this._resetHandler?.()
   },
   _handler: null,
   _resetHandler: null,
   _pending: null,
-} as EcomandaWidgetAPI
+} as AtendioWidgetAPI
 
 function WidgetRoot() {
   const [isOpen, setIsOpen] = useState(false)
@@ -53,7 +53,7 @@ function WidgetRoot() {
   clearSessionRef.current = clearSession
 
   useEffect(() => {
-    const api = (window as any).EcomandaWidget as EcomandaWidgetAPI
+    const api = (window as any).AtendioWidget as AtendioWidgetAPI
     api._handler = (data) => {
       if (data.language) setLanguage(data.language)
       createSessionRef.current(data.name, data.email, data.phone)
@@ -84,7 +84,7 @@ function WidgetRoot() {
 }
 
 const host = document.createElement('div')
-host.id = 'ecomanda-widget-host'
+host.id = 'atendio-widget-host'
 document.body.appendChild(host)
 const shadow = host.attachShadow({ mode: 'open' })
 const mountPoint = document.createElement('div')

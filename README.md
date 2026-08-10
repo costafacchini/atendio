@@ -1,6 +1,6 @@
-# Ecomanda Delivery
+# atend.io
 
-Ecomanda Delivery is an integration hub for WhatsApp, chat platforms, and chatbots.
+atend.io is an integration hub for WhatsApp, chat platforms, and chatbots.
 It receives inbound webhooks, persists the raw payloads, processes them through BullMQ
 workers, and routes outbound messages to the configured provider plugins.
 

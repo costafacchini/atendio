@@ -1,10 +1,10 @@
 import api from './api'
 import type { IUser } from '../types'
 
-const TOKEN_KEY = "@ecomanda-delivery-bearer"
-const EMAIL_KEY = "@ecomanda-delivery-mail"
-const ACTIVE_LICENSEE_KEY = "@ecomanda-delivery-active-licensee"
-const LICENSEE_MODAL_SEEN_KEY = "@ecomanda-delivery-licensee-modal-seen"
+const TOKEN_KEY = "@atendio-bearer"
+const EMAIL_KEY = "@atendio-mail"
+const ACTIVE_LICENSEE_KEY = "@atendio-active-licensee"
+const LICENSEE_MODAL_SEEN_KEY = "@atendio-licensee-modal-seen"
 
 export function isAuthenticated(): boolean {
   return localStorage.getItem(TOKEN_KEY) !== null

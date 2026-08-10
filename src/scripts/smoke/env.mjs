@@ -12,7 +12,7 @@ const DEFAULT_SMOKE_ENV = Object.freeze({
   appPort: 5001,
   clientPort: 5173,
   apiProxyTarget: 'http://127.0.0.1:5001',
-  mongoUri: 'mongodb://root:pwk372ew@127.0.0.1:27017/ecomanda-delivery?authSource=admin',
+  mongoUri: 'mongodb://root:pwk372ew@127.0.0.1:27017/atendio?authSource=admin',
   redisUrl: 'redis://127.0.0.1:6379',
   rabbitUrl: 'amqp://guest:guest@127.0.0.1:5672',
   licenseeName: 'Smoke Licensee',
