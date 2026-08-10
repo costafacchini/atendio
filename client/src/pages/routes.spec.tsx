@@ -28,7 +28,7 @@ describe('<RootRoutes>', () => {
       </AppContextProvider>
     )
 
-    const title = screen.getByText(/e-comanda/i)
+    const title = screen.getByText(/atend\.io/i)
     const emailField = screen.getByText('login.emailLabel')
     const passwordField = screen.getByText('login.passwordLabel')
     const loginButton = screen.getByText('login.submitButton')

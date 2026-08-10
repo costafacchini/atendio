@@ -2,7 +2,7 @@ import { useState } from 'react'
 import * as api from '../api'
 import type { WidgetSession } from '../types'
 
-const SESSION_KEY = (token: string) => `ecomanda_session_${token}`
+const SESSION_KEY = (token: string) => `atendio_session_${token}`
 
 export function useWidgetSession(baseUrl: string, apiToken: string) {
   const stored = localStorage.getItem(SESSION_KEY(apiToken))

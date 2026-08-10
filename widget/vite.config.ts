@@ -10,7 +10,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, 'src/main.tsx'),
-      name: 'EcomandaWidget',
+      name: 'AtendioWidget',
       formats: ['iife'],
       fileName: () => 'widget.js',
     },

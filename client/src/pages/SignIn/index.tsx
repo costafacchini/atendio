@@ -59,7 +59,7 @@ function SignIn() {
           <div className='row h-100 justify-content-center pb-5'>
             <div className={`col h-100 col-12 col-md-8 col-lg-6 col-xl-4 ${styles.login}`}>
               <div className='h-100 px-4 d-flex justify-content-center flex-column'>
-                <h3 className='text-center mb-4'>e-comanda</h3>
+                <h3 className='text-center mb-4'>atend.io</h3>
 
                 <LanguageSwitcher className="mb-3" />
 

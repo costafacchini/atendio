@@ -1,8 +1,8 @@
-# Documentação da API - Ecomanda Delivery
+# Documentação da API - atend.io
 
 ## Visão Geral
 
-A API do Ecomanda Delivery é um sistema de integração entre plataformas de Chat, Chatbots e WhatsApp. A API está dividida em duas seções principais:
+A API do atend.io é um sistema de integração entre plataformas de Chat, Chatbots e WhatsApp. A API está dividida em duas seções principais:
 
 1. **API de Recursos** (`/resources`) - Endpoints administrativos que requerem autenticação JWT
 2. **API de Integração** (`/api/v1`) - Endpoints para integração com plataformas externas que requerem token de licenciado

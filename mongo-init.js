@@ -5,11 +5,11 @@ db.createUser(
     roles: [
       {
         role: "readWrite",
-        db: "ecomanda-delivery"
+        db: "atendio"
       },
       {
         role: "readWrite",
-        db: "ecomanda-delivery-test"
+        db: "atendio-test"
       }
     ]
   }

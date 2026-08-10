@@ -2,7 +2,7 @@ const { Appsignal } = require('@appsignal/nodejs')
 
 const appsignal = new Appsignal({
   active: true,
-  name: 'ecomanda-hub',
+  name: 'atendio',
 })
 
 module.exports = { appsignal }
