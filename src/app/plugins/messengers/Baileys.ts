@@ -147,14 +147,14 @@ class Baileys extends MessengersBase {
   }
 
   async saveSession(session: any, creds: any, keys: any, BufferJSON: any) {
-    // Serialize Buffers to { type: 'Buffer', data: '<base64>' } before storing in MongoDB,
+    // Serialize Buffers to { type: 'Buffer', data: '<base64>' } before storing in JSON,
     // so BufferJSON.reviver can restore them correctly on the next load.
     const serialized = JSON.parse(JSON.stringify({ creds, keys }, BufferJSON.replacer))
     await this.whatsappSessionRepository.update(session._id, serialized)
   }
 
   buildAuthState(session: any, initAuthCreds: any, BufferJSON: any) {
-    // Deserialize creds and keys from MongoDB — plain objects must become real Buffer instances
+    // Deserialize creds and keys from JSON storage — plain objects must become real Buffer instances
     // so Baileys crypto operations receive the correct types.
     const creds =
       session.creds && Object.keys(session.creds).length > 0

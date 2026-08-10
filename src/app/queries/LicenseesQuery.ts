@@ -65,13 +65,13 @@ class LicenseesQuery {
 
     if (this.expressionClause) query.filterByExpression(['name', 'email', 'phone'], this.expressionClause)
 
-    const mongooseQuery = query.getQuery()
+    const chainedQuery = query.getQuery()
 
     if (this.excludedIdsClause?.length) {
-      mongooseQuery.where('_id').nin(this.excludedIdsClause)
+      chainedQuery.where('_id').nin(this.excludedIdsClause)
     }
 
-    const docs = await mongooseQuery.lean().exec()
+    const docs = await chainedQuery.lean().exec()
     return docs.map(stringifyObjectIds)
   }
 }

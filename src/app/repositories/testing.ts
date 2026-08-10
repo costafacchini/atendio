@@ -182,12 +182,12 @@ class MemoryQuery {
   }
 
   lean() {
-    // Mongoose compat: .lean() is a no-op in memory — records are already plain objects.
+    // No-op in memory — records are already plain objects.
     return this
   }
 
   select(_fields: any) {
-    // Mongoose compat: field projection not needed for in-memory records.
+    // Field projection not needed for in-memory records.
     return this
   }
 

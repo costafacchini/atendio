@@ -82,7 +82,6 @@ class UserRepositoryMemory extends RepositoryMemory<IUser> {
     return record
   }
 
-  // Validation was previously delegated to the Mongoose User model.
   // The Prisma repo enforces constraints at the DB level; memory repo skips schema validation.
   async validateUserFields(_fields = {}) {
     // no-op: schema validation is handled by Prisma in production

@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto'
 
-// 24-hex-char string that mimics a MongoDB ObjectId without depending on mongoose.
+// 24-hex-char string used as a legacy identifier for in-memory records.
 function generateObjectId(): string {
   return randomBytes(12).toString('hex')
 }
@@ -64,7 +64,7 @@ function isObject(value: any) {
 }
 
 function isObjectIdLike(value: any) {
-  // Previously checked instanceof mongoose.Types.ObjectId; now just checks the bsontype tag.
+  // Checks for the bsontype tag left on ObjectId-like values from legacy mongo data.
   return value?._bsontype === 'ObjectId'
 }
 
@@ -160,7 +160,7 @@ function matchValue(actual: any, expected: any): any {
     return Object.entries(expected).every(([key, value]) => matchValue(actual?.[key], value))
   }
 
-  // Treat null and undefined as equivalent (MongoDB stores absent fields as null).
+  // Treat null and undefined as equivalent — absent fields may be stored as either.
   if (actual == null && expected == null) return true
 
   const normalizedExpected = normalizeExpectedValue(actual, expected)
@@ -439,7 +439,7 @@ class RepositoryMemory<T> extends Repository<T> implements IRepository<T> {
 
     const comparable = comparableValue(value)
 
-    // Validates a 24-hex-char ObjectId string without depending on mongoose.
+    // Validates a 24-hex-char ObjectId string (legacy in-memory record IDs).
     if (typeof comparable === 'string' && !/^[0-9a-fA-F]{24}$/.test(comparable)) {
       throw new Error(`Cast to ObjectId failed for value "${comparable}" at path "${path}"`)
     }
