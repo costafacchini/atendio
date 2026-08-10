@@ -1,5 +1,4 @@
 import { randomBytes } from 'crypto'
-import { logger } from '../helpers/logger'
 
 // 24-hex-char string that mimics a MongoDB ObjectId without depending on mongoose.
 function generateObjectId(): string {
@@ -541,69 +540,10 @@ class PrismaRepository<T> implements IRepository<T> {
   }
 }
 
-class DualWriteRepository<T> implements IRepository<T> {
-  private primary: IRepository<T>
-  private secondary: PrismaRepository<T>
-  private asyncSecondary: boolean
-
-  constructor(primary: IRepository<T>, secondary: PrismaRepository<T>, { asyncSecondary = true } = {}) {
-    this.primary = primary
-    this.secondary = secondary
-    this.asyncSecondary = asyncSecondary
-  }
-
-  private writeSecondary(fn: () => Promise<unknown>): void | Promise<void> {
-    if (this.asyncSecondary) {
-      fn().catch((err: any) => logger.error(`[DualWrite] Secondary write failed: ${err.message}`))
-    } else {
-      return fn() as Promise<void>
-    }
-  }
-
-  async findFirst(params: Record<string, unknown> = {}, relations: string[] = []): Promise<T | null> {
-    return await this.primary.findFirst(params, relations)
-  }
-
-  async find(params: Record<string, unknown> = {}, relations: string[] = []): Promise<T[]> {
-    return await this.primary.find(params, relations)
-  }
-
-  async create(fields: Partial<T> = {}): Promise<T> {
-    const result = await this.primary.create(fields)
-    await this.writeSecondary(() => this.secondary.save(result))
-    return result
-  }
-
-  async update(id: string, fields: Partial<T> = {}): Promise<{ acknowledged: boolean }> {
-    const result = await this.primary.update(id, fields)
-    await this.writeSecondary(() => this.secondary.update(id, fields))
-    return result
-  }
-
-  async updateMany(params: Record<string, unknown> = {}, fields: Partial<T> = {}): Promise<{ acknowledged: boolean }> {
-    const result = await this.primary.updateMany(params, fields)
-    await this.writeSecondary(() => this.secondary.updateMany(params, fields))
-    return result
-  }
-
-  async delete(params: Record<string, unknown> = {}): Promise<{ acknowledged: boolean }> {
-    const result = await this.primary.delete(params)
-    await this.writeSecondary(() => this.secondary.delete(params))
-    return result
-  }
-
-  async save(document: T): Promise<T> {
-    const result = await this.primary.save(document)
-    await this.writeSecondary(() => this.secondary.save(result))
-    return result
-  }
-}
-
 export default Repository
 export {
   RepositoryMemory,
   PrismaRepository,
-  DualWriteRepository,
   buildMemoryRecord,
   comparableValue,
   generateObjectId,

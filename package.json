@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node --require source-map-support/register --require './appsignal.cjs' dist/server.js",
-    "build": "tsc && echo '{\"type\":\"commonjs\"}' > dist/package.json && cp appsignal.cjs dist/appsignal.cjs && cd client && yarn install --production=false && yarn run build && cd ../widget && yarn install --frozen-lockfile --production=false && yarn build",
+    "build": "npx prisma generate && tsc && echo '{\"type\":\"commonjs\"}' > dist/package.json && cp appsignal.cjs dist/appsignal.cjs && cd client && yarn install --production=false && yarn run build && cd ../widget && yarn install --frozen-lockfile --production=false && yarn build",
     "dev": "npm-run-all -p dev:*",
     "dev:server": "nodemon --exec tsx server.ts",
     "dev:worker": "nodemon --exec tsx worker.ts",
@@ -69,6 +69,7 @@
     "@bull-board/api": "^8.0.0",
     "@bull-board/express": "^8.0.0",
     "@bull-board/ui": "^8.0.0",
+    "@prisma/adapter-pg": "7.9.1",
     "@prisma/client": "7.9.1",
     "@sentry/node": "^10.25.0",
     "@socket.io/redis-adapter": "8.3.0",
