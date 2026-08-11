@@ -70,11 +70,11 @@ class PrismaLicenseeDatabaseRepository extends PrismaRepository<ILicensee> {
 // Factory for backward-compatibility with specs that call new LicenseeRepositoryDatabase().
 // Returns the active shared instance when memory repos are installed.
 
-function LicenseeRepositoryDatabase(this: any): any {
+const LicenseeRepositoryDatabase = function (this: any): any {
   const active = tryGetActiveRepositories()
   if (active) return active.licenseeRepository
   return new LicenseeRepositoryMemory()
-}
+} as unknown as new () => LicenseeRepositoryMemory
 LicenseeRepositoryDatabase.prototype = LicenseeRepositoryMemory.prototype
 
 export { LicenseeRepositoryDatabase, LicenseeRepositoryMemory, PrismaLicenseeDatabaseRepository }

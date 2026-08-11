@@ -1,10 +1,14 @@
 import { v4 as uuidv4 } from 'uuid'
-import { RepositoryMemory, PrismaRepository, comparableValue, sortRecords } from './repository'
+import { IRepository, RepositoryMemory, PrismaRepository, comparableValue, sortRecords } from './repository'
 import { replace } from '../helpers/Emoji'
 import { requireDependency } from '../helpers/RequireDependency'
 import { IMessage, MessageKind, MessageDestination } from '../../types'
 import { getPrismaClient } from '../../config/postgres'
 import { tryGetActiveRepositories } from './activeState'
+
+export interface IMessageRepository extends IRepository<IMessage> {
+  createInteractiveMessages(fields: any): Promise<IMessage[]>
+}
 
 class MessageRepositoryMemory extends RepositoryMemory<IMessage> {
   triggerRepository: any
@@ -121,11 +125,11 @@ class PrismaMessageDatabaseRepository extends PrismaRepository<IMessage> {
 // Returns the active shared instance when memory repos are installed, so all
 // patched methods (find, findFirst, etc.) are inherited from the shared instance.
 
-function MessageRepositoryDatabase(this: any): any {
+const MessageRepositoryDatabase = function (this: any): any {
   const active = tryGetActiveRepositories()
   if (active) return active.messageRepository
   return new MessageRepositoryMemory()
-}
+} as unknown as new () => MessageRepositoryMemory
 MessageRepositoryDatabase.prototype = MessageRepositoryMemory.prototype
 
 export { MessageRepositoryDatabase, MessageRepositoryMemory, PrismaMessageDatabaseRepository }

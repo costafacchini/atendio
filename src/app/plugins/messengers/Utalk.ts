@@ -2,7 +2,7 @@ import { NormalizePhone } from '../../helpers/NormalizePhone'
 import request from '../../services/request'
 import { MessengersBase } from './Base'
 import { logger } from '../../helpers/logger'
-import { ILicensee } from '../../../types'
+import { ILicensee, IContact } from '../../../types'
 import { IRepository } from '../../repositories/repository'
 
 class Utalk extends MessengersBase {
@@ -156,11 +156,13 @@ class Utalk extends MessengersBase {
 
   async sendMessage(messageId: string, url: string, token: string): Promise<void> {
     const messageToSend = await this.messageRepository.findFirst({ _id: messageId }, ['contact'])
+    if (!messageToSend) return
+    const messageContact = messageToSend.contact as IContact
 
     const body: Record<string, any> = {
       cmd: 'chat',
       id: messageId,
-      to: messageToSend.contact.number + messageToSend.contact.type,
+      to: messageContact.number + messageContact.type,
       msg: messageToSend.text,
     }
 

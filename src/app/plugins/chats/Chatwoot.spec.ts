@@ -1392,8 +1392,8 @@ describe('Chatwoot plugin', () => {
         expect(roomRepository.save).toHaveBeenCalledWith(expect.objectContaining({ _id: room._id, closed: true }))
 
         const contactUpdated = await contactRepository.findFirst({ _id: contact._id })
-        expect(contactUpdated.chatwootSourceId).toEqual(null)
-        expect(contactUpdated.chatwootId).toEqual(null)
+        expect(contactUpdated.chatwootSourceId).toEqual(undefined)
+        expect(contactUpdated.chatwootId).toEqual(undefined)
       })
 
       it('retries with a recreated conversation when postMessage returns false', async () => {

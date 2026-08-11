@@ -3,7 +3,7 @@ import path from 'path'
 import { logger } from '../../helpers/logger'
 
 const LOCAL_STORAGE_PATH = process.env.LOCAL_STORAGE_PATH ?? '/app/uploads'
-const APP_URL = process.env.APP_URL ?? 'http://localhost:5000'
+const APP_URL = process.env.APP_URL ?? 'http://localhost:5001'
 
 const getFilePath = (contactNumber: any, fileName: string) => {
   const date = new Date()

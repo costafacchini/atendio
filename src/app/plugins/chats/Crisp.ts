@@ -5,8 +5,9 @@ import request from '../../services/request'
 import mime from 'mime-types'
 import { ChatsBase } from './Base'
 import { requireDependency } from '../../helpers/RequireDependency'
-import { ILicensee } from '../../../types'
+import { ILicensee, IContact } from '../../../types'
 import { IRepository } from '../../repositories/repository'
+import { IMessageRepository } from '../../repositories/message'
 
 const createSession = async (url: any, headers: any, contact: any, segments: any, roomRepository: any) => {
   const response = await request.post(`https://api.crisp.chat/v1/website/${url}/conversation`, { headers })
@@ -127,7 +128,7 @@ class Crisp extends ChatsBase {
     }: {
       roomRepository?: IRepository<any>
       contactRepository?: IRepository<any>
-      messageRepository?: IRepository<any>
+      messageRepository?: IMessageRepository
       [key: string]: unknown
     } = {},
   ) {
@@ -190,7 +191,10 @@ class Crisp extends ChatsBase {
 
   async transfer(messageId: any, url: any) {
     const messageToSend = await this.messageRepository.findFirst({ _id: messageId }, ['contact'])
-    const contact = await this.contactRepository.findFirst({ _id: messageToSend.contact._id })
+    if (!messageToSend) return
+    const messageContact = messageToSend.contact as IContact
+    const contact = await this.contactRepository.findFirst({ _id: messageContact._id })
+    if (!contact) return
 
     contact.talkingWithChatBot = false
     await this.contactRepository.save(contact)
@@ -200,13 +204,15 @@ class Crisp extends ChatsBase {
 
   async sendMessage(messageId: string, url: string): Promise<void> {
     const messageToSend = await this.messageRepository.findFirst({ _id: messageId }, ['contact'])
+    if (!messageToSend) return
+    const messageContact = messageToSend.contact as IContact
     const basicToken = Buffer.from(`${this.licensee.chatIdentifier}:${this.licensee.chatKey}`).toString('base64')
     const headers = { Authorization: `Basic ${basicToken}`, 'X-Crisp-Tier': 'plugin' }
-    const openRoom = await this.roomRepository.findFirst({ contact: messageToSend.contact, closed: false })
+    const openRoom = await this.roomRepository.findFirst({ contact: messageContact, closed: false })
     let room = openRoom
 
     if (!room) {
-      room = await createSession(url, headers, messageToSend.contact, messageToSend.departament, this.roomRepository)
+      room = await createSession(url, headers, messageContact, messageToSend.departament, this.roomRepository)
       if (!room) {
         return
       }
@@ -216,7 +222,7 @@ class Crisp extends ChatsBase {
       }
     }
 
-    const response = await postMessage(url, headers, messageToSend.contact, messageToSend, room)
+    const response = await postMessage(url, headers, messageContact, messageToSend, room)
     await persistPostedMessage(this.messageRepository, messageToSend, response)
   }
 
@@ -231,9 +237,12 @@ class Crisp extends ChatsBase {
 
   async closeChat(messageId: any) {
     const message = await this.messageRepository.findFirst({ _id: messageId }, ['contact', 'licensee', 'room'])
-    const licensee = message.licensee
+    if (!message) return []
+    const licensee = message.licensee as ILicensee
+    const messageContact = message.contact as IContact
 
-    const contact = await this.contactRepository.findFirst({ _id: message.contact._id })
+    const contact = await this.contactRepository.findFirst({ _id: messageContact._id })
+    if (!contact) return []
     const messages = []
 
     if (licensee.messageOnCloseChat) {

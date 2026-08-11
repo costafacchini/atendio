@@ -290,10 +290,12 @@ class Dialog extends MessengersBase {
 
   async sendMessage(messageId: string, url: string, token: string): Promise<void> {
     const messageToSend = await this.messageRepository.findFirst({ _id: messageId }, ['contact'])
+    if (!messageToSend) return
+    const messageContact = messageToSend.contact as IContact
 
-    let waId = messageToSend.contact.waId
+    let waId = messageContact.waId
     if (!waId) {
-      const waContact = await getWaIdContact(messageToSend.contact.number, url, token)
+      const waContact = await getWaIdContact(messageContact.number, url, token)
       if (waContact.valid) {
         waId = waContact.waId
       } else {
@@ -319,23 +321,26 @@ class Dialog extends MessengersBase {
     }
 
     if (messageToSend.kind === 'template') {
-      const parameters = messageToSend.text.match(/\{\{[^}]+\}\}/g)
-      const templateName = parameters[0].replace('{{', '').replace('}}', '')
+      const parameters = messageToSend.text!.match(/\{\{[^}]+\}\}/g)
+      if (parameters) {
+        const templateName = parameters[0].replace('{{', '').replace('}}', '')
 
-      const template = await this.templateRepository.findFirst({ name: templateName })
+        const template = await this.templateRepository.findFirst({ name: templateName })
+        if (template) {
+          messageBody.type = 'template'
+          messageBody.template = {
+            namespace: template.namespace,
+            name: template.name,
+            language: {
+              code: template.language,
+              policy: 'deterministic',
+            },
+            components: [],
+          }
 
-      messageBody.type = 'template'
-      messageBody.template = {
-        namespace: template.namespace,
-        name: template.name,
-        language: {
-          code: template.language,
-          policy: 'deterministic',
-        },
-        components: [],
+          messageBody.template.components = parseComponents(template, parameters)
+        }
       }
-
-      messageBody.template.components = parseComponents(template, parameters)
     }
 
     if (messageToSend.kind === 'interactive') {
@@ -343,21 +348,21 @@ class Dialog extends MessengersBase {
       if (trigger) {
         messageBody.type = 'interactive'
         if (trigger.triggerKind === 'multi_product') {
-          messageBody.interactive = JSON.parse(trigger.catalogMulti)
+          messageBody.interactive = JSON.parse(trigger.catalogMulti!)
         }
         if (trigger.triggerKind === 'single_product') {
-          messageBody.interactive = JSON.parse(trigger.catalogSingle)
+          messageBody.interactive = JSON.parse(trigger.catalogSingle!)
         }
         if (trigger.triggerKind === 'reply_button') {
-          messageBody.interactive = JSON.parse(trigger.textReplyButton)
+          messageBody.interactive = JSON.parse(trigger.textReplyButton!)
         }
         if (trigger.triggerKind === 'list_message') {
-          messageBody.interactive = JSON.parse(trigger.messagesList)
+          messageBody.interactive = JSON.parse(trigger.messagesList!)
         }
         if (trigger.triggerKind === 'text') {
           messageBody.type = 'text'
           messageBody.text = {
-            body: await this.parseText(trigger.text, messageToSend.contact),
+            body: await this.parseText(trigger.text!, messageContact),
           }
         }
       } else {
@@ -369,17 +374,17 @@ class Dialog extends MessengersBase {
     }
 
     if (messageToSend.kind === 'file') {
-      if (isPhoto(messageToSend.url)) {
+      if (isPhoto(messageToSend.url!)) {
         messageBody.type = 'image'
         messageBody.image = {
           link: messageToSend.url,
         }
-      } else if (isVideo(messageToSend.url)) {
+      } else if (isVideo(messageToSend.url!)) {
         messageBody.type = 'video'
         messageBody.video = {
           link: messageToSend.url,
         }
-      } else if (isMidia(messageToSend.url) || isVoice(messageToSend.url)) {
+      } else if (isMidia(messageToSend.url!) || isVoice(messageToSend.url!)) {
         messageBody.type = 'audio'
         messageBody.audio = {
           link: messageToSend.url,

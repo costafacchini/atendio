@@ -115,7 +115,7 @@ describe('LocalChat plugin', () => {
 
       const room = await roomRepository.findFirst({ contact: contact._id, closed: false })
       expect(room).not.toBeNull()
-      expect(room.department.toString()).toEqual(departmentId.toString())
+      expect(room.department).toEqual(departmentId.toString())
     })
 
     it('creates a room with department null when message has no department', async () => {
@@ -127,7 +127,7 @@ describe('LocalChat plugin', () => {
 
       const room = await roomRepository.findFirst({ contact: contact._id, closed: false })
       expect(room).not.toBeNull()
-      expect(room.department).toBeNull()
+      expect(room.department).toBeUndefined()
     })
   })
 
@@ -180,7 +180,7 @@ describe('LocalChat plugin', () => {
 
       const saved = await messageRepository.findFirst({ contact: contact._id })
       expect(saved).not.toBeNull()
-      expect(saved.department?.toString()).toEqual(departmentId.toString())
+      expect(saved.department).toEqual(departmentId.toString())
     })
 
     it('sets department null on message when room has no department', async () => {
@@ -195,7 +195,7 @@ describe('LocalChat plugin', () => {
 
       const saved = await messageRepository.findFirst({ contact: contact._id })
       expect(saved).not.toBeNull()
-      expect(saved.department).toBeNull()
+      expect(saved.department).toBeUndefined()
     })
   })
 
