@@ -312,13 +312,7 @@ class Chatwoot extends ChatsBase {
     let room = openRoom
 
     if (!room) {
-      room = await createConversation(
-        url,
-        headers,
-        messageContact,
-        this.licensee.chatIdentifier,
-        this.roomRepository,
-      )
+      room = await createConversation(url, headers, messageContact, this.licensee.chatIdentifier, this.roomRepository)
       if (!room) {
         messageToSend.error =
           'Chatwoot - erro: Não foi possível criar a conversa na Chatwoot! Você vai encontrar mais detalhes nos logs do servidor.'
