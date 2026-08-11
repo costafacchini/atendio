@@ -2,6 +2,9 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
+// Tests must not use local file storage — unset so code falls back to S3 (mocked in specs).
+delete process.env.STORAGE_PROVIDER
+
 const jest = {
   testEnvironment: 'node',
   modulePathIgnorePatterns: ['<rootDir>/client/', '<rootDir>/.worktrees/'],

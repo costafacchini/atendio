@@ -350,6 +350,8 @@ class YCloud extends MessengersBase {
 
   async sendMessage(messageId: string, url: string, token: string): Promise<void> {
     const messageToSend = await this.messageRepository.findFirst({ _id: messageId }, ['contact'])
+    if (!messageToSend) return
+    const messageContact = messageToSend.contact as IContact
 
     const headers = {
       'X-Api-Key': `${token}`,
@@ -359,7 +361,7 @@ class YCloud extends MessengersBase {
 
     const messageBody: Record<string, any> = {
       from: `+${this.licensee.phone}`,
-      to: `+${messageToSend.contact.number}`,
+      to: `+${messageContact.number}`,
       type: 'individual',
     }
 
@@ -372,23 +374,24 @@ class YCloud extends MessengersBase {
         break
 
       case 'template': {
-        const parameters = messageToSend.text.match(/\{\{[^}]+\}\}/g) || []
+        const parameters = messageToSend.text!.match(/\{\{[^}]+\}\}/g) || []
         const templateName = parameters[0]?.replace('{{', '').replace('}}', '') || ''
 
         const template = await this.templateRepository.findFirst({ name: templateName })
+        if (template) {
+          messageBody.type = 'template'
+          messageBody.template = {
+            namespace: template.namespace,
+            name: template.name,
+            language: {
+              code: template.language,
+              policy: 'deterministic',
+            },
+            components: [],
+          }
 
-        messageBody.type = 'template'
-        messageBody.template = {
-          namespace: template.namespace,
-          name: template.name,
-          language: {
-            code: template.language,
-            policy: 'deterministic',
-          },
-          components: [],
+          messageBody.template.components = parseComponents(template, parameters)
         }
-
-        messageBody.template.components = parseComponents(template, parameters)
 
         break
       }
@@ -399,21 +402,21 @@ class YCloud extends MessengersBase {
 
           switch (trigger.triggerKind) {
             case 'multi_product':
-              messageBody.interactive = JSON.parse(trigger.catalogMulti)
+              messageBody.interactive = JSON.parse(trigger.catalogMulti!)
               break
             case 'single_product':
-              messageBody.interactive = JSON.parse(trigger.catalogSingle)
+              messageBody.interactive = JSON.parse(trigger.catalogSingle!)
               break
             case 'reply_button':
-              messageBody.interactive = JSON.parse(trigger.textReplyButton)
+              messageBody.interactive = JSON.parse(trigger.textReplyButton!)
               break
             case 'list_message':
-              messageBody.interactive = JSON.parse(trigger.messagesList)
+              messageBody.interactive = JSON.parse(trigger.messagesList!)
               break
             case 'text':
               messageBody.type = 'text'
               messageBody.text = {
-                body: await this.parseText(trigger.text, messageToSend.contact),
+                body: await this.parseText(trigger.text!, messageContact),
               }
               break
             default:
@@ -437,17 +440,17 @@ class YCloud extends MessengersBase {
           const uploadedFile = await this.uploadFileToYCloud(messageToSend.url, url, token)
 
           if (uploadedFile) {
-            if (isPhoto(messageToSend.url)) {
+            if (isPhoto(messageToSend.url!)) {
               messageBody.type = 'image'
               messageBody.image = {
                 id: uploadedFile.id,
               }
-            } else if (isVideo(messageToSend.url)) {
+            } else if (isVideo(messageToSend.url!)) {
               messageBody.type = 'video'
               messageBody.video = {
                 id: uploadedFile.id,
               }
-            } else if (isMidia(messageToSend.url) || isVoice(messageToSend.url)) {
+            } else if (isMidia(messageToSend.url!) || isVoice(messageToSend.url!)) {
               messageBody.type = 'audio'
               messageBody.audio = {
                 id: uploadedFile.id,
@@ -459,17 +462,17 @@ class YCloud extends MessengersBase {
               }
             }
           } else {
-            if (isPhoto(messageToSend.url)) {
+            if (isPhoto(messageToSend.url!)) {
               messageBody.type = 'image'
               messageBody.image = {
                 link: messageToSend.url,
               }
-            } else if (isVideo(messageToSend.url)) {
+            } else if (isVideo(messageToSend.url!)) {
               messageBody.type = 'video'
               messageBody.video = {
                 link: messageToSend.url,
               }
-            } else if (isMidia(messageToSend.url) || isVoice(messageToSend.url)) {
+            } else if (isMidia(messageToSend.url!) || isVoice(messageToSend.url!)) {
               messageBody.type = 'audio'
               messageBody.audio = {
                 link: messageToSend.url,
@@ -483,17 +486,17 @@ class YCloud extends MessengersBase {
             }
           }
         } else {
-          if (isPhoto(messageToSend.url)) {
+          if (isPhoto(messageToSend.url!)) {
             messageBody.type = 'image'
             messageBody.image = {
               link: messageToSend.url,
             }
-          } else if (isVideo(messageToSend.url)) {
+          } else if (isVideo(messageToSend.url!)) {
             messageBody.type = 'video'
             messageBody.video = {
               link: messageToSend.url,
             }
-          } else if (isMidia(messageToSend.url) || isVoice(messageToSend.url)) {
+          } else if (isMidia(messageToSend.url!) || isVoice(messageToSend.url!)) {
             messageBody.type = 'audio'
             messageBody.audio = {
               link: messageToSend.url,

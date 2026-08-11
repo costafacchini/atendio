@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { S3 } from '../storage/S3'
 import { LocalStorage } from '../storage/Local'
 import { requireDependency } from '../../helpers/RequireDependency'
-import { ILicensee, IContact, IMessage, ITrigger } from '../../../types'
+import { ILicensee, IContact, IMessage, ITrigger, MessageKind, MessageDestination } from '../../../types'
 
 interface ITriggerRepository {
   findFirst(params?: Record<string, unknown>): Promise<ITrigger | null>
@@ -62,6 +62,11 @@ class MessengersBase implements IMessengerPlugin {
     this._messageRepository = messageRepository!
     this._triggerRepository = triggerRepository!
     this._productRepository = productRepository
+  }
+
+  // Implemented by subclasses
+  sendMessage(_messageId: string, _url?: string, _token?: string): Promise<void> {
+    return Promise.resolve()
   }
 
   get contactRepository() {
@@ -190,8 +195,8 @@ class MessengersBase implements IMessengerPlugin {
               messageWaId: this.messageData.waId,
               licensee: this.licensee._id,
               contact: contact._id,
-              destination: 'to-messenger',
-              kind: 'interactive',
+              destination: MessageDestination.ToMessenger,
+              kind: MessageKind.Interactive,
               trigger: trigger._id,
               ...(departmentId && { department: departmentId }),
             }),
@@ -204,7 +209,7 @@ class MessengersBase implements IMessengerPlugin {
             messageWaId: this.messageData.waId,
             licensee: this.licensee._id,
             contact: contact._id,
-            destination: contact.talkingWithChatBot ? 'to-chatbot' : 'to-chat',
+            destination: contact.talkingWithChatBot ? MessageDestination.ToChatbot : MessageDestination.ToChat,
             text: this.messageData.interactive.expression,
             ...(departmentId && { department: departmentId }),
           }),
@@ -216,7 +221,7 @@ class MessengersBase implements IMessengerPlugin {
         messageWaId: this.messageData.waId,
         licensee: this.licensee._id,
         contact: contact._id,
-        destination: contact.talkingWithChatBot ? 'to-chatbot' : 'to-chat',
+        destination: contact.talkingWithChatBot ? MessageDestination.ToChatbot : MessageDestination.ToChat,
         kind: this.messageData.kind,
         departament: this.messageData.departament,
         ...(departmentId && { department: departmentId }),

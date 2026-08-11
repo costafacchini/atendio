@@ -5,8 +5,9 @@ import { NormalizePhone } from '../../helpers/NormalizePhone'
 import { v4 as uuidv4 } from 'uuid'
 import request from '../../services/request'
 import { ChatsBase } from './Base'
-import { ILicensee } from '../../../types'
+import { ILicensee, IContact } from '../../../types'
 import { IRepository } from '../../repositories/repository'
+import { IMessageRepository } from '../../repositories/message'
 
 class Cuboup extends ChatsBase {
   constructor(
@@ -15,7 +16,7 @@ class Cuboup extends ChatsBase {
       contactRepository,
       messageRepository,
       ...dependencies
-    }: { contactRepository?: IRepository<any>; messageRepository?: IRepository<any>; [key: string]: unknown } = {},
+    }: { contactRepository?: IRepository<any>; messageRepository?: IMessageRepository; [key: string]: unknown } = {},
   ) {
     super(licensee, { contactRepository, messageRepository, ...dependencies })
   }
@@ -101,7 +102,10 @@ class Cuboup extends ChatsBase {
 
   async transfer(messageId: any, url: any) {
     const messageToSend = await this.messageRepository.findFirst({ _id: messageId }, ['contact'])
-    const contact = await this.contactRepository.findFirst({ _id: messageToSend.contact._id })
+    if (!messageToSend) return
+    const messageContact = messageToSend.contact as IContact
+    const contact = await this.contactRepository.findFirst({ _id: messageContact._id })
+    if (!contact) return
 
     contact.talkingWithChatBot = false
     await this.contactRepository.save(contact)
@@ -111,19 +115,22 @@ class Cuboup extends ChatsBase {
 
   async sendMessage(messageId: string, url: string): Promise<void> {
     const messageToSend = await this.messageRepository.findFirst({ _id: messageId }, ['contact', 'licensee'])
+    if (!messageToSend) return
+    const messageContact = messageToSend.contact as IContact
+    const messageLicensee = messageToSend.licensee as ILicensee
 
     const sender: Record<string, any> = {
-      id: messageToSend.contact.number + messageToSend.contact.type,
-      name: messageToSend.contact.name,
-      email: messageToSend.contact.email,
+      id: messageContact.number + messageContact.type,
+      name: messageContact.name,
+      email: messageContact.email,
     }
 
-    const licenseePhone = new NormalizePhone(messageToSend.licensee.phone)
+    const licenseePhone = new NormalizePhone(messageLicensee.phone ?? '')
     const recipient: Record<string, any> = {
       id: licenseePhone.number,
     }
 
-    if (messageToSend.contact.type === '@c.us') sender.phone = messageToSend.contact.number
+    if (messageContact.type === '@c.us') sender.phone = messageContact.number
 
     const body: Record<string, any> = {
       recipient,
@@ -135,7 +142,7 @@ class Cuboup extends ChatsBase {
 
     if (messageToSend.kind === 'text') {
       body.message.type = 'text'
-      if (messageToSend.contact.type === '@g.us') {
+      if (messageContact.type === '@g.us') {
         body.message.text = `${messageToSend.senderName}:\n${messageToSend.text}\n.`
       } else {
         body.message.text = messageToSend.text
@@ -194,9 +201,12 @@ class Cuboup extends ChatsBase {
 
   async closeChat(messageId: any) {
     const message = await this.messageRepository.findFirst({ _id: messageId }, ['contact', 'licensee'])
-    const licensee = message.licensee
+    if (!message) return []
+    const licensee = message.licensee as ILicensee
+    const messageContact = message.contact as IContact
 
-    const contact = await this.contactRepository.findFirst({ _id: message.contact._id })
+    const contact = await this.contactRepository.findFirst({ _id: messageContact._id })
+    if (!contact) return []
     const messages = []
 
     if (licensee.messageOnCloseChat) {

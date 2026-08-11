@@ -1,8 +1,9 @@
 import Repository, { IRepository } from '../../repositories/repository'
+import { IMessageRepository } from '../../repositories/message'
 import { replace } from '../../helpers/Emoji'
 import { v4 as uuidv4 } from 'uuid'
 import { requireDependency } from '../../helpers/RequireDependency'
-import { ILicensee, IContact, IMessage, ITrigger } from '../../../types'
+import { ILicensee, IContact, IMessage, ITrigger, MessageKind, MessageDestination } from '../../../types'
 
 interface ITriggerRepository {
   findFirst(params?: Record<string, unknown>): Promise<ITrigger | null>
@@ -17,7 +18,7 @@ interface IChatPlugin {
 class ChatsBase implements IChatPlugin {
   licensee: ILicensee
   _contactRepository: IRepository<IContact>
-  _messageRepository: IRepository<IMessage>
+  _messageRepository: IMessageRepository
   _triggerRepository: ITriggerRepository
   messageParsed: any
 
@@ -39,7 +40,7 @@ class ChatsBase implements IChatPlugin {
       triggerRepository,
     }: {
       contactRepository?: IRepository<IContact>
-      messageRepository?: IRepository<IMessage>
+      messageRepository?: IMessageRepository
       triggerRepository?: ITriggerRepository
     } = {},
   ) {
@@ -84,12 +85,12 @@ class ChatsBase implements IChatPlugin {
         await this.messageRepository.create({
           number: uuidv4(),
           text: 'Chat encerrado pelo agente',
-          kind: 'text',
+          kind: MessageKind.Text,
           licensee: this.licensee._id,
           contact: this.messageParsed.contact._id,
           room: this.messageParsed.room?._id || this.messageParsed.room,
-          department: this.messageParsed.room?.department ?? null,
-          destination: 'to-messenger',
+          department: this.messageParsed.room?.department,
+          destination: MessageDestination.ToMessenger,
         }),
       )
     } else {
@@ -106,13 +107,13 @@ class ChatsBase implements IChatPlugin {
               processedMessages.push(
                 await this.messageRepository.create({
                   number: uuidv4(),
-                  kind: 'interactive',
+                  kind: MessageKind.Interactive,
                   text,
                   licensee: this.licensee._id,
                   contact: this.messageParsed.contact._id,
                   room: this.messageParsed.room?._id || this.messageParsed.room,
-                  department: this.messageParsed.room?.department ?? null,
-                  destination: 'to-messenger',
+                  department: this.messageParsed.room?.department,
+                  destination: MessageDestination.ToMessenger,
                   trigger: trigger._id,
                 }),
               )
@@ -120,12 +121,12 @@ class ChatsBase implements IChatPlugin {
           } else {
             const messageToSend: Record<string, any> = {
               number: uuidv4(),
-              kind: 'text',
+              kind: MessageKind.Text,
               text,
               licensee: this.licensee._id,
               contact: this.messageParsed.contact._id,
               room: this.messageParsed.room?._id || this.messageParsed.room,
-              department: this.messageParsed.room?.department ?? null,
+              department: this.messageParsed.room?.department,
               destination: 'to-messenger',
               senderName: message.senderName,
             }
@@ -143,7 +144,7 @@ class ChatsBase implements IChatPlugin {
             licensee: this.licensee._id,
             contact: this.messageParsed.contact._id,
             room: this.messageParsed.room?._id || this.messageParsed.room,
-            department: this.messageParsed.room?.department ?? null,
+            department: this.messageParsed.room?.department,
             destination: 'to-messenger',
             senderName: message.senderName,
           }
@@ -160,7 +161,7 @@ class ChatsBase implements IChatPlugin {
             licensee: this.licensee._id,
             contact: this.messageParsed.contact._id,
             room: this.messageParsed.room?._id || this.messageParsed.room,
-            department: this.messageParsed.room?.department ?? null,
+            department: this.messageParsed.room?.department,
             destination: 'to-messenger',
             senderName: message.senderName,
           }

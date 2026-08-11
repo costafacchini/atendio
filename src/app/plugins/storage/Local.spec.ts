@@ -1,5 +1,4 @@
 import fs from 'fs'
-import path from 'path'
 
 jest.spyOn(fs, 'mkdirSync').mockImplementation(() => undefined)
 jest.spyOn(fs, 'writeFileSync').mockImplementation(() => undefined)
@@ -63,7 +62,7 @@ describe('LocalStorage', () => {
       expect(url).toMatch(new RegExp(`/uploads/.+[/\\\\]${contact.number}[/\\\\]${fileName}$`))
     })
 
-    it('uses http://localhost:5000 as default APP_URL when env var is not set', async () => {
+    it('uses http://localhost:5001 as default APP_URL when env var is not set', async () => {
       const originalAppUrl = process.env.APP_URL
       delete process.env.APP_URL
 
@@ -75,7 +74,7 @@ describe('LocalStorage', () => {
       const storage = new Fresh!(licensee, contact, fileName, '')
       const url = await storage.presignedUrl()
 
-      expect(url).toMatch(/^http:\/\/localhost:5000\/uploads\//)
+      expect(url).toMatch(/^http:\/\/localhost:5001\/uploads\//)
 
       if (originalAppUrl !== undefined) process.env.APP_URL = originalAppUrl
     })

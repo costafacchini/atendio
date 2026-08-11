@@ -1,10 +1,12 @@
 import { io } from '../../../../config/http'
 import { LicenseeMessagesByDayQuery } from '../../../../app/queries/LicenseeMessagesByDayQuery'
+import { IQueryableRepository } from '../../../../app/queries/QueryBuilder'
 import { PrismaLicenseeDatabaseRepository } from '../../../../app/repositories/licensee'
 import { PrismaMessageDatabaseRepository } from '../../../../app/repositories/message'
+import { IMessage } from '../../../../types'
 
 const licenseeRepository = new PrismaLicenseeDatabaseRepository()
-const messageRepository = new PrismaMessageDatabaseRepository()
+const messageRepository = new PrismaMessageDatabaseRepository() as unknown as IQueryableRepository<IMessage>
 
 io.on('connect', (socket) => {
   socket.on('load_licensees_messages_by_day', async (params) => {

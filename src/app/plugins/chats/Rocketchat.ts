@@ -3,8 +3,9 @@ import request from '../../services/request'
 import { ChatsBase } from './Base'
 import { logger } from '../../helpers/logger'
 import { requireDependency } from '../../helpers/RequireDependency'
-import { ILicensee } from '../../../types'
+import { ILicensee, IContact, IRoom } from '../../../types'
 import { IRepository } from '../../repositories/repository'
+import { IMessageRepository } from '../../repositories/message'
 
 const createVisitor = async (contact: any, token: any, url: any) => {
   const body = {
@@ -83,7 +84,7 @@ class Rocketchat extends ChatsBase {
     }: {
       roomRepository?: IRepository<any>
       contactRepository?: IRepository<any>
-      messageRepository?: IRepository<any>
+      messageRepository?: IMessageRepository
       [key: string]: unknown
     } = {},
   ) {
@@ -148,7 +149,10 @@ class Rocketchat extends ChatsBase {
 
   async transfer(messageId: any, url: any) {
     const messageToSend = await this.messageRepository.findFirst({ _id: messageId }, ['contact'])
-    const contact = await this.contactRepository.findFirst({ _id: messageToSend.contact._id })
+    if (!messageToSend) return
+    const messageContact = messageToSend.contact as IContact
+    const contact = await this.contactRepository.findFirst({ _id: messageContact._id })
+    if (!contact) return
 
     contact.talkingWithChatBot = false
     await this.contactRepository.save(contact)
@@ -158,13 +162,15 @@ class Rocketchat extends ChatsBase {
 
   async sendMessage(messageId: string, url: string): Promise<void> {
     const messageToSend = await this.messageRepository.findFirst({ _id: messageId }, ['contact'])
-    const openRoom = await this.roomRepository.findFirst({ contact: messageToSend.contact, closed: false })
+    if (!messageToSend) return
+    const messageContact = messageToSend.contact as IContact
+    const openRoom = await this.roomRepository.findFirst({ contact: messageContact, closed: false })
     let room = openRoom
 
     if (!room) {
-      const token = messageToSend.contact._id.toString()
-      if ((await createVisitor(messageToSend.contact, token, url)) === true) {
-        room = await createRoom(messageToSend.contact, token, url, this.roomRepository)
+      const token = messageContact._id.toString()
+      if ((await createVisitor(messageContact, token, url)) === true) {
+        room = await createRoom(messageContact, token, url, this.roomRepository)
         if (!room) {
           return
         }
@@ -177,9 +183,9 @@ class Rocketchat extends ChatsBase {
       await transferToDepartament(messageToSend.departament, room, url)
     }
 
-    const response = await postMessage(messageToSend.contact, messageToSend, room, url)
+    const response = await postMessage(messageContact, messageToSend, room, url)
 
-    if (!messageToSend.room || messageToSend.room._id !== room._id) messageToSend.room = room
+    if (!messageToSend.room || (messageToSend.room as IRoom)._id !== room._id) messageToSend.room = room
 
     if (response.data.success === true) {
       messageToSend.sended = true
@@ -194,7 +200,7 @@ class Rocketchat extends ChatsBase {
         room.closed = true
         room.closedAt = new Date()
         await this.roomRepository.save(room)
-        messageToSend.room = null
+        messageToSend.room = undefined
       }
       await this.messageRepository.save(messageToSend)
 
@@ -204,17 +210,19 @@ class Rocketchat extends ChatsBase {
         logger.error(`Mensagem ${messageToSend._id} não enviada para a Rocketchat ${JSON.stringify(response.data)}`)
       }
     }
-
-    return response.data.success === true
   }
 
   async closeChat(messageId: any) {
     const message = await this.messageRepository.findFirst({ _id: messageId }, ['contact', 'licensee', 'room'])
-    const licensee = message.licensee
+    if (!message) return []
+    const licensee = message.licensee as ILicensee
+    const messageContact = message.contact as IContact
+    const messageRoom = message.room as IRoom
 
-    const contact = await this.contactRepository.findFirst({ _id: message.contact._id })
+    const contact = await this.contactRepository.findFirst({ _id: messageContact._id })
+    if (!contact) return []
 
-    const room = await this.roomRepository.findFirst({ _id: message.room._id })
+    const room = await this.roomRepository.findFirst({ _id: messageRoom._id })
     const messages = []
 
     room.closed = true

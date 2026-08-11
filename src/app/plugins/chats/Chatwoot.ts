@@ -5,8 +5,9 @@ import path from 'path'
 
 import mime from 'mime-types'
 import { requireDependency } from '../../helpers/RequireDependency'
-import { ILicensee } from '../../../types'
+import { ILicensee, IContact, IRoom } from '../../../types'
 import { IRepository } from '../../repositories/repository'
+import { IMessageRepository } from '../../repositories/message'
 
 const searchContact = async (url: any, headers: any, contact: any, licensee: any, contactRepository: any) => {
   const response = await request.get(`${url}contacts/search?q=+${contact.number}`, { headers })
@@ -123,7 +124,7 @@ class Chatwoot extends ChatsBase {
     }: {
       roomRepository?: IRepository<any>
       contactRepository?: IRepository<any>
-      messageRepository?: IRepository<any>
+      messageRepository?: IMessageRepository
       [key: string]: unknown
     } = {},
   ) {
@@ -261,7 +262,10 @@ class Chatwoot extends ChatsBase {
 
   async transfer(messageId: any, url: any) {
     const messageToSend = await this.messageRepository.findFirst({ _id: messageId }, ['contact'])
-    const contact = await this.contactRepository.findFirst({ _id: messageToSend.contact._id })
+    if (!messageToSend) return
+    const messageContact = messageToSend.contact as IContact
+    const contact = await this.contactRepository.findFirst({ _id: messageContact._id })
+    if (!contact) return
 
     contact.talkingWithChatBot = false
     await this.contactRepository.save(contact)
@@ -271,48 +275,44 @@ class Chatwoot extends ChatsBase {
 
   async sendMessage(messageId: string, url: string): Promise<void> {
     const messageToSend = await this.messageRepository.findFirst({ _id: messageId }, ['contact'])
+    if (!messageToSend) return
+    const messageContact = messageToSend.contact as IContact
     const headers = { api_access_token: this.licensee.chatKey, 'Content-Type': 'application/json' }
 
-    if (!messageToSend.contact.chatwootSourceId) {
+    if (!messageContact.chatwootSourceId) {
       const { sourceId, id: chatwootId } = await searchContact(
         url,
         headers,
-        messageToSend.contact,
+        messageContact,
         this.licensee,
         this.contactRepository,
       )
       if (!sourceId && !chatwootId) {
-        messageToSend.contact.chatwootSourceId = await createContact(
+        messageContact.chatwootSourceId = await createContact(
           url,
           headers,
-          messageToSend.contact,
+          messageContact,
           this.licensee,
           this.contactRepository,
         )
       } else {
-        messageToSend.contact.chatwootSourceId = sourceId
-        messageToSend.contact.chatwootId = chatwootId
+        messageContact.chatwootSourceId = sourceId ?? undefined
+        messageContact.chatwootId = chatwootId ?? undefined
       }
     }
 
-    if (!messageToSend.contact.chatwootSourceId && !messageToSend.contact.chatwootId) {
+    if (!messageContact.chatwootSourceId && !messageContact.chatwootId) {
       messageToSend.error = 'Chatwoot - erro: Não foi possível encontrar ou criar o contato na Chatwoot!'
       await this.messageRepository.save(messageToSend)
 
       return
     }
 
-    const openRoom = await this.roomRepository.findFirst({ contact: messageToSend.contact, closed: false })
+    const openRoom = await this.roomRepository.findFirst({ contact: messageContact, closed: false })
     let room = openRoom
 
     if (!room) {
-      room = await createConversation(
-        url,
-        headers,
-        messageToSend.contact,
-        this.licensee.chatIdentifier,
-        this.roomRepository,
-      )
+      room = await createConversation(url, headers, messageContact, this.licensee.chatIdentifier, this.roomRepository)
       if (!room) {
         messageToSend.error =
           'Chatwoot - erro: Não foi possível criar a conversa na Chatwoot! Você vai encontrar mais detalhes nos logs do servidor.'
@@ -322,9 +322,10 @@ class Chatwoot extends ChatsBase {
       }
     }
 
-    const sent = await this.postMessage(url, headers, messageToSend.contact, messageToSend, room)
+    const sent = await this.postMessage(url, headers, messageContact, messageToSend, room)
     if (!sent) {
-      const contact = await this.contactRepository.findFirst({ _id: messageToSend.contact._id })
+      const contact = await this.contactRepository.findFirst({ _id: messageContact._id })
+      if (!contact) return
       const { sourceId, id: chatwootId } = await searchContact(
         url,
         headers,
@@ -335,8 +336,8 @@ class Chatwoot extends ChatsBase {
       if (!sourceId && !chatwootId) {
         contact.chatwootSourceId = await createContact(url, headers, contact, this.licensee, this.contactRepository)
       } else {
-        contact.chatwootSourceId = sourceId
-        contact.chatwootId = chatwootId
+        contact.chatwootSourceId = sourceId ?? undefined
+        contact.chatwootId = chatwootId ?? undefined
       }
 
       room = await createConversation(url, headers, contact, this.licensee.chatIdentifier, this.roomRepository)
@@ -354,12 +355,16 @@ class Chatwoot extends ChatsBase {
 
   async closeChat(messageId: any) {
     const message = await this.messageRepository.findFirst({ _id: messageId }, ['contact', 'licensee', 'room'])
-    const licensee = message.licensee
+    if (!message) return []
+    const licensee = message.licensee as ILicensee
+    const messageContact = message.contact as IContact
+    const messageRoom = message.room as IRoom
 
-    const contact = await this.contactRepository.findFirst({ _id: message.contact._id })
+    const contact = await this.contactRepository.findFirst({ _id: messageContact._id })
+    if (!contact) return []
     const messages = []
 
-    const room = await this.roomRepository.findFirst({ roomId: message.room.roomId })
+    const room = await this.roomRepository.findFirst({ roomId: messageRoom.roomId })
     room.closed = true
     room.closedAt = new Date()
     await this.roomRepository.save(room)
@@ -500,8 +505,8 @@ class Chatwoot extends ChatsBase {
         await this.roomRepository.save(roomSaved)
 
         await this.contactRepository.update(contact._id, {
-          chatwootSourceId: null,
-          chatwootId: null,
+          chatwootSourceId: undefined,
+          chatwootId: undefined,
         })
 
         return false

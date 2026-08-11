@@ -3,7 +3,7 @@ import { MessengersBase } from './Base'
 import { logger } from '../../helpers/logger'
 import { requireDependency } from '../../helpers/RequireDependency'
 import { isPhoto, isVideo } from '../../helpers/Files'
-import { ILicensee, IInbox, IWhatsappSession } from '../../../types'
+import { ILicensee, IInbox, IWhatsappSession, IContact } from '../../../types'
 import { IRepository } from '../../repositories/repository'
 
 const JID_GROUP_SUFFIX = '@g.us'
@@ -242,7 +242,8 @@ class Baileys extends MessengersBase {
 
       await this._waitForConnection(socket)
 
-      const rawId = messageToSend.contact.waId || messageToSend.contact.number
+      const messageContact = messageToSend.contact as IContact
+      const rawId = messageContact.waId || messageContact.number
       let jid
 
       if (rawId.endsWith(JID_GROUP_SUFFIX)) {
@@ -260,9 +261,9 @@ class Baileys extends MessengersBase {
 
       let messageContent
       if (messageToSend.kind === 'file') {
-        if (isPhoto(messageToSend.url)) {
+        if (isPhoto(messageToSend.url!)) {
           messageContent = { image: { url: messageToSend.url }, caption: messageToSend.text ?? '' }
-        } else if (isVideo(messageToSend.url)) {
+        } else if (isVideo(messageToSend.url!)) {
           messageContent = { video: { url: messageToSend.url }, caption: messageToSend.text ?? '' }
         } else {
           messageContent = {

@@ -1,6 +1,6 @@
 import { ChatsBase } from './Base'
 import { emitToLicensee } from '../../services/socketEmitter'
-import { ILicensee } from '../../../types'
+import { ILicensee, IContact, IRoom } from '../../../types'
 import { IRepository } from '../../repositories/repository'
 
 class LocalChat extends ChatsBase {
@@ -21,13 +21,15 @@ class LocalChat extends ChatsBase {
   async sendMessage(messageId: string): Promise<void> {
     const message = await this.messageRepository.findFirst({ _id: messageId }, ['contact'])
     if (!message) return
+    const messageContact = message.contact as IContact
 
-    let room = await this._roomRepository.findOpenForContact(message.contact._id)
+    const roomRepo = this._roomRepository as any
+    let room = await roomRepo.findOpenForContact(messageContact._id)
     if (!room) {
       room = await this._roomRepository.create({
-        contact: message.contact._id,
+        contact: messageContact._id,
         status: 'pending',
-        department: message.department ?? null,
+        department: message.department,
       })
     }
 
@@ -44,9 +46,7 @@ class LocalChat extends ChatsBase {
       destination: message.destination,
       createdAt: message.createdAt instanceof Date ? message.createdAt.toISOString() : message.createdAt,
       sended: message.sended,
-      contact: message.contact
-        ? { id: message.contact._id?.toString() ?? message.contact.id, name: message.contact.name }
-        : null,
+      contact: { id: messageContact._id?.toString(), name: messageContact.name },
     })
   }
 
@@ -73,8 +73,9 @@ class LocalChat extends ChatsBase {
   async closeChat(messageId: any) {
     const message = await this.messageRepository.findFirst({ _id: messageId }, ['contact', 'room'])
     if (!message?.room) return []
+    const messageRoom = message.room as IRoom
 
-    const room = await this._roomRepository.findFirst({ _id: message.room._id })
+    const room = await this._roomRepository.findFirst({ _id: messageRoom._id })
     room.status = 'closed'
     await this._roomRepository.save(room)
 

@@ -100,6 +100,7 @@ export interface IContact {
   landbotId?: string
   chatwootId?: string
   chatwootSourceId?: string
+  wa_start_chat?: string
   document?: string
   customer_id?: string
   createdAt: Date
@@ -118,6 +119,7 @@ export interface IMessage {
   latitude?: number
   longitude?: number
   departament?: string
+  department?: string | null
   senderName?: string
   sended: boolean
   ignored?: boolean
@@ -125,7 +127,9 @@ export interface IMessage {
   contact: string | IContact
   room?: string | IRoom
   messageWaId?: string
+  messageChatId?: string
   attachmentWaId?: string
+  trigger?: string
   sendedAt?: Date | null
   readAt?: Date
   deliveredAt?: Date

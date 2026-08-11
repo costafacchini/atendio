@@ -93,6 +93,10 @@ jobs:
       - name: Apply Prisma migrations
         run: npx prisma migrate deploy
 
+      - name: Run TypeScript type check
+        run: npx tsc --noEmit
+        timeout-minutes: 5
+
       - name: Run linter
         run: yarn linter
         timeout-minutes: 5
