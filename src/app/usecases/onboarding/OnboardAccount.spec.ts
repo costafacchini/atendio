@@ -115,7 +115,11 @@ describe('OnboardAccount', () => {
     licenseeRepository = new LicenseeRepositoryMemory()
     userRepository = new UserRepositoryMemory()
     onboardAccount = new OnboardAccount({ licenseeRepository, userRepository })
-    const result2 = await onboardAccount.execute({ ...validInput, licenseeEmail: 'other@acme.com', userEmail: 'other@doe.com' })
+    const result2 = await onboardAccount.execute({
+      ...validInput,
+      licenseeEmail: 'other@acme.com',
+      userEmail: 'other@doe.com',
+    })
 
     expect(result1.licensee.apiToken).toBeTruthy()
     expect(result2.licensee.apiToken).toBeTruthy()

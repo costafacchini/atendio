@@ -65,7 +65,7 @@ describeIf('PrismaUserDatabaseRepository', () => {
 
     it('attaches a validPassword function that compares against the stored hash', async () => {
       await repo.create({ ...baseFields, licensee: licenseeId } as any)
-      const found = await repo.findFirst({ email: baseFields.email }) as any
+      const found = (await repo.findFirst({ email: baseFields.email })) as any
       expect(typeof found.validPassword).toBe('function')
       await expect(found.validPassword('plainpassword')).resolves.toBe(true)
       await expect(found.validPassword('wrongpassword')).resolves.toBe(false)
