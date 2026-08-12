@@ -96,6 +96,19 @@ class PrismaUserDatabaseRepository extends PrismaRepository<IUser> {
     return ['licensee']
   }
 
+  async findFirst(params: Record<string, unknown> = {}): Promise<IUser | null> {
+    const record = await super.findFirst(params)
+    return record ? this.attachValidPassword(record) : null
+  }
+
+  private attachValidPassword(record: IUser): IUser {
+    const r = record as any
+    if (!r.validPassword) {
+      r.validPassword = (password: string) => bcrypt.compare(password, r.password)
+    }
+    return r
+  }
+
   async create(fields: Partial<IUser> = {}): Promise<IUser> {
     const prepared = await this.hashPasswordIfPresent(fields)
     return await super.create(prepared)

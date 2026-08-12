@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid'
+
 const ONBOARD_LICENSEE_FIELDS = [
   'name',
   'email',
@@ -39,6 +41,7 @@ class OnboardAccount {
       email: fields.licenseeEmail,
       licenseKind: 'demo',
       active: true,
+      apiToken: uuidv4(),
     }
 
     const createdLicensee = await this.licenseeRepository.create(licenseePayload)
