@@ -90,6 +90,14 @@ class PrismaContactDatabaseRepository extends PrismaRepository<IContact> {
     return await super.create(normalized)
   }
 
+  async findIds(params: Record<string, unknown> = {}): Promise<number[]> {
+    const records = await getPrismaClient().contact.findMany({
+      where: this.toWhere(params) as any,
+      select: { id: true },
+    })
+    return records.map((r) => r.id)
+  }
+
   private normalizeNumber<F extends Partial<IContact>>(fields: F): F {
     const number = fields.number as string | undefined
     if (!number) return fields

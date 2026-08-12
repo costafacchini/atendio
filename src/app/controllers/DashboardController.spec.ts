@@ -7,17 +7,6 @@ function buildResponse() {
   }
 }
 
-function buildModelAdapter({ countResult = 0, aggregateResult = [] } = {}) {
-  const queryChain = {
-    countDocuments: jest.fn().mockResolvedValue(countResult),
-  }
-  return {
-    where: jest.fn().mockReturnValue(queryChain),
-    aggregate: jest.fn().mockResolvedValue(aggregateResult),
-    _queryChain: queryChain,
-  }
-}
-
 function buildRedis({ cachedValue = null } = {}) {
   return {
     get: jest.fn().mockResolvedValue(cachedValue),
@@ -25,30 +14,28 @@ function buildRedis({ cachedValue = null } = {}) {
   }
 }
 
-function buildController({
-  user = null,
-  licenseeModelAdapter = null,
-  messageModelAdapter = null,
-  contactModelAdapter = null,
-  roomModelAdapter = null,
-  redisConnection = null,
-} = {}) {
-  const userRepository = {
-    findFirst: jest.fn().mockResolvedValue(user),
-  }
-  const licenseeRepository = {
-    model: jest.fn().mockReturnValue(licenseeModelAdapter ?? buildModelAdapter()),
-  }
+function buildController({ user = null, redisConnection = null, overrides = {} as any } = {}) {
+  const userRepository = { findFirst: jest.fn().mockResolvedValue(user) }
+  const licenseeRepository = { count: jest.fn().mockResolvedValue(0) }
   const contactRepository = {
-    model: jest.fn().mockReturnValue(contactModelAdapter ?? buildModelAdapter()),
+    count: jest.fn().mockResolvedValue(0),
+    findIds: jest.fn().mockResolvedValue([]),
+    find: jest.fn().mockResolvedValue([]),
   }
   const messageRepository = {
-    model: jest.fn().mockReturnValue(messageModelAdapter ?? buildModelAdapter()),
-    findFirst: jest.fn().mockResolvedValue(null),
-    save: jest.fn(),
+    countMessages: jest.fn().mockResolvedValue(0),
+    groupByDay: jest.fn().mockResolvedValue([]),
+    groupByHour: jest.fn().mockResolvedValue([]),
+    avgQueueTime: jest.fn().mockResolvedValue(0),
+    avgMessagesPerRoom: jest.fn().mockResolvedValue(0),
+    lastMessagePerRoom: jest.fn().mockResolvedValue([]),
   }
   const roomRepository = {
-    model: jest.fn().mockReturnValue(roomModelAdapter ?? buildModelAdapter()),
+    count: jest.fn().mockResolvedValue(0),
+    findManyPaged: jest.fn().mockResolvedValue([]),
+    avgDuration: jest.fn().mockResolvedValue(0),
+    findById: jest.fn().mockResolvedValue(null),
+    close: jest.fn().mockResolvedValue(undefined),
   }
   const redis = redisConnection ?? buildRedis()
 
@@ -59,6 +46,7 @@ function buildController({
     messageRepository,
     roomRepository,
     redisConnection: redis,
+    ...overrides,
   })
 
   return {
@@ -107,19 +95,15 @@ describe('DashboardController', () => {
       await controller.licensees(req, res)
 
       expect(redis.get).toHaveBeenCalledWith('dashboard:super:licensees')
-      expect(licenseeRepository.model).not.toHaveBeenCalled()
+      expect(licenseeRepository.count).not.toHaveBeenCalled()
       expect(res.status).toHaveBeenCalledWith(200)
       expect(res.json).toHaveBeenCalledWith(cached)
     })
 
     it('queries DB on cache miss and stores result in redis', async () => {
       const redis = buildRedis({ cachedValue: null })
-      const modelAdapter = buildModelAdapter({ countResult: 10 })
-      const { controller } = buildController({
-        user: SUPER_USER,
-        licenseeModelAdapter: modelAdapter,
-        redisConnection: redis,
-      })
+      const { controller, licenseeRepository } = buildController({ user: SUPER_USER, redisConnection: redis })
+      licenseeRepository.count.mockResolvedValue(10)
       const req = { userId: 'user-id', query: {} }
       const res = buildResponse()
 
@@ -135,9 +119,7 @@ describe('DashboardController', () => {
     it('returns 500 on repository error', async () => {
       const redis = buildRedis({ cachedValue: null })
       const { controller, licenseeRepository } = buildController({ user: SUPER_USER, redisConnection: redis })
-      licenseeRepository.model.mockImplementation(() => {
-        throw new Error('DB error')
-      })
+      licenseeRepository.count.mockRejectedValue(new Error('DB error'))
       const req = { userId: 'user-id', query: {} }
       const res = buildResponse()
 
@@ -169,19 +151,17 @@ describe('DashboardController', () => {
 
       await controller.messageVolume(req, res)
 
-      expect(messageRepository.model).not.toHaveBeenCalled()
+      expect(messageRepository.groupByDay).not.toHaveBeenCalled()
       expect(res.status).toHaveBeenCalledWith(200)
       expect(res.json).toHaveBeenCalledWith(cached)
     })
 
     it('queries DB and returns volume data on cache miss', async () => {
       const redis = buildRedis({ cachedValue: null })
-      const modelAdapter = buildModelAdapter({ countResult: 5, aggregateResult: [{ _id: '2026-05-07', count: 5 }] })
-      const { controller } = buildController({
-        user: SUPER_USER,
-        messageModelAdapter: modelAdapter,
-        redisConnection: redis,
-      })
+      const { controller, messageRepository } = buildController({ user: SUPER_USER, redisConnection: redis })
+      messageRepository.groupByDay.mockResolvedValue([{ _id: '2026-05-07', count: 5 }])
+      messageRepository.groupByHour.mockResolvedValue([{ _id: '2026-05-07T10', count: 5 }])
+      messageRepository.countMessages.mockResolvedValue(5)
       const req = {
         userId: 'user-id',
         query: { startDate: '2026-05-07T00:00:00.000Z', endDate: '2026-05-07T24:00:00.000Z' },
@@ -212,16 +192,11 @@ describe('DashboardController', () => {
 
     it('returns correct percentages on cache miss', async () => {
       const redis = buildRedis({ cachedValue: null })
-      const modelAdapter = buildModelAdapter({ countResult: 0 })
-      modelAdapter._queryChain.countDocuments
+      const { controller, messageRepository } = buildController({ user: SUPER_USER, redisConnection: redis })
+      messageRepository.countMessages
         .mockResolvedValueOnce(80)
         .mockResolvedValueOnce(20)
         .mockResolvedValueOnce(35)
-      const { controller } = buildController({
-        user: SUPER_USER,
-        messageModelAdapter: modelAdapter,
-        redisConnection: redis,
-      })
       const req = { userId: 'user-id', query: {} }
       const res = buildResponse()
 
@@ -238,12 +213,7 @@ describe('DashboardController', () => {
 
     it('returns zero percentages when no messages', async () => {
       const redis = buildRedis({ cachedValue: null })
-      const modelAdapter = buildModelAdapter({ countResult: 0 })
-      const { controller } = buildController({
-        user: SUPER_USER,
-        messageModelAdapter: modelAdapter,
-        redisConnection: redis,
-      })
+      const { controller } = buildController({ user: SUPER_USER, redisConnection: redis })
       const req = { userId: 'user-id', query: {} }
       const res = buildResponse()
 
@@ -268,12 +238,9 @@ describe('DashboardController', () => {
 
     it('returns queue stats on cache miss', async () => {
       const redis = buildRedis({ cachedValue: null })
-      const modelAdapter = buildModelAdapter({ countResult: 5, aggregateResult: [{ _id: null, avg: 30 }] })
-      const { controller } = buildController({
-        user: SUPER_USER,
-        messageModelAdapter: modelAdapter,
-        redisConnection: redis,
-      })
+      const { controller, messageRepository } = buildController({ user: SUPER_USER, redisConnection: redis })
+      messageRepository.countMessages.mockResolvedValue(5)
+      messageRepository.avgQueueTime.mockResolvedValue(30)
       const req = { userId: 'user-id', query: {} }
       const res = buildResponse()
 
@@ -285,14 +252,11 @@ describe('DashboardController', () => {
       expect(result).toHaveProperty('avg_time_in_queue_seconds')
     })
 
-    it('returns 0 avg when no aggregate results', async () => {
+    it('returns 0 avg when avgQueueTime returns 0', async () => {
       const redis = buildRedis({ cachedValue: null })
-      const modelAdapter = buildModelAdapter({ countResult: 3, aggregateResult: [] })
-      const { controller } = buildController({
-        user: SUPER_USER,
-        messageModelAdapter: modelAdapter,
-        redisConnection: redis,
-      })
+      const { controller, messageRepository } = buildController({ user: SUPER_USER, redisConnection: redis })
+      messageRepository.countMessages.mockResolvedValue(3)
+      messageRepository.avgQueueTime.mockResolvedValue(0)
       const req = { userId: 'user-id', query: {} }
       const res = buildResponse()
 
@@ -316,14 +280,13 @@ describe('DashboardController', () => {
 
     it('returns conversation stats on cache miss', async () => {
       const redis = buildRedis({ cachedValue: null })
-      const roomModelAdapter = buildModelAdapter({ countResult: 5, aggregateResult: [{ _id: null, avg: 120 }] })
-      const messageModelAdapter = buildModelAdapter({ aggregateResult: [{ _id: null, avg: 4.5 }] })
-      const { controller } = buildController({
+      const { controller, roomRepository, messageRepository } = buildController({
         user: SUPER_USER,
-        roomModelAdapter,
-        messageModelAdapter,
         redisConnection: redis,
       })
+      roomRepository.count.mockResolvedValue(5)
+      roomRepository.avgDuration.mockResolvedValue(120)
+      messageRepository.avgMessagesPerRoom.mockResolvedValue(4.5)
       const req = { userId: 'user-id', query: {} }
       const res = buildResponse()
 
@@ -337,16 +300,9 @@ describe('DashboardController', () => {
       expect(result).toHaveProperty('avg_duration_seconds')
     })
 
-    it('returns 0 averages when no aggregate results', async () => {
+    it('returns 0 averages when repositories return 0', async () => {
       const redis = buildRedis({ cachedValue: null })
-      const roomModelAdapter = buildModelAdapter({ countResult: 0, aggregateResult: [] })
-      const messageModelAdapter = buildModelAdapter({ aggregateResult: [] })
-      const { controller } = buildController({
-        user: SUPER_USER,
-        roomModelAdapter,
-        messageModelAdapter,
-        redisConnection: redis,
-      })
+      const { controller } = buildController({ user: SUPER_USER, redisConnection: redis })
       const req = { userId: 'user-id', query: {} }
       const res = buildResponse()
 
@@ -389,20 +345,15 @@ describe('DashboardController', () => {
       await controller.contacts(req, res)
 
       expect(redis.get).toHaveBeenCalledWith(`dashboard:licensee:${LICENSEE_USER.licensee}:contacts`)
-      expect(contactRepository.model).not.toHaveBeenCalled()
+      expect(contactRepository.count).not.toHaveBeenCalled()
       expect(res.status).toHaveBeenCalledWith(200)
       expect(res.json).toHaveBeenCalledWith(cached)
     })
 
     it('queries DB on cache miss', async () => {
       const redis = buildRedis({ cachedValue: null })
-      const modelAdapter = buildModelAdapter({ countResult: 0 })
-      modelAdapter._queryChain.countDocuments.mockResolvedValueOnce(15).mockResolvedValueOnce(4)
-      const { controller } = buildController({
-        user: LICENSEE_USER,
-        contactModelAdapter: modelAdapter,
-        redisConnection: redis,
-      })
+      const { controller, contactRepository } = buildController({ user: LICENSEE_USER, redisConnection: redis })
+      contactRepository.count.mockResolvedValueOnce(15).mockResolvedValueOnce(4)
       const req = { userId: 'user-id', query: {} }
       const res = buildResponse()
 
@@ -428,13 +379,8 @@ describe('DashboardController', () => {
 
     it('returns licensee message counts on cache miss', async () => {
       const redis = buildRedis({ cachedValue: null })
-      const modelAdapter = buildModelAdapter({ countResult: 0 })
-      modelAdapter._queryChain.countDocuments.mockResolvedValueOnce(50).mockResolvedValueOnce(5)
-      const { controller } = buildController({
-        user: LICENSEE_USER,
-        messageModelAdapter: modelAdapter,
-        redisConnection: redis,
-      })
+      const { controller, messageRepository } = buildController({ user: LICENSEE_USER, redisConnection: redis })
+      messageRepository.countMessages.mockResolvedValueOnce(50).mockResolvedValueOnce(5)
       const req = { userId: 'user-id', query: {} }
       const res = buildResponse()
 
@@ -460,12 +406,8 @@ describe('DashboardController', () => {
 
     it('returns per_day data on cache miss', async () => {
       const redis = buildRedis({ cachedValue: null })
-      const modelAdapter = buildModelAdapter({ aggregateResult: [{ _id: '2026-05-07', count: 10 }] })
-      const { controller } = buildController({
-        user: LICENSEE_USER,
-        messageModelAdapter: modelAdapter,
-        redisConnection: redis,
-      })
+      const { controller, messageRepository } = buildController({ user: LICENSEE_USER, redisConnection: redis })
+      messageRepository.groupByDay.mockResolvedValue([{ _id: '2026-05-07', count: 10 }])
       const req = { userId: 'user-id', query: {} }
       const res = buildResponse()
 
@@ -501,37 +443,9 @@ describe('DashboardController', () => {
   })
 
   describe('openRooms', () => {
-    function buildOpenRoomsAdapter(rooms: any[] = []) {
-      const chain = {
-        sort: jest.fn().mockReturnThis(),
-        skip: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        populate: jest.fn().mockReturnThis(),
-        lean: jest.fn().mockResolvedValue(rooms),
-      }
-      return {
-        find: jest.fn().mockReturnValue(chain),
-        aggregate: jest.fn().mockResolvedValue([]),
-        where: jest.fn().mockReturnValue({ countDocuments: jest.fn().mockResolvedValue(0) }),
-        _chain: chain,
-      }
-    }
-
-    function buildLicenseeContactAdapter(contacts: any[] = []) {
-      const chain = {
-        select: jest.fn().mockReturnThis(),
-        lean: jest.fn().mockResolvedValue(contacts),
-      }
-      return {
-        find: jest.fn().mockReturnValue(chain),
-        where: jest.fn().mockReturnValue({ countDocuments: jest.fn().mockResolvedValue(0) }),
-        aggregate: jest.fn().mockResolvedValue([]),
-      }
-    }
-
-    const room1 = { _id: 'room-1', contact: { name: 'Alice', number: '5511999990001' }, createdAt: new Date() }
-    const room2 = { _id: 'room-2', contact: { name: 'Bob', number: '5511999990002' }, createdAt: new Date() }
-    const lastMsg1 = { _id: 'room-1', text: 'Hello', createdAt: new Date() }
+    const room1 = { id: 1, _id: '1', contact: 101, createdAt: new Date() }
+    const room2 = { id: 2, _id: '2', contact: 102, createdAt: new Date() }
+    const lastMsg1 = { room: 1, text: 'Hello', createdAt: new Date() }
 
     it('returns 403 when user is not super or admin', async () => {
       const { controller } = buildController({ user: LICENSEE_USER })
@@ -554,13 +468,9 @@ describe('DashboardController', () => {
     })
 
     it('returns rooms that have a last message', async () => {
-      const roomAdapter = buildOpenRoomsAdapter([room1, room2])
-      const messageAdapter = buildModelAdapter({ aggregateResult: [lastMsg1] })
-      const { controller } = buildController({
-        user: SUPER_USER,
-        roomModelAdapter: roomAdapter,
-        messageModelAdapter: messageAdapter,
-      })
+      const { controller, roomRepository, messageRepository } = buildController({ user: SUPER_USER })
+      roomRepository.findManyPaged.mockResolvedValue([room1, room2])
+      messageRepository.lastMessagePerRoom.mockResolvedValue([lastMsg1])
       const req = { userId: 'user-id', query: { page: '1' }, params: {} }
       const res = buildResponse()
 
@@ -569,19 +479,15 @@ describe('DashboardController', () => {
       expect(res.status).toHaveBeenCalledWith(200)
       const result = res.json.mock.calls[0][0]
       expect(result.rooms).toHaveLength(1)
-      expect(result.rooms[0]._id).toBe('room-1')
+      expect(result.rooms[0].id).toBe(1)
       expect(result.rooms[0].lastMessage).toEqual(lastMsg1)
       expect(result.hasMore).toBe(false)
     })
 
     it('filters out rooms without a last message', async () => {
-      const roomAdapter = buildOpenRoomsAdapter([room1, room2])
-      const messageAdapter = buildModelAdapter({ aggregateResult: [] })
-      const { controller } = buildController({
-        user: SUPER_USER,
-        roomModelAdapter: roomAdapter,
-        messageModelAdapter: messageAdapter,
-      })
+      const { controller, roomRepository, messageRepository } = buildController({ user: SUPER_USER })
+      roomRepository.findManyPaged.mockResolvedValue([room1, room2])
+      messageRepository.lastMessagePerRoom.mockResolvedValue([])
       const req = { userId: 'user-id', query: {}, params: {} }
       const res = buildResponse()
 
@@ -593,20 +499,17 @@ describe('DashboardController', () => {
     })
 
     it('sets hasMore true when DB returns more rooms than the limit', async () => {
-      // controller fetches limit+1 (11) rooms; if it gets 11 back, hasMore=true
+      // findManyPaged fetches limit+1 (11); if it gets 11 back, hasMore=true
       const manyRooms = Array.from({ length: 11 }, (_, i) => ({
-        _id: `room-${i}`,
-        contact: null,
+        id: i + 1,
+        _id: String(i + 1),
+        contact: i + 100,
         createdAt: new Date(),
       }))
-      const lastMsgs = manyRooms.slice(0, 10).map((r) => ({ _id: r._id, text: 'msg', createdAt: new Date() }))
-      const roomAdapter = buildOpenRoomsAdapter(manyRooms)
-      const messageAdapter = buildModelAdapter({ aggregateResult: lastMsgs })
-      const { controller } = buildController({
-        user: SUPER_USER,
-        roomModelAdapter: roomAdapter,
-        messageModelAdapter: messageAdapter,
-      })
+      const lastMsgs = manyRooms.slice(0, 10).map((r) => ({ room: r.id, text: 'msg', createdAt: new Date() }))
+      const { controller, roomRepository, messageRepository } = buildController({ user: SUPER_USER })
+      roomRepository.findManyPaged.mockResolvedValue(manyRooms)
+      messageRepository.lastMessagePerRoom.mockResolvedValue(lastMsgs)
       const req = { userId: 'user-id', query: { page: '1' }, params: {} }
       const res = buildResponse()
 
@@ -619,43 +522,26 @@ describe('DashboardController', () => {
     })
 
     it('filters rooms by licensee via contact lookup', async () => {
-      const contacts = [{ _id: 'contact-1' }]
-      const roomAdapter = buildOpenRoomsAdapter([room1])
-      const contactAdapter = buildLicenseeContactAdapter(contacts)
-      const messageAdapter = buildModelAdapter({ aggregateResult: [lastMsg1] })
-      const { controller } = buildController({
-        user: SUPER_USER,
-        roomModelAdapter: roomAdapter,
-        contactModelAdapter: contactAdapter,
-        messageModelAdapter: messageAdapter,
-      })
+      const { controller, roomRepository, contactRepository, messageRepository } = buildController({ user: SUPER_USER })
+      contactRepository.findIds.mockResolvedValue([101])
+      roomRepository.findManyPaged.mockResolvedValue([room1])
+      messageRepository.lastMessagePerRoom.mockResolvedValue([lastMsg1])
       const req = { userId: 'user-id', query: { licensee: 'licensee-id' }, params: {} }
       const res = buildResponse()
 
       await controller.openRooms(req, res)
 
-      expect(contactAdapter.find).toHaveBeenCalledWith({ licensee: 'licensee-id' })
-      expect(roomAdapter.find).toHaveBeenCalledWith(expect.objectContaining({ contact: { $in: ['contact-1'] } }))
+      expect(contactRepository.findIds).toHaveBeenCalledWith({ licensee: expect.any(Number) })
+      expect(roomRepository.findManyPaged).toHaveBeenCalledWith(
+        expect.objectContaining({ contact: { in: [101] } }),
+        1,
+        10,
+      )
       expect(res.status).toHaveBeenCalledWith(200)
     })
   })
 
   describe('closeRoom', () => {
-    function buildCloseRoomAdapter(room: any = null) {
-      return {
-        findById: jest.fn().mockResolvedValue(room),
-        find: jest.fn().mockReturnValue({
-          sort: jest.fn().mockReturnThis(),
-          skip: jest.fn().mockReturnThis(),
-          limit: jest.fn().mockReturnThis(),
-          populate: jest.fn().mockReturnThis(),
-          lean: jest.fn().mockResolvedValue([]),
-        }),
-        where: jest.fn().mockReturnValue({ countDocuments: jest.fn().mockResolvedValue(0) }),
-        aggregate: jest.fn().mockResolvedValue([]),
-      }
-    }
-
     it('returns 403 when user is not super or admin', async () => {
       const { controller } = buildController({ user: LICENSEE_USER })
       const req = { userId: 'user-id', query: {}, params: { roomId: 'room-id' } }
@@ -677,8 +563,8 @@ describe('DashboardController', () => {
     })
 
     it('returns 404 when room not found', async () => {
-      const roomAdapter = buildCloseRoomAdapter(null)
-      const { controller } = buildController({ user: SUPER_USER, roomModelAdapter: roomAdapter })
+      const { controller, roomRepository } = buildController({ user: SUPER_USER })
+      roomRepository.findById.mockResolvedValue(null)
       const req = { userId: 'user-id', query: {}, params: { roomId: 'nonexistent-room' } }
       const res = buildResponse()
 
@@ -687,10 +573,9 @@ describe('DashboardController', () => {
       expect(res.status).toHaveBeenCalledWith(404)
     })
 
-    it('returns 200 with already-closed message without saving when room is already closed', async () => {
-      const closedRoom = { _id: 'room-id', closed: true, status: 'closed', save: jest.fn() }
-      const roomAdapter = buildCloseRoomAdapter(closedRoom)
-      const { controller } = buildController({ user: SUPER_USER, roomModelAdapter: roomAdapter })
+    it('returns 200 with already-closed message without calling close when room is already closed', async () => {
+      const { controller, roomRepository } = buildController({ user: SUPER_USER })
+      roomRepository.findById.mockResolvedValue({ id: 1, closed: true })
       const req = { userId: 'user-id', query: {}, params: { roomId: 'room-id' } }
       const res = buildResponse()
 
@@ -698,20 +583,18 @@ describe('DashboardController', () => {
 
       expect(res.status).toHaveBeenCalledWith(200)
       expect(res.json).toHaveBeenCalledWith({ message: 'Already closed' })
-      expect(closedRoom.save).not.toHaveBeenCalled()
+      expect(roomRepository.close).not.toHaveBeenCalled()
     })
 
-    it('sets status to closed, saves, and returns 200', async () => {
-      const openRoom = { _id: 'room-id', closed: false, status: 'open', save: jest.fn().mockResolvedValue(undefined) }
-      const roomAdapter = buildCloseRoomAdapter(openRoom)
-      const { controller } = buildController({ user: SUPER_USER, roomModelAdapter: roomAdapter })
+    it('calls close and returns 200 for an open room', async () => {
+      const { controller, roomRepository } = buildController({ user: SUPER_USER })
+      roomRepository.findById.mockResolvedValue({ id: 1, closed: false })
       const req = { userId: 'user-id', query: {}, params: { roomId: 'room-id' } }
       const res = buildResponse()
 
       await controller.closeRoom(req, res)
 
-      expect(openRoom.status).toBe('closed')
-      expect(openRoom.save).toHaveBeenCalled()
+      expect(roomRepository.close).toHaveBeenCalledWith('room-id')
       expect(res.status).toHaveBeenCalledWith(200)
       expect(res.json).toHaveBeenCalledWith({ message: 'Room closed' })
     })

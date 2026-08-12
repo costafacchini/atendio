@@ -1,9 +1,6 @@
 import { Request, Response } from 'express'
 import { IRepository } from '@repositories/repository'
-import { IQueryableRepository } from '../queries/QueryBuilder'
-import { IUser, ILicensee, IContact, IMessage, IRoom } from '../../types'
-
-const EXCLUDE_SYSTEM_CLOSE = { $nor: [{ kind: 'text', text: 'Chat encerrado pelo agente' }] }
+import { IUser } from '../../types'
 
 interface RedisClient {
   get(key: string): Promise<string | null>
@@ -12,10 +9,10 @@ interface RedisClient {
 
 class DashboardController {
   userRepository: IRepository<IUser>
-  licenseeRepository: IQueryableRepository<ILicensee>
-  contactRepository: IQueryableRepository<IContact>
-  messageRepository: IQueryableRepository<IMessage>
-  roomRepository: IQueryableRepository<IRoom>
+  licenseeRepository: any
+  contactRepository: any
+  messageRepository: any
+  roomRepository: any
   redisConnection: RedisClient
 
   constructor({
@@ -27,10 +24,10 @@ class DashboardController {
     redisConnection,
   }: {
     userRepository?: IRepository<IUser>
-    licenseeRepository?: IQueryableRepository<ILicensee>
-    contactRepository?: IQueryableRepository<IContact>
-    messageRepository?: IQueryableRepository<IMessage>
-    roomRepository?: IQueryableRepository<IRoom>
+    licenseeRepository?: any
+    contactRepository?: any
+    messageRepository?: any
+    roomRepository?: any
     redisConnection?: RedisClient
   } = {}) {
     this.userRepository = userRepository!
@@ -83,11 +80,11 @@ class DashboardController {
       const cacheKey = 'dashboard:super:licensees'
       const data = await this._cached(cacheKey, async () => {
         const [total, active, demo, free, paid] = await Promise.all([
-          this.licenseeRepository.model().where({}).countDocuments(),
-          this.licenseeRepository.model().where({ active: true }).countDocuments(),
-          this.licenseeRepository.model().where({ licenseKind: 'demo' }).countDocuments(),
-          this.licenseeRepository.model().where({ licenseKind: 'free' }).countDocuments(),
-          this.licenseeRepository.model().where({ licenseKind: 'paid' }).countDocuments(),
+          this.licenseeRepository.count({}),
+          this.licenseeRepository.count({ active: true }),
+          this.licenseeRepository.count({ licenseKind: 'demo' }),
+          this.licenseeRepository.count({ licenseKind: 'free' }),
+          this.licenseeRepository.count({ licenseKind: 'paid' }),
         ])
         return { total, active, by_kind: { demo, free, paid } }
       })
@@ -107,41 +104,24 @@ class DashboardController {
       const { startDate, endDate } = this._parseDateRange(req.query)
       const licensee = req.query.licensee || null
       const cacheKey = `dashboard:super:message-volume:${startDate.toISOString()}:${endDate.toISOString()}:${licensee || 'all'}`
-      const msgFilter = licensee ? { licensee: licensee as string } : {}
+      const licenseeIdInt = licensee ? parseInt(licensee as string, 10) : null
 
       const data = await this._cached(cacheKey, async () => {
-        const perDayPipeline = [
-          { $match: { ...msgFilter, ...EXCLUDE_SYSTEM_CLOSE, createdAt: { $gte: startDate, $lt: endDate } } },
-          { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, count: { $sum: 1 } } },
-          { $sort: { _id: 1 } },
-        ]
-        const perHourPipeline = [
-          { $match: { ...msgFilter, ...EXCLUDE_SYSTEM_CLOSE, createdAt: { $gte: startDate, $lt: endDate } } },
-          { $group: { _id: { $dateToString: { format: '%Y-%m-%dT%H', date: '$createdAt' } }, count: { $sum: 1 } } },
-          { $sort: { _id: 1 } },
-        ]
+        const licenseeFilter = licenseeIdInt ? { licensee: licenseeIdInt } : {}
 
         const [perDay, perHour, sentCount, failedCount] = await Promise.all([
-          this.messageRepository.model().aggregate(perDayPipeline),
-          this.messageRepository.model().aggregate(perHourPipeline),
-          this.messageRepository
-            .model()
-            .where({
-              ...msgFilter,
-              ...EXCLUDE_SYSTEM_CLOSE,
-              sended: true,
-              createdAt: { $gte: startDate, $lt: endDate },
-            })
-            .countDocuments(),
-          this.messageRepository
-            .model()
-            .where({
-              ...msgFilter,
-              ...EXCLUDE_SYSTEM_CLOSE,
-              sended: false,
-              createdAt: { $gte: startDate, $lt: endDate },
-            })
-            .countDocuments(),
+          this.messageRepository.groupByDay(licenseeIdInt, startDate, endDate),
+          this.messageRepository.groupByHour(licenseeIdInt, startDate, endDate),
+          this.messageRepository.countMessages({
+            sended: true,
+            ...licenseeFilter,
+            createdAt: { gte: startDate, lt: endDate },
+          }),
+          this.messageRepository.countMessages({
+            sended: false,
+            ...licenseeFilter,
+            createdAt: { gte: startDate, lt: endDate },
+          }),
         ])
 
         const peakThroughput = perHour.length > 0 ? Math.max(...perHour.map((h: any) => h.count)) : 0
@@ -171,33 +151,27 @@ class DashboardController {
       const { startDate, endDate } = this._parseDateRange(req.query)
       const licensee = req.query.licensee || null
       const cacheKey = `dashboard:super:delivery-rate:${startDate.toISOString()}:${endDate.toISOString()}:${licensee || 'all'}`
-      const msgFilter = licensee ? { licensee: licensee as string } : {}
+      const licenseeIdInt = licensee ? parseInt(licensee as string, 10) : null
+      const licenseeFilter = licenseeIdInt ? { licensee: licenseeIdInt } : {}
 
       const data = await this._cached(cacheKey, async () => {
         const [sentCount, failedCount, failedTotal] = await Promise.all([
-          this.messageRepository
-            .model()
-            .where({
-              ...msgFilter,
-              ...EXCLUDE_SYSTEM_CLOSE,
-              sended: true,
-              createdAt: { $gte: startDate, $lt: endDate },
-            })
-            .countDocuments(),
-          this.messageRepository
-            .model()
-            .where({
-              ...msgFilter,
-              ...EXCLUDE_SYSTEM_CLOSE,
-              sended: false,
-              ignored: { $ne: true },
-              createdAt: { $gte: startDate, $lt: endDate },
-            })
-            .countDocuments(),
-          this.messageRepository
-            .model()
-            .where({ ...msgFilter, ...EXCLUDE_SYSTEM_CLOSE, sended: false, ignored: { $ne: true } })
-            .countDocuments(),
+          this.messageRepository.countMessages({
+            sended: true,
+            ...licenseeFilter,
+            createdAt: { gte: startDate, lt: endDate },
+          }),
+          this.messageRepository.countMessages({
+            sended: false,
+            NOT: { ignored: true },
+            ...licenseeFilter,
+            createdAt: { gte: startDate, lt: endDate },
+          }),
+          this.messageRepository.countMessages({
+            sended: false,
+            NOT: { ignored: true },
+            ...licenseeFilter,
+          }),
         ])
 
         const total = sentCount + failedCount
@@ -228,30 +202,18 @@ class DashboardController {
       const { startDate, endDate } = this._parseDateRange(req.query)
       const licensee = req.query.licensee || null
       const cacheKey = `dashboard:super:queue:${startDate.toISOString()}:${endDate.toISOString()}:${licensee || 'all'}`
-      const msgFilter = licensee ? { licensee: licensee as string } : {}
+      const licenseeIdInt = licensee ? parseInt(licensee as string, 10) : null
+      const licenseeFilter = licenseeIdInt ? { licensee: licenseeIdInt } : {}
 
       const data = await this._cached(cacheKey, async () => {
-        const avgQueuePipeline: any[] = [
-          {
-            $match: {
-              ...msgFilter,
-              ...EXCLUDE_SYSTEM_CLOSE,
-              sendedAt: { $exists: true },
-              createdAt: { $gte: startDate, $lt: endDate },
-            },
-          },
-          { $group: { _id: null, avg: { $avg: { $divide: [{ $subtract: ['$sendedAt', '$createdAt'] }, 1000] } } } },
-        ]
-
-        const [pendingMessages, avgResult] = await Promise.all([
-          this.messageRepository
-            .model()
-            .where({ ...msgFilter, ...EXCLUDE_SYSTEM_CLOSE, sended: false, destination: 'to-messenger' })
-            .countDocuments(),
-          this.messageRepository.model().aggregate(avgQueuePipeline),
+        const [pendingMessages, avgTimeInQueueSeconds] = await Promise.all([
+          this.messageRepository.countMessages({
+            sended: false,
+            destination: 'to-messenger',
+            ...licenseeFilter,
+          }),
+          this.messageRepository.avgQueueTime(licenseeIdInt, startDate, endDate),
         ])
-
-        const avgTimeInQueueSeconds = avgResult.length > 0 ? parseFloat((avgResult[0].avg ?? 0).toFixed(2)) : 0
 
         return { pending_messages: pendingMessages, avg_time_in_queue_seconds: avgTimeInQueueSeconds }
       })
@@ -271,56 +233,27 @@ class DashboardController {
       const { startDate, endDate } = this._parseDateRange(req.query)
       const licensee = req.query.licensee || null
       const cacheKey = `dashboard:super:conversations:${startDate.toISOString()}:${endDate.toISOString()}:${licensee || 'all'}`
-      const msgFilter = licensee ? { licensee: licensee as string } : {}
+      const licenseeIdInt = licensee ? parseInt(licensee as string, 10) : null
 
       const data = await this._cached(cacheKey, async () => {
-        let roomFilter: any = {}
+        let contactIds: number[] = []
         if (licensee) {
-          const contacts = await this.contactRepository.model().find({ licensee }).select('_id')
-          const contactIds = contacts.map((c: any) => c._id)
-          roomFilter = { contact: { $in: contactIds } }
+          contactIds = await this.contactRepository.findIds({ licensee: parseInt(licensee as string, 10) })
         }
+        const roomWhere = contactIds.length > 0 ? { contact: { in: contactIds } } : {}
 
-        const avgMsgPerConvPipeline: any[] = [
-          {
-            $match: {
-              ...msgFilter,
-              ...EXCLUDE_SYSTEM_CLOSE,
-              room: { $exists: true },
-              createdAt: { $gte: startDate, $lt: endDate },
-            },
-          },
-          { $group: { _id: '$room', count: { $sum: 1 } } },
-          { $group: { _id: null, avg: { $avg: '$count' } } },
-        ]
-        const avgDurationPipeline: any[] = [
-          { $match: { ...roomFilter, closedAt: { $gte: startDate, $lt: endDate } } },
-          { $group: { _id: null, avg: { $avg: { $divide: [{ $subtract: ['$closedAt', '$createdAt'] }, 1000] } } } },
-        ]
-
-        const [startedCount, endedCount, avgMsgResult, avgDurationResult] = await Promise.all([
-          this.roomRepository
-            .model()
-            .where({ ...roomFilter, createdAt: { $gte: startDate, $lt: endDate } })
-            .countDocuments(),
-          this.roomRepository
-            .model()
-            .where({ ...roomFilter, closedAt: { $gte: startDate, $lt: endDate } })
-            .countDocuments(),
-          this.messageRepository.model().aggregate(avgMsgPerConvPipeline),
-          this.roomRepository.model().aggregate(avgDurationPipeline),
+        const [startedCount, endedCount, avgMessages, avgDuration] = await Promise.all([
+          this.roomRepository.count({ ...roomWhere, createdAt: { gte: startDate, lt: endDate } }),
+          this.roomRepository.count({ ...roomWhere, closedAt: { gte: startDate, lt: endDate } }),
+          this.messageRepository.avgMessagesPerRoom(licenseeIdInt, startDate, endDate),
+          this.roomRepository.avgDuration(contactIds.length > 0 ? contactIds : null, startDate, endDate),
         ])
-
-        const avgMessagesPerConversation =
-          avgMsgResult.length > 0 ? parseFloat((avgMsgResult[0].avg ?? 0).toFixed(2)) : 0
-        const avgDurationSeconds =
-          avgDurationResult.length > 0 ? parseFloat((avgDurationResult[0].avg ?? 0).toFixed(2)) : 0
 
         return {
           started_today: startedCount,
           ended_today: endedCount,
-          avg_messages_per_conversation: avgMessagesPerConversation,
-          avg_duration_seconds: avgDurationSeconds,
+          avg_messages_per_conversation: avgMessages,
+          avg_duration_seconds: avgDuration,
         }
       })
 
@@ -339,9 +272,10 @@ class DashboardController {
       const cacheKey = `dashboard:licensee:${user.licensee}:contacts`
 
       const data = await this._cached(cacheKey, async () => {
+        const licenseeId = user.licensee as any
         const [total, inChatbot] = await Promise.all([
-          this.contactRepository.model().where({ licensee: user.licensee }).countDocuments(),
-          this.contactRepository.model().where({ licensee: user.licensee, talkingWithChatBot: true }).countDocuments(),
+          this.contactRepository.count({ licensee: licenseeId }),
+          this.contactRepository.count({ licensee: licenseeId, talkingWithChatBot: true }),
         ])
         return { total, in_chatbot: inChatbot }
       })
@@ -360,28 +294,21 @@ class DashboardController {
 
       const { startDate, endDate } = this._parseDateRange(req.query)
       const cacheKey = `dashboard:licensee:${user.licensee}:messages-today:${startDate.toISOString()}:${endDate.toISOString()}`
+      const licenseeId = user.licensee as any
 
       const data = await this._cached(cacheKey, async () => {
         const [sentCount, failedCount] = await Promise.all([
-          this.messageRepository
-            .model()
-            .where({
-              licensee: user.licensee,
-              ...EXCLUDE_SYSTEM_CLOSE,
-              sended: true,
-              createdAt: { $gte: startDate, $lt: endDate },
-            })
-            .countDocuments(),
-          this.messageRepository
-            .model()
-            .where({
-              licensee: user.licensee,
-              ...EXCLUDE_SYSTEM_CLOSE,
-              sended: false,
-              ignored: { $ne: true },
-              createdAt: { $gte: startDate, $lt: endDate },
-            })
-            .countDocuments(),
+          this.messageRepository.countMessages({
+            licensee: licenseeId,
+            sended: true,
+            createdAt: { gte: startDate, lt: endDate },
+          }),
+          this.messageRepository.countMessages({
+            licensee: licenseeId,
+            sended: false,
+            NOT: { ignored: true },
+            createdAt: { gte: startDate, lt: endDate },
+          }),
         ])
 
         const total = sentCount + failedCount
@@ -403,24 +330,13 @@ class DashboardController {
       if (!user) return res.status(404).json({ errors: { message: 'User not found' } })
       if (user.role === 'super') return res.status(403).json({ errors: { message: 'Forbidden' } })
 
-      const { startDate, endDate } = this._parseDateRange(req.query)
-      const cacheKey = `dashboard:licensee:${user.licensee}:messages-per-day:${startDate.toISOString()}:${endDate.toISOString()}`
+      const { endDate } = this._parseDateRange(req.query)
+      const cacheKey = `dashboard:licensee:${user.licensee}:messages-per-day`
 
       const data = await this._cached(cacheKey, async () => {
         const sevenDaysAgo = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000)
-        const perDayPipeline = [
-          {
-            $match: {
-              createdAt: { $gte: sevenDaysAgo, $lt: endDate },
-              licensee: user.licensee,
-              ...EXCLUDE_SYSTEM_CLOSE,
-            },
-          },
-          { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, count: { $sum: 1 } } },
-          { $sort: { _id: 1 } },
-        ]
-
-        const perDay = await this.messageRepository.model().aggregate(perDayPipeline)
+        const licenseeInt = parseInt(String(user.licensee), 10)
+        const perDay = await this.messageRepository.groupByDay(licenseeInt, sevenDaysAgo, endDate)
         return { per_day: perDay }
       })
 
@@ -440,39 +356,35 @@ class DashboardController {
       const page = Math.max(1, parseInt(req.query.page as string) || 1)
       const limit = 10
 
-      let roomFilter: any = { closed: false }
+      let contactIds: number[] = []
       if (licensee) {
-        const contacts = await this.contactRepository.model().find({ licensee }).select('_id').lean()
-        const contactIds = contacts.map((c: any) => c._id)
-        roomFilter.contact = { $in: contactIds }
+        contactIds = await this.contactRepository.findIds({ licensee: parseInt(licensee as string, 10) })
       }
 
-      const roomResults = await this.roomRepository
-        .model()
-        .find(roomFilter)
-        .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit + 1)
-        .populate('contact', 'name number')
-        .lean()
+      const roomParams: Record<string, any> = { closed: false }
+      if (contactIds.length > 0) roomParams.contact = { in: contactIds }
 
+      const roomResults = await this.roomRepository.findManyPaged(roomParams, page, limit)
       const hasMore = roomResults.length > limit
       const rooms: any[] = hasMore ? roomResults.slice(0, limit) : roomResults
 
-      const roomIds = rooms.map((r: any) => r._id)
-      const lastMessages = await this.messageRepository
-        .model()
-        .aggregate([
-          { $match: { room: { $in: roomIds }, ...EXCLUDE_SYSTEM_CLOSE } },
-          { $sort: { createdAt: -1 } },
-          { $group: { _id: '$room', text: { $first: '$text' }, createdAt: { $first: '$createdAt' } } },
-        ])
+      // Enrich rooms with contact name/number via separate lookup (no Prisma relation on rooms.contact)
+      const contactIdList = [...new Set(rooms.map((r: any) => r.contact as number))]
+      const contacts =
+        contactIdList.length > 0 ? await this.contactRepository.find({ id: { in: contactIdList } } as any) : []
+      const contactMap = new Map((contacts as any[]).map((c: any) => [c.id, c]))
 
-      const lastMsgMap: Record<string, any> = {}
-      for (const m of lastMessages) lastMsgMap[m._id.toString()] = m
+      const roomIds = rooms.map((r: any) => r.id as number)
+      const lastMessages = await this.messageRepository.lastMessagePerRoom(roomIds)
+      const lastMsgMap: Record<number, any> = {}
+      for (const m of lastMessages) lastMsgMap[m.room] = m
 
       const roomsWithMessages = rooms
-        .map((r: any) => ({ ...r, lastMessage: lastMsgMap[r._id.toString()] || null }))
+        .map((r: any) => ({
+          ...r,
+          contact: contactMap.get(r.contact) ?? { id: r.contact },
+          lastMessage: lastMsgMap[r.id] ?? null,
+        }))
         .filter((r: any) => r.lastMessage !== null)
 
       return res.status(200).json({ rooms: roomsWithMessages, hasMore })
@@ -487,13 +399,11 @@ class DashboardController {
       if (!user) return res.status(404).json({ errors: { message: 'User not found' } })
       if (!['super', 'admin'].includes(user.role)) return res.status(403).json({ errors: { message: 'Forbidden' } })
 
-      const room = await this.roomRepository.model().findById(req.params.roomId as string)
+      const room = await this.roomRepository.findById(req.params.roomId)
       if (!room) return res.status(404).json({ errors: { message: 'Room not found' } })
-      if (room.closed) return res.status(200).json({ message: 'Already closed' })
+      if ((room as any).closed) return res.status(200).json({ message: 'Already closed' })
 
-      room.status = 'closed'
-      await room.save()
-
+      await this.roomRepository.close(req.params.roomId)
       return res.status(200).json({ message: 'Room closed' })
     } catch (err: any) {
       return res.status(500).json({ errors: { message: `Erro interno do servidor: ${err.message}` } })
