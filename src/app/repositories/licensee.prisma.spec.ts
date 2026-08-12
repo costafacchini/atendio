@@ -107,4 +107,19 @@ describeIf('PrismaLicenseeDatabaseRepository', () => {
       expect(found).toBeNull()
     })
   })
+
+  describe('#count', () => {
+    it('returns total count with no filter', async () => {
+      const n = await repo.count()
+      expect(typeof n).toBe('number')
+      expect(n).toBeGreaterThanOrEqual(1)
+    })
+
+    it('counts by licenseKind', async () => {
+      const demo = await repo.count({ licenseKind: 'demo' })
+      const paid = await repo.count({ licenseKind: 'paid' })
+      expect(demo).toBeGreaterThanOrEqual(1)
+      expect(paid).toBe(0)
+    })
+  })
 })

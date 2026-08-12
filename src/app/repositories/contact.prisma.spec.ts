@@ -93,4 +93,21 @@ describeIf('PrismaContactDatabaseRepository', () => {
       expect(found).toBeNull()
     })
   })
+
+  describe('#findIds', () => {
+    it('returns integer IDs for matching contacts', async () => {
+      await getPrismaClient().contact.create({
+        data: { number: '11999990001', talkingWithChatBot: false, licensee: licenseeId },
+      })
+      const ids = await repo.findIds({ licensee: licenseeId })
+      expect(Array.isArray(ids)).toBe(true)
+      expect(ids.length).toBeGreaterThanOrEqual(1)
+      ids.forEach((id) => expect(typeof id).toBe('number'))
+    })
+
+    it('returns empty array when no contacts match', async () => {
+      const ids = await repo.findIds({ licensee: 999999 })
+      expect(ids).toEqual([])
+    })
+  })
 })

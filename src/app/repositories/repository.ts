@@ -464,6 +464,10 @@ class PrismaRepository<T> implements IRepository<T> {
     return this.fromDBMany(await this.delegate().findMany({ where: this.toWhere(params) }))
   }
 
+  async count(params: Record<string, unknown> = {}): Promise<number> {
+    return await this.delegate().count({ where: this.toWhere(params) })
+  }
+
   async create(fields: Partial<T> = {}): Promise<T> {
     return this.fromDB(await this.delegate().create({ data: this.toData(fields) })) as T
   }
