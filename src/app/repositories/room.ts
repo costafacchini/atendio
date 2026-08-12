@@ -2,7 +2,7 @@ import { RepositoryMemory, PrismaRepository } from './repository'
 import { IRoom } from '../../types'
 import { getPrismaClient } from '../../config/postgres'
 import { tryGetActiveRepositories } from './activeState'
-import { Prisma } from '@prisma/client'
+import { Prisma } from '../../../generated/prisma/client'
 
 class RoomRepositoryMemory extends RepositoryMemory<IRoom> {
   async create(fields: any = {}) {
