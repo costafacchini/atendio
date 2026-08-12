@@ -91,4 +91,78 @@ describeIf('PrismaRoomDatabaseRepository', () => {
       expect(found).toBeNull()
     })
   })
+
+  describe('#findById', () => {
+    it('returns a room by integer id', async () => {
+      const created = await getPrismaClient().room.create({
+        data: { contact: contactId, status: 'pending' },
+      })
+      const found = await repo.findById(created.id)
+      expect(found).not.toBeNull()
+      expect((found as any)._id).toBeDefined()
+    })
+
+    it('returns null for non-existent id', async () => {
+      const found = await repo.findById(999999)
+      expect(found).toBeNull()
+    })
+  })
+
+  describe('#close', () => {
+    it('sets closed, status, and closedAt', async () => {
+      const created = await getPrismaClient().room.create({
+        data: { contact: contactId, status: 'pending' },
+      })
+      await repo.close(created.id)
+      const updated = await getPrismaClient().room.findUnique({ where: { id: created.id } })
+      expect(updated?.closed).toBe(true)
+      expect(updated?.status).toBe('closed')
+      expect(updated?.closedAt).not.toBeNull()
+    })
+  })
+
+  describe('#findOpenForContact', () => {
+    it('returns open room for contact', async () => {
+      await getPrismaClient().room.create({ data: { contact: contactId, closed: false } })
+      const found = await repo.findOpenForContact(contactId)
+      expect(found).not.toBeNull()
+    })
+
+    it('returns null when no open room exists for contact', async () => {
+      const found = await repo.findOpenForContact(999999)
+      expect(found).toBeNull()
+    })
+  })
+
+  describe('#avgDuration', () => {
+    it('returns a number', async () => {
+      const n = await repo.avgDuration(null, new Date('2020-01-01'), new Date())
+      expect(typeof n).toBe('number')
+    })
+  })
+
+  describe('#findManyPaged', () => {
+    it('returns rooms matching filter', async () => {
+      await getPrismaClient().room.create({ data: { contact: contactId, closed: false } })
+      const rooms = await repo.findManyPaged({ closed: false }, 1, 10)
+      expect(Array.isArray(rooms)).toBe(true)
+      expect(rooms.length).toBeGreaterThanOrEqual(1)
+    })
+  })
+
+  describe('#findForLicensee', () => {
+    it('returns open rooms for the given contactIds', async () => {
+      await getPrismaClient().room.create({ data: { contact: contactId, closed: false } })
+      const rooms = await repo.findForLicensee(licenseeId, { contactIds: [contactId] })
+      expect(Array.isArray(rooms)).toBe(true)
+      expect(rooms.length).toBeGreaterThanOrEqual(1)
+      expect(rooms.every((r: any) => r.closed === false)).toBe(true)
+    })
+
+    it('returns empty array when contactIds list is empty', async () => {
+      await getPrismaClient().room.create({ data: { contact: contactId, closed: false } })
+      const rooms = await repo.findForLicensee(licenseeId, { contactIds: [999999] })
+      expect(rooms.length).toBe(0)
+    })
+  })
 })
