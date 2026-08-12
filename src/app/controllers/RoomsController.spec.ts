@@ -7,57 +7,37 @@ function buildResponse() {
   }
 }
 
-function buildDepartmentModelAdapter(departments: any[] = []) {
-  const chain = {
-    select: jest.fn().mockReturnThis(),
-    lean: jest.fn().mockResolvedValue(departments),
-  }
-  return {
-    find: jest.fn().mockReturnValue(chain),
-    _chain: chain,
-  }
-}
-
-function buildMessageModelAdapter({ aggregateResult = [] as any[], countResult = 0, findResult = [] as any[] } = {}) {
-  const findChain = {
-    sort: jest.fn().mockReturnThis(),
-    skip: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockReturnThis(),
-    lean: jest.fn().mockResolvedValue(findResult),
-  }
-  return {
-    aggregate: jest.fn().mockResolvedValue(aggregateResult),
-    countDocuments: jest.fn().mockResolvedValue(countResult),
-    find: jest.fn().mockReturnValue(findChain),
-    _findChain: findChain,
-  }
-}
-
 function buildController({
   user = null as any,
-  departmentModelAdapter = null as any,
-  messageModelAdapter = null as any,
   roomRepository = null as any,
   contactRepository = null as any,
+  departmentIds = [] as any[],
+  messageLastPerRoom = [] as any[],
+  messageCount = 0,
+  messageFind = [] as any[],
 } = {}) {
   const userRepository = {
     findFirst: jest.fn().mockResolvedValue(user),
   }
   const departmentRepository = {
-    model: jest.fn().mockReturnValue(departmentModelAdapter ?? buildDepartmentModelAdapter()),
+    findIds: jest.fn().mockResolvedValue(departmentIds),
   }
-  const msgAdapter = messageModelAdapter ?? buildMessageModelAdapter()
   const messageRepository = {
-    model: jest.fn().mockReturnValue(msgAdapter),
+    lastMessagePerRoom: jest.fn().mockResolvedValue(messageLastPerRoom),
+    countForRoom: jest.fn().mockResolvedValue(messageCount),
+    findPagedForRoom: jest.fn().mockResolvedValue(messageFind),
   }
   const defaultRoomRepository = {
     findForLicensee: jest.fn().mockResolvedValue([]),
     findOpenForContact: jest.fn().mockResolvedValue(null),
     findFirst: jest.fn().mockResolvedValue(null),
+    findById: jest.fn().mockResolvedValue(null),
+    close: jest.fn().mockResolvedValue(undefined),
     create: jest.fn().mockResolvedValue({ _id: 'new-room-id', status: 'pending' }),
   }
   const defaultContactRepository = {
     findFirst: jest.fn().mockResolvedValue(null),
+    findIds: jest.fn().mockResolvedValue([]),
   }
 
   const controller = new RoomsController({
@@ -75,7 +55,6 @@ function buildController({
     messageRepository,
     roomRepository: roomRepository ?? defaultRoomRepository,
     contactRepository: contactRepository ?? defaultContactRepository,
-    msgAdapter,
   }
 }
 
@@ -106,20 +85,20 @@ describe('RoomsController', () => {
 
     it('returns rooms for user licensee (happy path)', async () => {
       const rooms = [
-        { _id: 'room-1', contact: { _id: 'contact-1', name: 'Alice', number: '5511999990001' } },
-        { _id: 'room-2', contact: { _id: 'contact-2', name: 'Bob', number: '5511999990002' } },
+        { id: 1, contact: { _id: 'contact-1', name: 'Alice', number: '5511999990001' } },
+        { id: 2, contact: { _id: 'contact-2', name: 'Bob', number: '5511999990002' } },
       ]
       const roomRepository = {
         findForLicensee: jest.fn().mockResolvedValue(rooms),
         findOpenForContact: jest.fn().mockResolvedValue(null),
         findFirst: jest.fn().mockResolvedValue(null),
+        findById: jest.fn().mockResolvedValue(null),
+        close: jest.fn().mockResolvedValue(undefined),
         create: jest.fn(),
       }
-      const msgAdapter = buildMessageModelAdapter({ aggregateResult: [] })
       const { controller } = buildController({
         user: AGENT_USER,
         roomRepository,
-        messageModelAdapter: msgAdapter,
       })
       const req = { userId: 'user-id', query: { page: '1' } }
       const res = buildResponse()
@@ -139,17 +118,17 @@ describe('RoomsController', () => {
     })
 
     it('returns only rooms in agent departments when agent belongs to departments', async () => {
-      const departments = [{ _id: 'department-1' }]
-      const departmentAdapter = buildDepartmentModelAdapter(departments)
       const roomRepository = {
         findForLicensee: jest.fn().mockResolvedValue([]),
         findOpenForContact: jest.fn(),
         findFirst: jest.fn(),
+        findById: jest.fn().mockResolvedValue(null),
+        close: jest.fn().mockResolvedValue(undefined),
         create: jest.fn(),
       }
       const { controller } = buildController({
         user: AGENT_USER,
-        departmentModelAdapter: departmentAdapter,
+        departmentIds: ['department-1'],
         roomRepository,
       })
       const req = { userId: 'user-id', query: {} }
@@ -164,16 +143,17 @@ describe('RoomsController', () => {
     })
 
     it('passes empty departmentIds when agent has no departments', async () => {
-      const departmentAdapter = buildDepartmentModelAdapter([])
       const roomRepository = {
         findForLicensee: jest.fn().mockResolvedValue([]),
         findOpenForContact: jest.fn(),
         findFirst: jest.fn(),
+        findById: jest.fn().mockResolvedValue(null),
+        close: jest.fn().mockResolvedValue(undefined),
         create: jest.fn(),
       }
       const { controller } = buildController({
         user: AGENT_USER,
-        departmentModelAdapter: departmentAdapter,
+        departmentIds: [],
         roomRepository,
       })
       const req = { userId: 'user-id', query: {} }
@@ -192,6 +172,8 @@ describe('RoomsController', () => {
         findForLicensee: jest.fn().mockResolvedValue([]),
         findOpenForContact: jest.fn(),
         findFirst: jest.fn(),
+        findById: jest.fn().mockResolvedValue(null),
+        close: jest.fn().mockResolvedValue(undefined),
         create: jest.fn(),
       }
       const { controller } = buildController({ user: SUPER_USER, roomRepository })
@@ -206,13 +188,15 @@ describe('RoomsController', () => {
 
     it('sets hasMore true when DB returns more than 20 rooms', async () => {
       const manyRooms = Array.from({ length: 21 }, (_, i) => ({
-        _id: `room-${i}`,
+        id: i + 1,
         contact: { _id: `contact-${i}`, name: `User ${i}` },
       }))
       const roomRepository = {
         findForLicensee: jest.fn().mockResolvedValue(manyRooms),
         findOpenForContact: jest.fn(),
         findFirst: jest.fn(),
+        findById: jest.fn().mockResolvedValue(null),
+        close: jest.fn().mockResolvedValue(undefined),
         create: jest.fn(),
       }
       const { controller } = buildController({ user: AGENT_USER, roomRepository })
@@ -240,7 +224,10 @@ describe('RoomsController', () => {
     })
 
     it('returns 404 when contact not found', async () => {
-      const contactRepository = { findFirst: jest.fn().mockResolvedValue(null) }
+      const contactRepository = {
+        findFirst: jest.fn().mockResolvedValue(null),
+        findIds: jest.fn().mockResolvedValue([]),
+      }
       const { controller } = buildController({ user: AGENT_USER, contactRepository })
       const req = { userId: 'user-id', body: { contactId: 'nonexistent-contact' } }
       const res = buildResponse()
@@ -252,7 +239,10 @@ describe('RoomsController', () => {
 
     it('returns 403 when contact belongs to a different licensee', async () => {
       const contact = { _id: 'contact-id', licensee: 'other-licensee-id' }
-      const contactRepository = { findFirst: jest.fn().mockResolvedValue(contact) }
+      const contactRepository = {
+        findFirst: jest.fn().mockResolvedValue(contact),
+        findIds: jest.fn().mockResolvedValue([]),
+      }
       const { controller } = buildController({ user: AGENT_USER, contactRepository })
       const req = { userId: 'user-id', body: { contactId: 'contact-id' } }
       const res = buildResponse()
@@ -265,11 +255,16 @@ describe('RoomsController', () => {
     it('returns existing open room (200) when one already exists for the contact', async () => {
       const existingRoom = { _id: 'existing-room', status: 'open' }
       const contact = { _id: 'contact-id', licensee: 'licensee-id' }
-      const contactRepository = { findFirst: jest.fn().mockResolvedValue(contact) }
+      const contactRepository = {
+        findFirst: jest.fn().mockResolvedValue(contact),
+        findIds: jest.fn().mockResolvedValue([]),
+      }
       const roomRepository = {
         findForLicensee: jest.fn(),
         findOpenForContact: jest.fn().mockResolvedValue(existingRoom),
         findFirst: jest.fn(),
+        findById: jest.fn().mockResolvedValue(null),
+        close: jest.fn().mockResolvedValue(undefined),
         create: jest.fn(),
       }
       const { controller } = buildController({ user: AGENT_USER, contactRepository, roomRepository })
@@ -286,11 +281,16 @@ describe('RoomsController', () => {
     it('creates and returns a new room (201) for a valid contact', async () => {
       const newRoom = { _id: 'new-room-id', status: 'pending' }
       const contact = { _id: 'contact-id', licensee: 'licensee-id' }
-      const contactRepository = { findFirst: jest.fn().mockResolvedValue(contact) }
+      const contactRepository = {
+        findFirst: jest.fn().mockResolvedValue(contact),
+        findIds: jest.fn().mockResolvedValue([]),
+      }
       const roomRepository = {
         findForLicensee: jest.fn(),
         findOpenForContact: jest.fn().mockResolvedValue(null),
         findFirst: jest.fn(),
+        findById: jest.fn().mockResolvedValue(null),
+        close: jest.fn().mockResolvedValue(undefined),
         create: jest.fn().mockResolvedValue(newRoom),
       }
       const { controller } = buildController({ user: AGENT_USER, contactRepository, roomRepository })
@@ -321,6 +321,8 @@ describe('RoomsController', () => {
         findForLicensee: jest.fn(),
         findOpenForContact: jest.fn(),
         findFirst: jest.fn().mockResolvedValue(null),
+        findById: jest.fn().mockResolvedValue(null),
+        close: jest.fn().mockResolvedValue(undefined),
         create: jest.fn(),
       }
       const { controller } = buildController({ user: AGENT_USER, roomRepository })
@@ -335,12 +337,15 @@ describe('RoomsController', () => {
     it('returns 403 when user licensee does not match room contact licensee', async () => {
       const room = {
         _id: 'room-id',
+        id: 42,
         contact: { _id: 'contact-id', licensee: 'other-licensee-id' },
       }
       const roomRepository = {
         findForLicensee: jest.fn(),
         findOpenForContact: jest.fn(),
         findFirst: jest.fn().mockResolvedValue(room),
+        findById: jest.fn().mockResolvedValue(null),
+        close: jest.fn().mockResolvedValue(undefined),
         create: jest.fn(),
       }
       const { controller } = buildController({ user: AGENT_USER, roomRepository })
@@ -359,16 +364,23 @@ describe('RoomsController', () => {
       ]
       const room = {
         _id: 'room-id',
+        id: 42,
         contact: { _id: 'contact-id', licensee: 'licensee-id' },
       }
       const roomRepository = {
         findForLicensee: jest.fn(),
         findOpenForContact: jest.fn(),
         findFirst: jest.fn().mockResolvedValue(room),
+        findById: jest.fn().mockResolvedValue(null),
+        close: jest.fn().mockResolvedValue(undefined),
         create: jest.fn(),
       }
-      const msgAdapter = buildMessageModelAdapter({ countResult: 2, findResult: msgs })
-      const { controller } = buildController({ user: AGENT_USER, roomRepository, messageModelAdapter: msgAdapter })
+      const { controller, messageRepository } = buildController({
+        user: AGENT_USER,
+        roomRepository,
+        messageCount: 2,
+        messageFind: msgs,
+      })
       const req = { userId: 'user-id', query: { page: '1' }, params: { roomId: 'room-id' } }
       const res = buildResponse()
 
@@ -380,8 +392,8 @@ describe('RoomsController', () => {
       expect(result.total).toBe(2)
       expect(result.page).toBe(1)
       expect(result.hasMore).toBe(false)
-      expect(msgAdapter.find).toHaveBeenCalledWith({ room: 'room-id' })
-      expect(msgAdapter._findChain.sort).toHaveBeenCalledWith({ createdAt: 1 })
+      expect(messageRepository.countForRoom).toHaveBeenCalledWith(42)
+      expect(messageRepository.findPagedForRoom).toHaveBeenCalledWith(42, 1, 30)
     })
 
     it('sets hasMore true when more messages exist beyond limit', async () => {
@@ -392,16 +404,23 @@ describe('RoomsController', () => {
       }))
       const room = {
         _id: 'room-id',
+        id: 42,
         contact: { _id: 'contact-id', licensee: 'licensee-id' },
       }
       const roomRepository = {
         findForLicensee: jest.fn(),
         findOpenForContact: jest.fn(),
         findFirst: jest.fn().mockResolvedValue(room),
+        findById: jest.fn().mockResolvedValue(null),
+        close: jest.fn().mockResolvedValue(undefined),
         create: jest.fn(),
       }
-      const msgAdapter = buildMessageModelAdapter({ countResult: 35, findResult: manyMsgs })
-      const { controller } = buildController({ user: AGENT_USER, roomRepository, messageModelAdapter: msgAdapter })
+      const { controller } = buildController({
+        user: AGENT_USER,
+        roomRepository,
+        messageCount: 35,
+        messageFind: manyMsgs,
+      })
       const req = { userId: 'user-id', query: {}, params: { roomId: 'room-id' } }
       const res = buildResponse()
 
@@ -417,16 +436,23 @@ describe('RoomsController', () => {
       const msgs = [{ _id: 'msg-1', text: 'Hello', createdAt: new Date() }]
       const room = {
         _id: 'room-id',
+        id: 42,
         contact: { _id: 'contact-id', licensee: 'any-licensee-id' },
       }
       const roomRepository = {
         findForLicensee: jest.fn(),
         findOpenForContact: jest.fn(),
         findFirst: jest.fn().mockResolvedValue(room),
+        findById: jest.fn().mockResolvedValue(null),
+        close: jest.fn().mockResolvedValue(undefined),
         create: jest.fn(),
       }
-      const msgAdapter = buildMessageModelAdapter({ countResult: 1, findResult: msgs })
-      const { controller } = buildController({ user: SUPER_USER, roomRepository, messageModelAdapter: msgAdapter })
+      const { controller } = buildController({
+        user: SUPER_USER,
+        roomRepository,
+        messageCount: 1,
+        messageFind: msgs,
+      })
       const req = { userId: 'user-id', query: {}, params: { roomId: 'room-id' } }
       const res = buildResponse()
 

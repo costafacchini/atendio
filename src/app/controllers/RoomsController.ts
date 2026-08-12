@@ -1,21 +1,37 @@
 import { Request, Response } from 'express'
 import { IRepository } from '@repositories/repository'
-import { IQueryableRepository } from '../queries/QueryBuilder'
 import { IUser, IRoom, IContact } from '../../types'
 
-const EXCLUDE_SYSTEM_CLOSE = { $nor: [{ kind: 'text', text: 'Chat encerrado pelo agente' }] }
-
-interface IRoomRepository extends IQueryableRepository<IRoom> {
-  findForLicensee(licenseeId: string, opts?: { departmentIds?: any[]; page?: number; limit?: number }): Promise<any[]>
+interface IRoomRepository extends IRepository<IRoom> {
+  findForLicensee(
+    licenseeId: string | number,
+    opts?: { departmentIds?: number[]; contactIds?: number[]; page?: number; limit?: number },
+  ): Promise<any[]>
   findOpenForContact(contactId: string): Promise<IRoom | null>
+  findById(id: string | number): Promise<IRoom | null>
+  close(id: string | number): Promise<void>
+}
+
+interface IMessageRepository {
+  lastMessagePerRoom(roomIds: number[]): Promise<{ room: number; text: string | null; createdAt: Date }[]>
+  countForRoom(roomId: number): Promise<number>
+  findPagedForRoom(roomId: number, page: number, limit: number): Promise<any[]>
+}
+
+interface IDepartmentRepository {
+  findIds(params: { users?: string | number; licensee?: string | number; active?: boolean }): Promise<number[]>
+}
+
+interface IContactRepository extends IRepository<IContact> {
+  findIds(params: Record<string, unknown>): Promise<number[]>
 }
 
 class RoomsController {
   userRepository: IRepository<IUser>
   roomRepository: IRoomRepository
-  messageRepository: IQueryableRepository<IRoom>
-  departmentRepository: IQueryableRepository<IRoom>
-  contactRepository: IRepository<IContact>
+  messageRepository: IMessageRepository
+  departmentRepository: IDepartmentRepository
+  contactRepository: IContactRepository
 
   constructor({
     userRepository,
@@ -26,9 +42,9 @@ class RoomsController {
   }: {
     userRepository?: IRepository<IUser>
     roomRepository?: IRoomRepository
-    messageRepository?: IQueryableRepository<IRoom>
-    departmentRepository?: IQueryableRepository<IRoom>
-    contactRepository?: IRepository<IContact>
+    messageRepository?: IMessageRepository
+    departmentRepository?: IDepartmentRepository
+    contactRepository?: IContactRepository
   } = {}) {
     this.userRepository = userRepository!
     this.roomRepository = roomRepository!
@@ -65,36 +81,39 @@ class RoomsController {
         licenseeId = this._resolveLicenseeId(user)
       }
 
-      const agentSectors = await this.departmentRepository
-        .model()
-        .find({ users: req.userId, licensee: licenseeId, active: true })
-        .select('_id')
-        .lean()
+      // Step 1: get contact IDs for this licensee (scope rooms to licensee via contacts)
+      const contactIds = await this.contactRepository.findIds({ licensee: licenseeId })
 
-      const departmentIds = agentSectors.map((s: any) => s._id)
+      // Step 2: get agent's department IDs
+      const agentDepts = await this.departmentRepository.findIds({
+        users: req.userId,
+        licensee: licenseeId,
+        active: true,
+      })
+
       const page = Math.max(1, parseInt(req.query.page as string) || 1)
       const limit = 20
 
-      const results = await this.roomRepository.findForLicensee(licenseeId, { departmentIds, page, limit })
+      // Step 3: get rooms
+      const results = await this.roomRepository.findForLicensee(licenseeId, {
+        departmentIds: agentDepts,
+        contactIds,
+        page,
+        limit,
+      })
 
       const hasMore = results.length > limit
       const rooms: any[] = hasMore ? results.slice(0, limit) : results
 
-      const roomIds = rooms.map((r: any) => r._id)
-      const lastMessages = await this.messageRepository
-        .model()
-        .aggregate([
-          { $match: { room: { $in: roomIds }, ...EXCLUDE_SYSTEM_CLOSE } },
-          { $sort: { createdAt: -1 } },
-          { $group: { _id: '$room', text: { $first: '$text' }, createdAt: { $first: '$createdAt' } } },
-        ])
-
-      const lastMsgMap: Record<string, any> = {}
-      for (const m of lastMessages) lastMsgMap[m._id.toString()] = m
+      // Step 4: last message per room
+      const roomIds = rooms.map((r: any) => r.id as number)
+      const lastMessages = await this.messageRepository.lastMessagePerRoom(roomIds)
+      const lastMsgMap: Record<number, any> = {}
+      for (const m of lastMessages) lastMsgMap[m.room] = m
 
       const roomsWithLast = rooms.map((r: any) => ({
         ...r,
-        lastMessage: lastMsgMap[r._id.toString()] ?? null,
+        lastMessage: lastMsgMap[r.id] ?? null,
       }))
 
       return res.status(200).json({ rooms: roomsWithLast, hasMore })
@@ -153,16 +172,10 @@ class RoomsController {
 
       const page = Math.max(1, parseInt(req.query.page as string) || 1)
       const limit = 30
+      const roomId = (room as any).id as number
 
-      const total = await this.messageRepository.model().countDocuments({ room: room._id })
-      const messages = await this.messageRepository
-        .model()
-        .find({ room: room._id })
-        .sort({ createdAt: 1 })
-        .skip((page - 1) * limit)
-        .limit(limit + 1)
-        .lean()
-
+      const total = await this.messageRepository.countForRoom(roomId)
+      const messages = await this.messageRepository.findPagedForRoom(roomId, page, limit)
       const hasMore = messages.length > limit
       const pageMessages = hasMore ? messages.slice(0, limit) : messages
 
@@ -177,23 +190,21 @@ class RoomsController {
       const user = await this._resolveUser(req)
       if (!user) return res.status(404).json({ errors: { message: 'User not found' } })
 
-      const room = await this.roomRepository.model().findById(req.params.roomId as string)
+      const room = await this.roomRepository.findById(req.params.roomId as string)
       if (!room) return res.status(404).json({ errors: { message: 'Room not found' } })
 
       if (user.role !== 'super') {
         const userLicenseeId = this._resolveLicenseeId(user)?.toString()
-        const contact = await this.contactRepository.findFirst({ _id: room.contact })
+        const contact = await this.contactRepository.findFirst({ _id: (room as any).contact })
         const roomLicenseeId = (contact?.licensee as any)?._id?.toString() ?? contact?.licensee?.toString() ?? null
         if (userLicenseeId !== roomLicenseeId) {
           return res.status(403).json({ errors: { message: 'Forbidden' } })
         }
       }
 
-      if (room.closed) return res.status(200).json({ message: 'Already closed' })
+      if ((room as any).closed) return res.status(200).json({ message: 'Already closed' })
 
-      room.status = 'closed'
-      await room.save()
-
+      await this.roomRepository.close(req.params.roomId)
       return res.status(200).json({ message: 'Room closed' })
     } catch (err: any) {
       return res.status(500).json({ errors: { message: `Erro interno do servidor: ${err.message}` } })
