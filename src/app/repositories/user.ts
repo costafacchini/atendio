@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt'
-import { RepositoryMemory, PrismaRepository } from './repository'
+import { RepositoryMemory, PrismaRepository, sortRecords } from './repository'
 import { IUser } from '../../types'
 import { getPrismaClient } from '../../config/postgres'
 import { tryGetActiveRepositories } from './activeState'
@@ -82,6 +82,29 @@ class UserRepositoryMemory extends RepositoryMemory<IUser> {
     return record
   }
 
+  async findManyUsers({
+    licensee,
+    expression,
+    page,
+    limit,
+  }: {
+    licensee?: string
+    expression?: string
+    page?: number
+    limit?: number
+  }): Promise<IUser[]> {
+    const params: any = {}
+    if (licensee) params.licensee = licensee
+    if (expression) {
+      params.$or = [{ name: new RegExp(expression, 'i') }, { email: new RegExp(expression, 'i') }]
+    }
+
+    const records = (await this.find(params)) as any[]
+    const sorted = sortRecords(records, { createdAt: 'asc' })
+    if (page == null || limit == null) return sorted
+    return sorted.slice((page - 1) * limit, page * limit)
+  }
+
   // The Prisma repo enforces constraints at the DB level; memory repo skips schema validation.
   async validateUserFields(_fields = {}) {
     // no-op: schema validation is handled by Prisma in production
@@ -117,6 +140,36 @@ class PrismaUserDatabaseRepository extends PrismaRepository<IUser> {
   async update(id: string, fields: Partial<IUser> = {}): Promise<{ acknowledged: boolean }> {
     const prepared = await this.hashPasswordIfPresent(fields)
     return await super.update(id, prepared)
+  }
+
+  async findManyUsers({
+    licensee,
+    expression,
+    page,
+    limit,
+  }: {
+    licensee?: string
+    expression?: string
+    page?: number
+    limit?: number
+  }): Promise<IUser[]> {
+    const where: any = {}
+    if (licensee) where.licensee = parseInt(String(licensee), 10)
+    if (expression) {
+      where.OR = [
+        { name: { contains: expression, mode: 'insensitive' } },
+        { email: { contains: expression, mode: 'insensitive' } },
+      ]
+    }
+
+    const query: any = { where, orderBy: { createdAt: 'asc' } }
+    if (page != null && limit != null) {
+      query.skip = (page - 1) * limit
+      query.take = limit
+    }
+
+    const records = await getPrismaClient().user.findMany(query)
+    return this.fromDBMany(records) as IUser[]
   }
 
   private async hashPasswordIfPresent<F extends Partial<IUser>>(fields: F): Promise<F> {

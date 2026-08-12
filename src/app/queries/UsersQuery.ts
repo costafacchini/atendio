@@ -1,16 +1,18 @@
-import { QueryBuilder, IQueryableRepository } from './QueryBuilder'
-import { stringifyObjectIds } from '@repositories/repository'
+import { IRepository } from '@repositories/repository'
 import { IUser } from '../../types'
 
+interface IUserQueryRepository extends IRepository<IUser> {
+  findManyUsers(opts: { licensee?: string; expression?: string; page?: number; limit?: number }): Promise<IUser[]>
+}
+
 class UsersQuery {
-  userRepository: IQueryableRepository<IUser> | undefined
+  userRepository: IUserQueryRepository | undefined
   pageClause: number | undefined
   limitClause: number | undefined
   licenseeClause: string | undefined
   expressionClause: string | undefined
-  expressionActive: boolean | undefined
 
-  constructor({ userRepository }: { userRepository?: IQueryableRepository<IUser> } = {}) {
+  constructor({ userRepository }: { userRepository?: IUserQueryRepository } = {}) {
     this.userRepository = userRepository
   }
 
@@ -31,17 +33,12 @@ class UsersQuery {
   }
 
   async all(): Promise<IUser[]> {
-    const query = new QueryBuilder(this.userRepository!.model())
-    query.sortBy('createdAt', 1)
-
-    if (this.pageClause) query.page(this.pageClause, this.limitClause!)
-
-    if (this.licenseeClause) query.filterBy('licensee', this.licenseeClause)
-
-    if (this.expressionClause) query.filterByExpression(['name', 'email'], this.expressionClause)
-
-    const docs = await query.getQuery().lean().exec()
-    return docs.map(stringifyObjectIds)
+    return await this.userRepository!.findManyUsers({
+      licensee: this.licenseeClause,
+      expression: this.expressionClause,
+      page: this.pageClause,
+      limit: this.limitClause,
+    })
   }
 }
 
