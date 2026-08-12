@@ -110,6 +110,18 @@ describe('OnboardAccount', () => {
     expect(result.user.language).toEqual('pt')
   })
 
+  it('generates a unique apiToken for the licensee', async () => {
+    const result1 = await onboardAccount.execute(validInput)
+    licenseeRepository = new LicenseeRepositoryMemory()
+    userRepository = new UserRepositoryMemory()
+    onboardAccount = new OnboardAccount({ licenseeRepository, userRepository })
+    const result2 = await onboardAccount.execute({ ...validInput, licenseeEmail: 'other@acme.com', userEmail: 'other@doe.com' })
+
+    expect(result1.licensee.apiToken).toBeTruthy()
+    expect(result2.licensee.apiToken).toBeTruthy()
+    expect(result1.licensee.apiToken).not.toEqual(result2.licensee.apiToken)
+  })
+
   it('deletes the orphaned licensee and re-throws when user creation fails', async () => {
     jest.spyOn(userRepository, 'create').mockRejectedValueOnce(new Error('user creation failed'))
     const deleteSpy = jest.spyOn(licenseeRepository, 'delete')
