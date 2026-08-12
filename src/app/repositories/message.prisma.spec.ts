@@ -109,4 +109,63 @@ describeIf('PrismaMessageDatabaseRepository', () => {
       expect(found).toBeNull()
     })
   })
+
+  describe('#message analytics', () => {
+    describe('#countMessages', () => {
+      it('returns a number', async () => {
+        const n = await repo.countMessages({})
+        expect(typeof n).toBe('number')
+      })
+    })
+
+    describe('#groupByDay', () => {
+      it('returns array of { _id, count }', async () => {
+        const result = await repo.groupByDay(null, new Date('2020-01-01'), new Date())
+        expect(Array.isArray(result)).toBe(true)
+      })
+    })
+
+    describe('#groupByHour', () => {
+      it('returns array of { _id, count }', async () => {
+        const result = await repo.groupByHour(null, new Date('2020-01-01'), new Date())
+        expect(Array.isArray(result)).toBe(true)
+      })
+    })
+
+    describe('#avgQueueTime', () => {
+      it('returns a number', async () => {
+        const n = await repo.avgQueueTime(null, new Date('2020-01-01'), new Date())
+        expect(typeof n).toBe('number')
+      })
+    })
+
+    describe('#avgMessagesPerRoom', () => {
+      it('returns a number', async () => {
+        const n = await repo.avgMessagesPerRoom(null, new Date('2020-01-01'), new Date())
+        expect(typeof n).toBe('number')
+      })
+    })
+
+    describe('#lastMessagePerRoom', () => {
+      it('returns empty array for empty roomIds', async () => {
+        const result = await repo.lastMessagePerRoom([])
+        expect(result).toEqual([])
+      })
+    })
+
+    describe('#countForRoom', () => {
+      it('returns a number', async () => {
+        const n = await repo.countForRoom(999999)
+        expect(typeof n).toBe('number')
+        expect(n).toBe(0)
+      })
+    })
+
+    describe('#findPagedForRoom', () => {
+      it('returns an array', async () => {
+        const msgs = await repo.findPagedForRoom(999999, 1, 30)
+        expect(Array.isArray(msgs)).toBe(true)
+      })
+    })
+  })
 })
