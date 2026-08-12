@@ -1,10 +1,20 @@
 import { v4 as uuidv4 } from 'uuid'
+import { Prisma } from '../../../generated/prisma/client'
 import { IRepository, RepositoryMemory, PrismaRepository, comparableValue, sortRecords } from './repository'
 import { replace } from '../helpers/Emoji'
 import { requireDependency } from '../helpers/RequireDependency'
 import { IMessage, MessageKind, MessageDestination } from '../../types'
 import { getPrismaClient } from '../../config/postgres'
 import { tryGetActiveRepositories } from './activeState'
+
+// Prisma `where` clause that excludes the system "chat closed" message used by the agent UI.
+// Mirrors the Mongoose `{ $nor: [{ kind: 'text', text: 'Chat encerrado pelo agente' }] }` filter.
+const EXCLUDE_SYSTEM_CLOSE_WHERE = {
+  NOT: { AND: [{ kind: 'text' }, { text: 'Chat encerrado pelo agente' }] },
+}
+
+// Raw SQL fragment for the same filter, used inside $queryRaw templates.
+const EXCLUDE_SYSTEM_CLOSE_SQL = `NOT (kind = 'text' AND text = 'Chat encerrado pelo agente')`
 
 export interface IMessageRepository extends IRepository<IMessage> {
   createInteractiveMessages(fields: any): Promise<IMessage[]>
@@ -118,6 +128,120 @@ class PrismaMessageDatabaseRepository extends PrismaRepository<IMessage> {
     const result = super.toData(fields)
     delete result.cart
     return result
+  }
+
+  // params are Prisma-native where clauses, e.g. { sended: true, createdAt: { gte: d1, lt: d2 } }.
+  // The EXCLUDE_SYSTEM_CLOSE_WHERE filter is always applied.
+  async countMessages(params: Record<string, unknown> = {}): Promise<number> {
+    return await getPrismaClient().message.count({
+      where: { ...EXCLUDE_SYSTEM_CLOSE_WHERE, ...(params as any) },
+    })
+  }
+
+  // Returns message counts grouped by calendar day (UTC) within [startDate, endDate).
+  async groupByDay(
+    licenseeId: number | null,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{ _id: string; count: number }[]> {
+    const licenseeFilter = licenseeId != null ? Prisma.sql`AND licensee = ${licenseeId}` : Prisma.sql``
+    return await getPrismaClient().$queryRaw<{ _id: string; count: number }[]>`
+      SELECT
+        TO_CHAR("createdAt" AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS "_id",
+        COUNT(*)::int AS count
+      FROM messages
+      WHERE ${Prisma.raw(EXCLUDE_SYSTEM_CLOSE_SQL)}
+        AND "createdAt" >= ${startDate}
+        AND "createdAt" < ${endDate}
+        ${licenseeFilter}
+      GROUP BY 1
+      ORDER BY 1
+    `
+  }
+
+  // Returns message counts grouped by hour (UTC) within [startDate, endDate).
+  async groupByHour(
+    licenseeId: number | null,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{ _id: string; count: number }[]> {
+    const licenseeFilter = licenseeId != null ? Prisma.sql`AND licensee = ${licenseeId}` : Prisma.sql``
+    return await getPrismaClient().$queryRaw<{ _id: string; count: number }[]>`
+      SELECT
+        TO_CHAR("createdAt" AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24') AS "_id",
+        COUNT(*)::int AS count
+      FROM messages
+      WHERE ${Prisma.raw(EXCLUDE_SYSTEM_CLOSE_SQL)}
+        AND "createdAt" >= ${startDate}
+        AND "createdAt" < ${endDate}
+        ${licenseeFilter}
+      GROUP BY 1
+      ORDER BY 1
+    `
+  }
+
+  // Returns the average seconds between createdAt and sendedAt for messages sent within the window.
+  async avgQueueTime(licenseeId: number | null, startDate: Date, endDate: Date): Promise<number> {
+    const licenseeFilter = licenseeId != null ? Prisma.sql`AND licensee = ${licenseeId}` : Prisma.sql``
+    const rows = await getPrismaClient().$queryRaw<{ avg: number | null }[]>`
+      SELECT AVG(EXTRACT(EPOCH FROM ("sendedAt" - "createdAt")))::float AS avg
+      FROM messages
+      WHERE ${Prisma.raw(EXCLUDE_SYSTEM_CLOSE_SQL)}
+        AND "sendedAt" IS NOT NULL
+        AND "createdAt" >= ${startDate}
+        AND "createdAt" < ${endDate}
+        ${licenseeFilter}
+    `
+    return parseFloat((rows[0]?.avg ?? 0).toFixed(2))
+  }
+
+  // Returns the average number of messages per room for messages created within the window.
+  async avgMessagesPerRoom(licenseeId: number | null, startDate: Date, endDate: Date): Promise<number> {
+    const licenseeFilter = licenseeId != null ? Prisma.sql`AND licensee = ${licenseeId}` : Prisma.sql``
+    const rows = await getPrismaClient().$queryRaw<{ avg: number | null }[]>`
+      SELECT COALESCE(AVG(cnt)::float, 0) AS avg
+      FROM (
+        SELECT COUNT(*) AS cnt
+        FROM messages
+        WHERE room IS NOT NULL
+          AND ${Prisma.raw(EXCLUDE_SYSTEM_CLOSE_SQL)}
+          AND "createdAt" >= ${startDate}
+          AND "createdAt" < ${endDate}
+          ${licenseeFilter}
+        GROUP BY room
+      ) sub
+    `
+    return parseFloat((rows[0]?.avg ?? 0).toFixed(2))
+  }
+
+  // Returns the most-recent non-system message for each room in roomIds.
+  // Uses DISTINCT ON for a single efficient pass — Postgres-specific.
+  async lastMessagePerRoom(roomIds: number[]): Promise<{ room: number; text: string | null; createdAt: Date }[]> {
+    if (roomIds.length === 0) return []
+    return await getPrismaClient().$queryRaw<{ room: number; text: string | null; createdAt: Date }[]>(
+      Prisma.sql`
+        SELECT DISTINCT ON (room) room, text, "createdAt"
+        FROM messages
+        WHERE room = ANY(${roomIds})
+          AND ${Prisma.raw(EXCLUDE_SYSTEM_CLOSE_SQL)}
+        ORDER BY room, "createdAt" DESC
+      `,
+    )
+  }
+
+  async countForRoom(roomId: number): Promise<number> {
+    return await getPrismaClient().message.count({ where: { room: roomId } })
+  }
+
+  // Returns a page of messages for a room, ordered oldest-first.
+  // Fetches limit + 1 so the caller can detect whether a next page exists.
+  async findPagedForRoom(roomId: number, page: number, limit: number): Promise<any[]> {
+    return await getPrismaClient().message.findMany({
+      where: { room: roomId },
+      orderBy: { createdAt: 'asc' },
+      skip: (page - 1) * limit,
+      take: limit + 1,
+    })
   }
 }
 
