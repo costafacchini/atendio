@@ -113,6 +113,133 @@ class MessageRepositoryMemory extends RepositoryMemory<IMessage> {
       text: '🚨 ATENÇÃO\nO período de 24h para manter conversas está quase expirando. Faltam apenas 10 minutos para encerrar.',
     })
   }
+
+  async findFailed(startDate: Date | string, endDate: Date | string, licenseeId: string): Promise<IMessage[]> {
+    const params: any = {
+      sended: false,
+      createdAt: { $gte: new Date(startDate), $lt: new Date(endDate) },
+      licensee: licenseeId,
+      text: { $ne: 'Chat encerrado pelo agente' },
+    }
+    return (await this.find(params)) as IMessage[]
+  }
+
+  async findSended(startDate: Date | string, endDate: Date | string, licenseeId: string): Promise<IMessage[]> {
+    const params: any = {
+      sended: true,
+      createdAt: { $gte: new Date(startDate), $lt: new Date(endDate) },
+      licensee: licenseeId,
+    }
+    return (await this.find(params)) as IMessage[]
+  }
+
+  async findManyMessages({
+    createdAtStart,
+    createdAtEnd,
+    licensee,
+    contact,
+    kind,
+    destination,
+    sended,
+    sortField = 'createdAt',
+    sortOrder = -1,
+    page,
+    limit,
+  }: {
+    createdAtStart?: Date | string
+    createdAtEnd?: Date | string
+    licensee?: string
+    contact?: string
+    kind?: string
+    destination?: string
+    sended?: boolean
+    sortField?: string
+    sortOrder?: number | string
+    page?: number
+    limit?: number
+  }): Promise<IMessage[]> {
+    const params: any = {}
+    if (createdAtStart && createdAtEnd)
+      params.createdAt = { $gt: new Date(createdAtStart), $lt: new Date(createdAtEnd) }
+    if (licensee) params.licensee = licensee
+    if (contact) params.contact = contact
+    if (kind) params.kind = kind
+    if (destination) params.destination = destination
+    if (sended !== undefined) {
+      params.sended = sended
+      if (sended) {
+        params.text = { $ne: 'Chat encerrado pelo agente' }
+        params.ignored = { $ne: true }
+      }
+    }
+    const records = (await this.find(params)) as any[]
+    const sorted = sortRecords(records, { [sortField]: sortOrder === 'asc' || sortOrder === 1 ? 'asc' : 'desc' })
+    if (page == null || limit == null) return sorted
+    return sorted.slice((page - 1) * limit, page * limit)
+  }
+
+  async countManyMessages({
+    createdAtStart,
+    createdAtEnd,
+    licensee,
+    contact,
+    kind,
+    destination,
+    sended,
+  }: {
+    createdAtStart?: Date | string
+    createdAtEnd?: Date | string
+    licensee?: string
+    contact?: string
+    kind?: string
+    destination?: string
+    sended?: boolean
+  }): Promise<number> {
+    const params: any = {}
+    if (createdAtStart && createdAtEnd)
+      params.createdAt = { $gt: new Date(createdAtStart), $lt: new Date(createdAtEnd) }
+    if (licensee) params.licensee = licensee
+    if (contact) params.contact = contact
+    if (kind) params.kind = kind
+    if (destination) params.destination = destination
+    if (sended !== undefined) {
+      params.sended = sended
+      if (sended) {
+        params.text = { $ne: 'Chat encerrado pelo agente' }
+        params.ignored = { $ne: true }
+      }
+    }
+    const records = await this.find(params)
+    return records.length
+  }
+
+  async groupByLicenseeAndDay(
+    startDate: Date | string,
+    endDate: Date | string,
+    licenseeId?: string,
+  ): Promise<{ _id: string; days: { date: string; count: number }[] }[]> {
+    const params: any = { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } }
+    if (licenseeId) params.licensee = licenseeId
+    const records = (await this.find(params)) as any[]
+
+    const grouped = new Map<string, Map<string, number>>()
+    for (const record of records) {
+      const licKey = String((record.licensee as any)?._id ?? record.licensee)
+      const day = new Date(record.createdAt).toISOString().slice(0, 10)
+      if (!grouped.has(licKey)) grouped.set(licKey, new Map())
+      const dayMap = grouped.get(licKey)!
+      dayMap.set(day, (dayMap.get(day) ?? 0) + 1)
+    }
+
+    return Array.from(grouped.entries())
+      .sort(([a], [b]) => (a > b ? 1 : -1))
+      .map(([id, dayMap]) => ({
+        _id: id,
+        days: Array.from(dayMap.entries())
+          .sort(([a], [b]) => (a > b ? 1 : -1))
+          .map(([date, count]) => ({ date, count })),
+      }))
+  }
 }
 
 class PrismaMessageDatabaseRepository extends PrismaRepository<IMessage> {
@@ -242,6 +369,140 @@ class PrismaMessageDatabaseRepository extends PrismaRepository<IMessage> {
       skip: (page - 1) * limit,
       take: limit + 1,
     })
+  }
+
+  async findFailed(startDate: Date | string, endDate: Date | string, licenseeId: string): Promise<IMessage[]> {
+    const licId = parseInt(String(licenseeId), 10)
+    const records = await getPrismaClient().message.findMany({
+      where: {
+        sended: false,
+        createdAt: { gte: new Date(startDate), lt: new Date(endDate) },
+        licensee: licId,
+        NOT: { text: 'Chat encerrado pelo agente' },
+      },
+    })
+    return this.fromDBMany(records) as IMessage[]
+  }
+
+  async findSended(startDate: Date | string, endDate: Date | string, licenseeId: string): Promise<IMessage[]> {
+    const licId = parseInt(String(licenseeId), 10)
+    const records = await getPrismaClient().message.findMany({
+      where: {
+        sended: true,
+        createdAt: { gte: new Date(startDate), lt: new Date(endDate) },
+        licensee: licId,
+      },
+    })
+    return this.fromDBMany(records) as IMessage[]
+  }
+
+  async findManyMessages({
+    createdAtStart,
+    createdAtEnd,
+    licensee,
+    contact,
+    kind,
+    destination,
+    sended,
+    sortField = 'createdAt',
+    sortOrder = -1,
+    page,
+    limit,
+  }: {
+    createdAtStart?: Date | string
+    createdAtEnd?: Date | string
+    licensee?: string
+    contact?: string
+    kind?: string
+    destination?: string
+    sended?: boolean
+    sortField?: string
+    sortOrder?: number | string
+    page?: number
+    limit?: number
+  }): Promise<IMessage[]> {
+    const where: any = {}
+    if (createdAtStart && createdAtEnd) where.createdAt = { gt: new Date(createdAtStart), lt: new Date(createdAtEnd) }
+    if (licensee) where.licensee = parseInt(String(licensee), 10)
+    if (contact) where.contact = parseInt(String(contact), 10)
+    if (kind) where.kind = kind
+    if (destination) where.destination = destination
+    if (sended !== undefined) {
+      where.sended = sended
+      if (sended) {
+        where.NOT = { AND: [{ text: 'Chat encerrado pelo agente' }] }
+        where.ignored = { not: true }
+      }
+    }
+    const orderDir = sortOrder === 'asc' || sortOrder === 1 ? 'asc' : 'desc'
+    const query: any = { where, orderBy: { [sortField]: orderDir } }
+    if (page != null && limit != null) {
+      query.skip = (page - 1) * limit
+      query.take = limit
+    }
+    const records = await getPrismaClient().message.findMany(query)
+    return this.fromDBMany(records) as IMessage[]
+  }
+
+  async countManyMessages({
+    createdAtStart,
+    createdAtEnd,
+    licensee,
+    contact,
+    kind,
+    destination,
+    sended,
+  }: {
+    createdAtStart?: Date | string
+    createdAtEnd?: Date | string
+    licensee?: string
+    contact?: string
+    kind?: string
+    destination?: string
+    sended?: boolean
+  }): Promise<number> {
+    const where: any = {}
+    if (createdAtStart && createdAtEnd) where.createdAt = { gt: new Date(createdAtStart), lt: new Date(createdAtEnd) }
+    if (licensee) where.licensee = parseInt(String(licensee), 10)
+    if (contact) where.contact = parseInt(String(contact), 10)
+    if (kind) where.kind = kind
+    if (destination) where.destination = destination
+    if (sended !== undefined) {
+      where.sended = sended
+      if (sended) {
+        where.NOT = { AND: [{ text: 'Chat encerrado pelo agente' }] }
+        where.ignored = { not: true }
+      }
+    }
+    return await getPrismaClient().message.count({ where })
+  }
+
+  async groupByLicenseeAndDay(
+    startDate: Date | string,
+    endDate: Date | string,
+    licenseeId?: string,
+  ): Promise<{ _id: string; days: { date: string; count: number }[] }[]> {
+    const licenseeFilter =
+      licenseeId != null ? Prisma.sql`AND licensee = ${parseInt(String(licenseeId), 10)}` : Prisma.sql``
+    const rows = await getPrismaClient().$queryRaw<{ licensee_id: bigint; day: string; count: bigint }[]>`
+      SELECT
+        licensee AS licensee_id,
+        TO_CHAR("createdAt" AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS day,
+        COUNT(*) AS count
+      FROM messages
+      WHERE "createdAt" >= ${new Date(startDate)}
+        AND "createdAt" <= ${new Date(endDate)}
+        ${licenseeFilter}
+      GROUP BY licensee, day
+      ORDER BY licensee, day
+    `
+    const grouped = new Map<string, { date: string; count: number }[]>()
+    for (const row of rows) {
+      const key = String(row.licensee_id)
+      if (!grouped.has(key)) grouped.set(key, [])
+      grouped.get(key)!.push({ date: row.day, count: Number(row.count) })
+    }
+    return Array.from(grouped.entries()).map(([id, days]) => ({ _id: id, days }))
   }
 }
 

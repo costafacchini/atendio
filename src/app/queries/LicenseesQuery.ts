@@ -1,9 +1,21 @@
-import { QueryBuilder, IQueryableRepository } from './QueryBuilder'
-import { stringifyObjectIds } from '@repositories/repository'
+import { IRepository } from '@repositories/repository'
 import { ILicensee } from '../../types'
 
+interface ILicenseeQueryRepository extends IRepository<ILicensee> {
+  findManyLicensees(opts: {
+    chatDefault?: string
+    chatbotDefault?: string
+    whatsappDefault?: string
+    active?: boolean
+    expression?: string
+    excludedIds?: string[]
+    page?: number
+    limit?: number
+  }): Promise<ILicensee[]>
+}
+
 class LicenseesQuery {
-  licenseeRepository: IQueryableRepository<ILicensee> | undefined
+  licenseeRepository: ILicenseeQueryRepository | undefined
   pageClause: number | undefined
   limitClause: number | undefined
   chatClause: string | undefined
@@ -13,7 +25,7 @@ class LicenseesQuery {
   expressionActive: boolean | undefined
   excludedIdsClause: string[] | undefined
 
-  constructor({ licenseeRepository }: { licenseeRepository?: IQueryableRepository<ILicensee> } = {}) {
+  constructor({ licenseeRepository }: { licenseeRepository?: ILicenseeQueryRepository } = {}) {
     this.licenseeRepository = licenseeRepository
   }
 
@@ -50,29 +62,16 @@ class LicenseesQuery {
   }
 
   async all(): Promise<ILicensee[]> {
-    const query = new QueryBuilder(this.licenseeRepository!.model())
-    query.sortBy('createdAt', 1)
-
-    if (this.pageClause) query.page(this.pageClause, this.limitClause!)
-
-    if (this.chatClause) query.filterBy('chatDefault', this.chatClause)
-
-    if (this.chatbotClause) query.filterBy('chatbotDefault', this.chatbotClause)
-
-    if (this.whatsappClause) query.filterBy('whatsappDefault', this.whatsappClause)
-
-    if (this.expressionActive) query.filterBy('active', this.expressionActive)
-
-    if (this.expressionClause) query.filterByExpression(['name', 'email', 'phone'], this.expressionClause)
-
-    const chainedQuery = query.getQuery()
-
-    if (this.excludedIdsClause?.length) {
-      chainedQuery.where('_id').nin(this.excludedIdsClause)
-    }
-
-    const docs = await chainedQuery.lean().exec()
-    return docs.map(stringifyObjectIds)
+    return await this.licenseeRepository!.findManyLicensees({
+      chatDefault: this.chatClause,
+      chatbotDefault: this.chatbotClause,
+      whatsappDefault: this.whatsappClause,
+      active: this.expressionActive ? true : undefined,
+      expression: this.expressionClause,
+      excludedIds: this.excludedIdsClause,
+      page: this.pageClause,
+      limit: this.limitClause,
+    })
   }
 }
 

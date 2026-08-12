@@ -1,4 +1,4 @@
-import { RepositoryMemory, PrismaRepository } from './repository'
+import { RepositoryMemory, PrismaRepository, sortRecords } from './repository'
 import { ILicensee } from '../../types'
 import { getPrismaClient } from '../../config/postgres'
 import { tryGetActiveRepositories } from './activeState'
@@ -11,6 +11,42 @@ class LicenseeRepositoryMemory extends RepositoryMemory<ILicensee> {
   async save(document: any) {
     Object.assign(document, this.normalizeLicenseeFields(document))
     return await super.save(document)
+  }
+
+  async findManyLicensees({
+    chatDefault,
+    chatbotDefault,
+    whatsappDefault,
+    active,
+    expression,
+    excludedIds,
+    page,
+    limit,
+  }: {
+    chatDefault?: string
+    chatbotDefault?: string
+    whatsappDefault?: string
+    active?: boolean
+    expression?: string
+    excludedIds?: string[]
+    page?: number
+    limit?: number
+  }): Promise<ILicensee[]> {
+    const params: any = {}
+    if (chatDefault) params.chatDefault = chatDefault
+    if (chatbotDefault) params.chatbotDefault = chatbotDefault
+    if (whatsappDefault) params.whatsappDefault = whatsappDefault
+    if (active !== undefined) params.active = active
+    if (excludedIds && excludedIds.length > 0) params._id = { $nin: excludedIds }
+    if (expression) {
+      const words = expression.split(' ').filter(Boolean)
+      const fields = ['name', 'email', 'phone']
+      params.$or = words.flatMap((word) => fields.map((field) => ({ [field]: new RegExp(word, 'i') })))
+    }
+    const records = (await this.find(params)) as any[]
+    const sorted = sortRecords(records, { createdAt: 'asc' })
+    if (page == null || limit == null) return sorted
+    return sorted.slice((page - 1) * limit, page * limit)
   }
 
   normalizeLicenseeFields(fields: Record<string, any> = {}) {
@@ -56,6 +92,45 @@ class PrismaLicenseeDatabaseRepository extends PrismaRepository<ILicensee> {
 
   async save(document: ILicensee): Promise<ILicensee> {
     return await super.save(this.applyWhatsappUrl(document) as ILicensee)
+  }
+
+  async findManyLicensees({
+    chatDefault,
+    chatbotDefault,
+    whatsappDefault,
+    active,
+    expression,
+    excludedIds,
+    page,
+    limit,
+  }: {
+    chatDefault?: string
+    chatbotDefault?: string
+    whatsappDefault?: string
+    active?: boolean
+    expression?: string
+    excludedIds?: string[]
+    page?: number
+    limit?: number
+  }): Promise<ILicensee[]> {
+    const where: any = {}
+    if (chatDefault) where.chatDefault = chatDefault
+    if (chatbotDefault) where.chatbotDefault = chatbotDefault
+    if (whatsappDefault) where.whatsappDefault = whatsappDefault
+    if (active !== undefined) where.active = active
+    if (excludedIds && excludedIds.length > 0) where.id = { notIn: excludedIds.map((id) => parseInt(id, 10)) }
+    if (expression) {
+      const words = expression.split(' ').filter(Boolean)
+      const fields = ['name', 'email', 'phone']
+      where.OR = words.flatMap((word) => fields.map((field) => ({ [field]: { contains: word, mode: 'insensitive' } })))
+    }
+    const query: any = { where, orderBy: { createdAt: 'asc' } }
+    if (page != null && limit != null) {
+      query.skip = (page - 1) * limit
+      query.take = limit
+    }
+    const records = await getPrismaClient().licensee.findMany(query)
+    return this.fromDBMany(records) as ILicensee[]
   }
 
   private applyWhatsappUrl<F extends Partial<ILicensee>>(fields: F): F {

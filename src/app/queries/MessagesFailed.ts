@@ -1,18 +1,21 @@
-import { stringifyObjectIds } from '@repositories/repository'
-import { IQueryableRepository } from './QueryBuilder'
+import { IRepository } from '@repositories/repository'
 import { IMessage } from '../../types'
+
+interface IMessageFailedRepository extends IRepository<IMessage> {
+  findFailed(startDate: Date | string, endDate: Date | string, licenseeId: string): Promise<IMessage[]>
+}
 
 class MessagesFailedQuery {
   startDate: Date | string
   endDate: Date | string
   licenseeId: string
-  messageRepository: IQueryableRepository<IMessage> | undefined
+  messageRepository: IMessageFailedRepository | undefined
 
   constructor(
     startDate: Date | string,
     endDate: Date | string,
     licenseeId: string,
-    { messageRepository }: { messageRepository?: IQueryableRepository<IMessage> } = {},
+    { messageRepository }: { messageRepository?: IMessageFailedRepository } = {},
   ) {
     this.startDate = startDate
     this.endDate = endDate
@@ -21,20 +24,7 @@ class MessagesFailedQuery {
   }
 
   async all(): Promise<IMessage[]> {
-    const docs = await this.messageRepository!.model()
-      .find({
-        sended: false,
-        createdAt: {
-          $gte: this.startDate,
-          $lt: this.endDate,
-        },
-        licensee: this.licenseeId,
-        text: {
-          $ne: 'Chat encerrado pelo agente',
-        },
-      })
-      .lean()
-    return docs.map(stringifyObjectIds)
+    return await this.messageRepository!.findFailed(this.startDate, this.endDate, this.licenseeId)
   }
 }
 

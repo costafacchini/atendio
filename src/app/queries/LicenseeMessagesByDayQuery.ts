@@ -1,5 +1,4 @@
 import moment from 'moment-timezone'
-import { IQueryableRepository } from './QueryBuilder'
 import { IRepository } from '@repositories/repository'
 import { ILicensee, IMessage } from '../../types'
 
@@ -9,10 +8,18 @@ interface LicenseeMessagesByDayResult {
   days: Array<{ date: string; count: number }>
 }
 
+interface IMessageGroupRepository extends IRepository<IMessage> {
+  groupByLicenseeAndDay(
+    startDate: Date | string,
+    endDate: Date | string,
+    licenseeId?: string,
+  ): Promise<{ _id: string; days: { date: string; count: number }[] }[]>
+}
+
 class LicenseeMessagesByDayQuery {
   startDate: Date | string
   endDate: Date | string
-  messageRepository: IQueryableRepository<IMessage> | undefined
+  messageRepository: IMessageGroupRepository | undefined
   licenseeRepository: IRepository<ILicensee> | undefined
   licenseeClause: string | undefined
 
@@ -23,7 +30,7 @@ class LicenseeMessagesByDayQuery {
       messageRepository,
       licenseeRepository,
     }: {
-      messageRepository?: IQueryableRepository<IMessage>
+      messageRepository?: IMessageGroupRepository
       licenseeRepository?: IRepository<ILicensee>
     } = {},
   ) {
@@ -60,64 +67,16 @@ class LicenseeMessagesByDayQuery {
     return days
   }
 
-  buildAggregation() {
-    const match: Record<string, any> = {
-      createdAt: {
-        $gte: this.startDate,
-        $lte: this.endDate,
-      },
-    }
-
-    if (this.licenseeClause) {
-      match.licensee = this.licenseeClause.toString()
-    }
-
-    return [
-      {
-        $match: match,
-      },
-      {
-        $group: {
-          _id: {
-            licensee: '$licensee',
-            day: {
-              $dateToString: {
-                format: '%Y-%m-%d',
-                date: '$createdAt',
-                timezone: 'UTC',
-              },
-            },
-          },
-          count: { $sum: 1 },
-        },
-      },
-      {
-        $sort: {
-          '_id.licensee': 1,
-          '_id.day': 1,
-        },
-      },
-      {
-        $group: {
-          _id: '$_id.licensee',
-          days: {
-            $push: {
-              date: '$_id.day',
-              count: '$count',
-            },
-          },
-        },
-      },
-    ]
-  }
-
   async all(): Promise<LicenseeMessagesByDayResult[]> {
     this.validateDates()
 
-    const aggregation = this.buildAggregation()
-    const rawCounts = await this.messageRepository!.model().aggregate(aggregation)
+    const rawCounts = await this.messageRepository!.groupByLicenseeAndDay(
+      this.startDate,
+      this.endDate,
+      this.licenseeClause,
+    )
 
-    const mapDays = rawCounts.reduce((acc: Record<string, Array<{ date: string; count: number }>>, current: any) => {
+    const mapDays = rawCounts.reduce((acc: Record<string, Array<{ date: string; count: number }>>, current) => {
       acc[current._id.toString()] = current.days
       return acc
     }, {})

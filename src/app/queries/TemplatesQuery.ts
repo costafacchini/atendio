@@ -1,15 +1,23 @@
-import { QueryBuilder, IQueryableRepository } from './QueryBuilder'
-import { stringifyObjectIds } from '@repositories/repository'
+import { IRepository } from '@repositories/repository'
 import { ITemplate } from '../../types'
 
+interface ITemplateQueryRepository extends IRepository<ITemplate> {
+  findManyTemplates(opts: {
+    licensee?: string
+    expression?: string
+    page?: number
+    limit?: number
+  }): Promise<ITemplate[]>
+}
+
 class TemplatesQuery {
-  templateRepository: IQueryableRepository<ITemplate> | undefined
+  templateRepository: ITemplateQueryRepository | undefined
   pageClause: number | undefined
   limitClause: number | undefined
   licenseeClause: string | undefined
   expressionClause: string | undefined
 
-  constructor({ templateRepository }: { templateRepository?: IQueryableRepository<ITemplate> } = {}) {
+  constructor({ templateRepository }: { templateRepository?: ITemplateQueryRepository } = {}) {
     this.templateRepository = templateRepository
   }
 
@@ -30,17 +38,12 @@ class TemplatesQuery {
   }
 
   async all(): Promise<ITemplate[]> {
-    const query = new QueryBuilder(this.templateRepository!.model())
-    query.sortBy('createdAt', 1)
-
-    if (this.pageClause) query.page(this.pageClause, this.limitClause!)
-
-    if (this.licenseeClause) query.filterBy('licensee', this.licenseeClause)
-
-    if (this.expressionClause) query.filterByExpression(['name', 'namespace'], this.expressionClause)
-
-    const docs = await query.getQuery().lean().exec()
-    return docs.map(stringifyObjectIds)
+    return await this.templateRepository!.findManyTemplates({
+      licensee: this.licenseeClause,
+      expression: this.expressionClause,
+      page: this.pageClause,
+      limit: this.limitClause,
+    })
   }
 }
 

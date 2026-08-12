@@ -1,9 +1,24 @@
-import { QueryBuilder, IQueryableRepository } from './QueryBuilder'
-import { stringifyObjectIds } from '@repositories/repository'
+import { IRepository } from '@repositories/repository'
 import { IContact } from '../../types'
 
+interface IContactQueryRepository extends IRepository<IContact> {
+  findManyContacts(opts: {
+    type?: string
+    talkingWithChatBot?: boolean
+    licensee?: string
+    expression?: string
+    startDate?: Date | string
+    endDate?: Date | string
+    isGroup?: boolean
+    updatedAtStart?: Date | string
+    updatedAtEnd?: Date | string
+    page?: number
+    limit?: number
+  }): Promise<IContact[]>
+}
+
 class ContactsQuery {
-  contactRepository: IQueryableRepository<IContact> | undefined
+  contactRepository: IContactQueryRepository | undefined
   pageClause: number | undefined
   limitClause: number | undefined
   typeClause: string | undefined
@@ -16,7 +31,7 @@ class ContactsQuery {
   updatedAtStartClause: Date | string | undefined
   updatedAtEndClause: Date | string | undefined
 
-  constructor({ contactRepository }: { contactRepository?: IQueryableRepository<IContact> } = {}) {
+  constructor({ contactRepository }: { contactRepository?: IContactQueryRepository } = {}) {
     this.contactRepository = contactRepository
   }
 
@@ -66,39 +81,19 @@ class ContactsQuery {
   }
 
   async all(): Promise<IContact[]> {
-    const query = new QueryBuilder(this.contactRepository!.model())
-    query.sortBy('createdAt', 1)
-    query.filterNotEqual('active', false)
-
-    if (this.pageClause) query.page(this.pageClause, this.limitClause!)
-
-    if (this.typeClause) query.filterBy('type', this.typeClause)
-
-    if (this.talkingWithChatbotClause) query.filterBy('talkingWithChatBot', this.talkingWithChatbotClause)
-
-    if (this.licenseeClause) query.filterBy('licensee', this.licenseeClause)
-
-    if (this.expressionClause)
-      query.filterByExpression(['name', 'email', 'number', 'waId', 'landbotId'], this.expressionClause)
-
-    if (this.startDateClause && this.endDateClause)
-      query.filterByInterval('wa_start_chat', this.startDateClause, this.endDateClause)
-
-    if (!this.startDateClause && this.endDateClause) query.filterByLessThan('wa_start_chat', this.endDateClause)
-
-    if (this.isGroupClause !== undefined) query.filterBy('isGroup', this.isGroupClause)
-
-    if (this.updatedAtStartClause && this.updatedAtEndClause)
-      query.filterByInterval('updatedAt', this.updatedAtStartClause, this.updatedAtEndClause)
-
-    if (this.updatedAtStartClause && !this.updatedAtEndClause)
-      query.filterByGreaterThan('updatedAt', this.updatedAtStartClause)
-
-    if (!this.updatedAtStartClause && this.updatedAtEndClause)
-      query.filterByLessThan('updatedAt', this.updatedAtEndClause)
-
-    const docs = await query.getQuery().lean().exec()
-    return docs.map(stringifyObjectIds)
+    return await this.contactRepository!.findManyContacts({
+      type: this.typeClause,
+      talkingWithChatBot: this.talkingWithChatbotClause,
+      licensee: this.licenseeClause,
+      expression: this.expressionClause,
+      startDate: this.startDateClause,
+      endDate: this.endDateClause,
+      isGroup: this.isGroupClause,
+      updatedAtStart: this.updatedAtStartClause,
+      updatedAtEnd: this.updatedAtEndClause,
+      page: this.pageClause,
+      limit: this.limitClause,
+    })
   }
 }
 

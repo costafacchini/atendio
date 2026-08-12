@@ -48,6 +48,56 @@ class ContactRepositoryMemory extends RepositoryMemory<IContact> {
     return await this.updateMany({ licensee: licenseeId, isGroup: true }, { active: false })
   }
 
+  async findManyContacts({
+    type,
+    talkingWithChatBot,
+    licensee,
+    expression,
+    startDate,
+    endDate,
+    isGroup,
+    updatedAtStart,
+    updatedAtEnd,
+    page,
+    limit,
+  }: {
+    type?: string
+    talkingWithChatBot?: boolean
+    licensee?: string
+    expression?: string
+    startDate?: Date | string
+    endDate?: Date | string
+    isGroup?: boolean
+    updatedAtStart?: Date | string
+    updatedAtEnd?: Date | string
+    page?: number
+    limit?: number
+  }): Promise<IContact[]> {
+    const params: any = { active: { $ne: false } }
+    if (type) params.type = type
+    if (talkingWithChatBot !== undefined) params.talkingWithChatBot = talkingWithChatBot
+    if (licensee) params.licensee = licensee
+    if (isGroup !== undefined) params.isGroup = isGroup
+
+    if (startDate && endDate) params.wa_start_chat = { $gt: startDate, $lt: endDate }
+    else if (endDate) params.wa_start_chat = { $lt: endDate }
+
+    if (updatedAtStart && updatedAtEnd) params.updatedAt = { $gt: updatedAtStart, $lt: updatedAtEnd }
+    else if (updatedAtStart) params.updatedAt = { $gt: updatedAtStart }
+    else if (updatedAtEnd) params.updatedAt = { $lt: updatedAtEnd }
+
+    if (expression) {
+      const words = expression.split(' ').filter(Boolean)
+      const fields = ['name', 'email', 'number', 'waId', 'landbotId']
+      params.$or = words.flatMap((word) => fields.map((field) => ({ [field]: new RegExp(word, 'i') })))
+    }
+
+    const records = (await this.find(params)) as any[]
+    const sorted = sortRecords(records, { createdAt: 'asc' })
+    if (page == null || limit == null) return sorted
+    return sorted.slice((page - 1) * limit, page * limit)
+  }
+
   async save(document: any) {
     Object.assign(document, this.normalizeContactFields(document))
     return await super.save(document)
@@ -96,6 +146,59 @@ class PrismaContactDatabaseRepository extends PrismaRepository<IContact> {
       select: { id: true },
     })
     return records.map((r) => r.id)
+  }
+
+  async findManyContacts({
+    type,
+    talkingWithChatBot,
+    licensee,
+    expression,
+    startDate,
+    endDate,
+    isGroup,
+    updatedAtStart,
+    updatedAtEnd,
+    page,
+    limit,
+  }: {
+    type?: string
+    talkingWithChatBot?: boolean
+    licensee?: string
+    expression?: string
+    startDate?: Date | string
+    endDate?: Date | string
+    isGroup?: boolean
+    updatedAtStart?: Date | string
+    updatedAtEnd?: Date | string
+    page?: number
+    limit?: number
+  }): Promise<IContact[]> {
+    const where: any = { active: { not: false } }
+    if (type) where.type = type
+    if (talkingWithChatBot !== undefined) where.talkingWithChatBot = talkingWithChatBot
+    if (licensee) where.licensee = parseInt(String(licensee), 10)
+    if (isGroup !== undefined) where.isGroup = isGroup
+
+    if (startDate && endDate) where.wa_start_chat = { gt: new Date(startDate), lt: new Date(endDate) }
+    else if (endDate) where.wa_start_chat = { lt: new Date(endDate) }
+
+    if (updatedAtStart && updatedAtEnd) where.updatedAt = { gt: new Date(updatedAtStart), lt: new Date(updatedAtEnd) }
+    else if (updatedAtStart) where.updatedAt = { gt: new Date(updatedAtStart) }
+    else if (updatedAtEnd) where.updatedAt = { lt: new Date(updatedAtEnd) }
+
+    if (expression) {
+      const words = expression.split(' ').filter(Boolean)
+      const fields = ['name', 'email', 'number', 'waId', 'landbotId']
+      where.OR = words.flatMap((word) => fields.map((field) => ({ [field]: { contains: word, mode: 'insensitive' } })))
+    }
+
+    const query: any = { where, orderBy: { createdAt: 'asc' } }
+    if (page != null && limit != null) {
+      query.skip = (page - 1) * limit
+      query.take = limit
+    }
+    const records = await getPrismaClient().contact.findMany(query)
+    return this.fromDBMany(records) as IContact[]
   }
 
   private normalizeNumber<F extends Partial<IContact>>(fields: F): F {

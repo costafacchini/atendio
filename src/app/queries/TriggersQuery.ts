@@ -1,16 +1,25 @@
-import { QueryBuilder, IQueryableRepository } from './QueryBuilder'
-import { stringifyObjectIds } from '@repositories/repository'
+import { IRepository } from '@repositories/repository'
 import { ITrigger } from '../../types'
 
+interface ITriggerQueryRepository extends IRepository<ITrigger> {
+  findManyTriggers(opts: {
+    kind?: string
+    licensee?: string
+    expression?: string
+    page?: number
+    limit?: number
+  }): Promise<ITrigger[]>
+}
+
 class TriggersQuery {
-  triggerRepository: IQueryableRepository<ITrigger> | undefined
+  triggerRepository: ITriggerQueryRepository | undefined
   pageClause: number | undefined
   limitClause: number | undefined
   kindClause: string | undefined
   licenseeClause: string | undefined
   expressionClause: string | undefined
 
-  constructor({ triggerRepository }: { triggerRepository?: IQueryableRepository<ITrigger> } = {}) {
+  constructor({ triggerRepository }: { triggerRepository?: ITriggerQueryRepository } = {}) {
     this.triggerRepository = triggerRepository
   }
 
@@ -35,23 +44,13 @@ class TriggersQuery {
   }
 
   async all(): Promise<ITrigger[]> {
-    const query = new QueryBuilder(this.triggerRepository!.model())
-    query.sortBy('createdAt', 1)
-
-    if (this.pageClause) query.page(this.pageClause, this.limitClause!)
-
-    if (this.kindClause) query.filterBy('triggerKind', this.kindClause)
-
-    if (this.licenseeClause) query.filterBy('licensee', this.licenseeClause)
-
-    if (this.expressionClause)
-      query.filterByExpression(
-        ['name', 'expression', 'catalogMulti', 'catalogSingle', 'textReplyButton', 'messagesList', 'text'],
-        this.expressionClause,
-      )
-
-    const docs = await query.getQuery().lean().exec()
-    return docs.map(stringifyObjectIds)
+    return await this.triggerRepository!.findManyTriggers({
+      kind: this.kindClause,
+      licensee: this.licenseeClause,
+      expression: this.expressionClause,
+      page: this.pageClause,
+      limit: this.limitClause,
+    })
   }
 }
 

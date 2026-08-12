@@ -1,18 +1,38 @@
-import { QueryBuilder, IQueryableRepository } from './QueryBuilder'
-import { stringifyObjectIds } from '@repositories/repository'
+import { IRepository } from '@repositories/repository'
 import { IMessage } from '../../types'
 
-interface MessagesQueryDeps {
-  messageRepository?: IQueryableRepository<IMessage>
+interface IMessageQueryRepository extends IRepository<IMessage> {
+  findManyMessages(opts: {
+    createdAtStart?: Date | string
+    createdAtEnd?: Date | string
+    licensee?: string
+    contact?: string
+    kind?: string
+    destination?: string
+    sended?: boolean
+    sortField?: string
+    sortOrder?: number | string
+    page?: number
+    limit?: number
+  }): Promise<IMessage[]>
+  countManyMessages(opts: {
+    createdAtStart?: Date | string
+    createdAtEnd?: Date | string
+    licensee?: string
+    contact?: string
+    kind?: string
+    destination?: string
+    sended?: boolean
+  }): Promise<number>
 }
 
 interface SortClause {
   field: string
-  order: number
+  order: number | string
 }
 
 class MessagesQuery {
-  messageRepository: IQueryableRepository<IMessage> | undefined
+  messageRepository: IMessageQueryRepository | undefined
   pageClause: number | undefined
   limitClause: number | undefined
   startDateClause: Date | string | undefined
@@ -24,7 +44,7 @@ class MessagesQuery {
   sendedClause: boolean | undefined
   sortByClause: SortClause | undefined
 
-  constructor({ messageRepository }: MessagesQueryDeps = {}) {
+  constructor({ messageRepository }: { messageRepository?: IMessageQueryRepository } = {}) {
     this.messageRepository = messageRepository
   }
 
@@ -61,58 +81,36 @@ class MessagesQuery {
     this.sendedClause = value
   }
 
-  sortBy(field: string, order: number) {
-    this.sortByClause = {
-      field,
-      order,
-    }
-  }
-
-  applyFilters(query: QueryBuilder) {
-    if (this.pageClause) query.page(this.pageClause, this.limitClause!)
-
-    if (this.startDateClause && this.endDateClause)
-      query.filterByInterval('createdAt', this.startDateClause, this.endDateClause)
-
-    if (this.licenseeClause) query.filterBy('licensee', this.licenseeClause)
-
-    if (this.contactClause) query.filterBy('contact', this.contactClause)
-
-    if (this.kindClause) query.filterBy('kind', this.kindClause)
-
-    if (this.destinationClause) query.filterBy('destination', this.destinationClause)
-
-    if (this.sendedClause) {
-      query.filterBy('sended', this.sendedClause)
-      query.filterNotEqual('text', 'Chat encerrado pelo agente')
-      query.filterNotEqual('ignored', true)
-    }
+  sortBy(field: string, order: number | string) {
+    this.sortByClause = { field, order }
   }
 
   async all(): Promise<IMessage[]> {
-    const query = new QueryBuilder(this.messageRepository!.model())
-    if (this.sortByClause) {
-      query.sortBy(this.sortByClause.field, this.sortByClause.order)
-    } else {
-      query.sortBy('createdAt', -1)
-    }
-    this.applyFilters(query)
-
-    const docs = await query
-      .getQuery()
-      .populate('contact')
-      .populate('trigger')
-      .populate('department', 'name')
-      .lean()
-      .exec()
-    return docs.map(stringifyObjectIds)
+    return await this.messageRepository!.findManyMessages({
+      createdAtStart: this.startDateClause,
+      createdAtEnd: this.endDateClause,
+      licensee: this.licenseeClause,
+      contact: this.contactClause,
+      kind: this.kindClause,
+      destination: this.destinationClause,
+      sended: this.sendedClause,
+      sortField: this.sortByClause?.field ?? 'createdAt',
+      sortOrder: this.sortByClause?.order ?? -1,
+      page: this.pageClause,
+      limit: this.limitClause,
+    })
   }
 
   async count(): Promise<number> {
-    const query = new QueryBuilder(this.messageRepository!.model())
-    this.applyFilters(query)
-
-    return await query.getQuery().countDocuments()
+    return await this.messageRepository!.countManyMessages({
+      createdAtStart: this.startDateClause,
+      createdAtEnd: this.endDateClause,
+      licensee: this.licenseeClause,
+      contact: this.contactClause,
+      kind: this.kindClause,
+      destination: this.destinationClause,
+      sended: this.sendedClause,
+    })
   }
 }
 
