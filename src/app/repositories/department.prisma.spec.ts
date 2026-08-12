@@ -107,4 +107,33 @@ describeIf('PrismaDepartmentDatabaseRepository', () => {
       expect(found).toBeNull()
     })
   })
+
+  describe('#findIds', () => {
+    // users is a JSONB column storing string user IDs (req.userId is typed as string)
+    const findIdsUserId = 'user-findids-42'
+
+    afterEach(async () => {
+      await getPrismaClient().department.deleteMany({ where: { departmentToken: 'tok-findids' } })
+    })
+
+    it('returns department IDs where users array contains the given userId', async () => {
+      await getPrismaClient().department.create({
+        data: {
+          name: 'Dept FindIds Test',
+          licensee: licenseeId,
+          active: true,
+          departmentToken: 'tok-findids',
+          users: [findIdsUserId],
+        },
+      })
+      const ids = await repo.findIds({ users: findIdsUserId, licensee: licenseeId, active: true })
+      expect(ids.length).toBeGreaterThanOrEqual(1)
+      ids.forEach((id) => expect(typeof id).toBe('number'))
+    })
+
+    it('returns empty array when no department has the given userId', async () => {
+      const ids = await repo.findIds({ users: 'user-nobody-999999', licensee: licenseeId, active: true })
+      expect(ids).toEqual([])
+    })
+  })
 })
