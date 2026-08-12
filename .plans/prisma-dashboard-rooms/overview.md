@@ -1,6 +1,6 @@
 # Plan: Prisma Dashboard & Rooms Migration
 
-**Status**: not-started
+**Status**: complete
 **Created**: 2026-08-12
 **Last Updated**: 2026-08-12
 **Assigned Dev**: Alan
@@ -46,12 +46,12 @@ Replace all Mongoose `.model()` API calls in `DashboardController` and `RoomsCon
 
 | Task Path | Title | Phase | Status | Depends On |
 |-----------|-------|-------|--------|------------|
-| phase-1/task-01-base-count-licensee-contact | Base count + Licensee & Contact query methods | 1 | not-started | — |
-| phase-1/task-02-message-analytics | Message analytics repository methods | 1 | not-started | — |
-| phase-1/task-03-room-queries | Room query methods | 1 | not-started | — |
-| phase-1/task-04-department-findids | Department findIds (JSON array filter) | 1 | not-started | — |
-| phase-2/task-05-dashboard-controller | Rewrite DashboardController | 2 | not-started | phase-1/task-01, phase-1/task-02, phase-1/task-03 |
-| phase-2/task-06-rooms-controller | Rewrite RoomsController | 2 | not-started | phase-1/task-02, phase-1/task-03, phase-1/task-04 |
+| phase-1/task-01-base-count-licensee-contact | Base count + Licensee & Contact query methods | 1 | complete | — |
+| phase-1/task-02-message-analytics | Message analytics repository methods | 1 | complete | — |
+| phase-1/task-03-room-queries | Room query methods | 1 | complete | — |
+| phase-1/task-04-department-findids | Department findIds (JSON array filter) | 1 | complete | — |
+| phase-2/task-05-dashboard-controller | Rewrite DashboardController | 2 | complete | phase-1/task-01, phase-1/task-02, phase-1/task-03 |
+| phase-2/task-06-rooms-controller | Rewrite RoomsController | 2 | complete | phase-1/task-02, phase-1/task-03, phase-1/task-04 |
 
 ## Branch Convention
 
@@ -88,11 +88,11 @@ All task work happens on `feature/prisma-migration`. No per-task branches — th
 
 ## Success Criteria
 
-- [ ] SC-001: All 10 dashboard endpoints return 200 with correct shape
-- [ ] SC-002: GET /rooms, GET /rooms/:id/messages, POST /rooms/:id/close work end-to-end
-- [ ] SC-003: Zero `.model()` calls remain in DashboardController and RoomsController
-- [ ] SC-004: All tests pass; new tests cover every new repository method and controller action
-- [ ] SC-005: `npx eslint` reports 0 errors on changed files
+- [x] SC-001: All 10 dashboard endpoints return 200 with correct shape
+- [x] SC-002: GET /rooms, GET /rooms/:id/messages, POST /rooms/:id/close work end-to-end
+- [x] SC-003: Zero `.model()` calls remain in DashboardController and RoomsController
+- [x] SC-004: All tests pass; new tests cover every new repository method and controller action
+- [x] SC-005: `npx eslint` reports 0 errors on changed files
 
 ## References
 
