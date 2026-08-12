@@ -57,6 +57,8 @@ cp .env.example .env
 - `DEFAULT_PASSWORD`
 - AWS variables if you need backup/storage flows
 
+See [docs/kb/architecture/env-vars.md](docs/kb/architecture/env-vars.md) for a full reference of all environment variables.
+
 ## Local Development
 
 ### Backend + Worker
@@ -165,6 +167,24 @@ for the full topology and troubleshooting notes.
 | `cd client && yarn build` | Build the frontend |
 | `cd client && yarn test` | Run frontend Vitest tests once |
 | `cd client && yarn test:watch` | Run frontend Vitest in watch mode |
+
+## Deployment
+
+The scaler process supports multiple providers via the `DEPLOY_PROVIDER` env var.
+Set it before starting the `scaler` process type.
+
+| `DEPLOY_PROVIDER` | Description |
+|-------------------|-------------|
+| `heroku` | Heroku Formation API — scales dyno quantities per process type |
+| `fly` | Fly.io Machines API — starts/stops pre-created worker machines |
+| `ecs` | AWS ECS `UpdateService` — adjusts `desiredCount` on the worker service |
+| `fake` (default) | No-op — logs scale decisions without calling any provider API |
+
+Provider-specific setup:
+
+- [Heroku](docs/kb/features/deploy-heroku.md)
+- [Fly.io](docs/kb/features/deploy-fly.md)
+- [AWS ECS](docs/kb/features/deploy-ecs.md)
 
 ## Architecture Notes
 

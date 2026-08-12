@@ -17,6 +17,7 @@ Load ONLY documents relevant to your current task.
 | Document | When to Read |
 |----------|--------------|
 | [dependency-injection-runtime-wiring](architecture/dependency-injection-runtime-wiring.md) | Executing `.plans/dependency-injection`, removing concrete repository allocation from runtime code, or migrating controller specs from `mongoServer` |
+| [env-vars](architecture/env-vars.md) | Adding or auditing environment variables; setting up a new deployment environment |
 | [express-conventions](architecture/express-conventions.md) | Working with Express routes, middleware, or configuration |
 | [job-queue-system](architecture/job-queue-system.md) | Working on async jobs, message ordering, worker logic, or feature flags |
 | [project-context-pre-setup](architecture/project-context-pre-setup.md) | Historical migrated AGENTS/project context captured before framework setup; useful only when reconciling old instructions |
@@ -28,6 +29,9 @@ Load ONLY documents relevant to your current task.
 | Document | When to Read |
 |----------|--------------|
 | [baileys-whatsapp-guide](features/baileys-whatsapp-guide.md) | Configuring a Licensee to use the Baileys WhatsApp plugin, QR auth, sending/receiving messages, and the group sync & directory flow |
+| [deploy-heroku](features/deploy-heroku.md) | Deploying to Heroku: process types, env vars, scaler setup, Formation API |
+| [deploy-fly](features/deploy-fly.md) | Deploying to Fly.io: machines, fly.toml, scaler wiring via Machines API |
+| [deploy-ecs](features/deploy-ecs.md) | Deploying to AWS ECS Fargate: task definitions, IAM policy, scaler via UpdateService |
 | [local-smoke-workflow](features/local-smoke-workflow.md) | Running the hybrid local smoke stack, seeded demo data, or the scripted pre-deploy smoke verification flow |
 
 ### Integrations
