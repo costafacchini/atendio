@@ -3,20 +3,19 @@ import moment from 'moment-timezone'
 const WINDOW_HOURS = 24
 const WARNING_MINUTES = 10
 
-async function sendMessageToChat(licensee: any, messageToSend: any, { createChatPlugin }: Record<string, any> = {}) {
-  const chatPlugin = createChatPlugin(licensee)
-
-  await chatPlugin.sendMessage(messageToSend._id, licensee.chatUrl)
+async function sendMessageToChat(licensee: any, chatInbox: any, messageToSend: any, { createChatPlugin }: Record<string, any> = {}) {
+  const chatPlugin = createChatPlugin(licensee, { inbox: chatInbox })
+  await chatPlugin.sendMessage(messageToSend._id, chatInbox.chatUrl)
 }
 
 async function clearWaStartChatOnContact(contact: any, { contactRepository }: Record<string, any> = {}) {
   await contactRepository.update(contact._id, { wa_start_chat: null })
-
   return
 }
 
 async function warningAboutChatsEnding(
   licensee: any,
+  chatInbox: any,
   { contactRepository, messageRepository, createChatPlugin }: Record<string, any> = {},
 ) {
   if (licensee.useWhatsappWindow !== true) return
@@ -35,13 +34,13 @@ async function warningAboutChatsEnding(
 
   for (const contact of contacts) {
     const messageToSend = await messageRepository.createMessageToWarnAboutWindowOfWhatsassIsEnding(contact, licensee)
-
-    await sendMessageToChat(licensee, messageToSend, { createChatPlugin })
+    await sendMessageToChat(licensee, chatInbox, messageToSend, { createChatPlugin })
   }
 }
 
 async function warningAboutChatsExpired(
   licensee: any,
+  chatInbox: any,
   { contactRepository, messageRepository, createChatPlugin }: Record<string, any> = {},
 ) {
   const contacts = await contactRepository.find({
@@ -60,22 +59,29 @@ async function warningAboutChatsExpired(
         contact,
         licensee,
       )
-
-      await sendMessageToChat(licensee, messageToSend, { createChatPlugin })
+      await sendMessageToChat(licensee, chatInbox, messageToSend, { createChatPlugin })
     }
   }
 }
 
 async function resetChats({
   licenseeRepository,
+  inboxRepository,
   contactRepository,
   messageRepository,
   createChatPlugin,
 }: Record<string, any> = {}) {
-  const licensees = await licenseeRepository.find({ active: true, whatsappDefault: 'dialog', useWhatsappWindow: true })
-  for (const licensee of licensees) {
-    await warningAboutChatsEnding(licensee, { contactRepository, messageRepository, createChatPlugin })
-    await warningAboutChatsExpired(licensee, { contactRepository, messageRepository, createChatPlugin })
+  const dialogInboxes = await inboxRepository.find({ whatsappDefault: 'dialog', kind: 'messenger' })
+
+  for (const messengerInbox of dialogInboxes) {
+    const licensee = await licenseeRepository.findFirst({ _id: messengerInbox.licensee, active: true, useWhatsappWindow: true })
+    if (!licensee) continue
+
+    const chatInbox = await inboxRepository.findFirst({ licensee: licensee._id, kind: 'chat' })
+    if (!chatInbox) continue
+
+    await warningAboutChatsEnding(licensee, chatInbox, { contactRepository, messageRepository, createChatPlugin })
+    await warningAboutChatsExpired(licensee, chatInbox, { contactRepository, messageRepository, createChatPlugin })
   }
 }
 

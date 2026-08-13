@@ -1,12 +1,18 @@
 async function transformMessengerBody(data: any, { bodyRepository, createMessengerPlugin }: Record<string, any> = {}) {
   const { bodyId } = data
-  const body = await bodyRepository.findFirst({ _id: bodyId }, ['licensee'])
+  const body = await bodyRepository.findFirst({ _id: bodyId }, ['licensee', 'inbox'])
   if (!body) {
     return []
   }
   const licensee = body.licensee
+  const inbox = body.inbox
+
+  if (!inbox) {
+    return []
+  }
+
   const departmentId = body.department ?? null
-  const extras: any = {}
+  const extras: any = { inbox }
   if (departmentId) {
     extras.department = departmentId
   }
@@ -20,11 +26,11 @@ async function transformMessengerBody(data: any, { bodyRepository, createMesseng
     const action = messengerPlugin.action(message.destination)
     let url, token
     if (message.destination === 'to-chat') {
-      url = licensee.chatUrl
+      url = inbox.chatUrl
       token = ''
     } else if (message.destination === 'to-messenger') {
-      url = licensee.whatsappUrl
-      token = licensee.whatsappToken
+      url = inbox.whatsappUrl
+      token = inbox.whatsappToken
     } else {
       url = licensee.chatbotUrl
       token = licensee.chatbotAuthorizationToken

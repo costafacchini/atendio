@@ -3,7 +3,9 @@ import { installMemoryRepositories, resetMemoryRepositories } from '@repositorie
 import { licensee as licenseeFactory } from '@factories/licensee'
 import { contact as contactFactory } from '@factories/contact'
 import { message as messageFactory } from '@factories/message'
+import { inbox as inboxFactory } from '@factories/inbox'
 import { LicenseeRepositoryDatabase } from '@repositories/licensee'
+import { InboxRepositoryDatabase } from '@repositories/inbox'
 import { ContactRepositoryDatabase } from '@repositories/contact'
 import { MessageRepositoryDatabase } from '@repositories/message'
 import request from '../services/request'
@@ -30,6 +32,7 @@ describe('resetChatbots', () => {
   describe('if licensees uses chatbot and contacts that talking with chatbot and the last message has destination to messenger and the sended a hour ago', () => {
     it('calls the drop conversation to reset chatbot', async () => {
       const licenseeRepository = new LicenseeRepositoryDatabase()
+      const inboxRepository = new InboxRepositoryDatabase()
       const licensee = await licenseeRepository.create(
         licenseeFactory.build({
           chatbotDefault: 'landbot',
@@ -39,6 +42,7 @@ describe('resetChatbots', () => {
           chatbotApiToken: 'api-token',
         }),
       )
+      await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'dialog' }))
 
       const contactRepository = new ContactRepositoryDatabase()
       const contact = await contactRepository.create(
@@ -221,6 +225,7 @@ describe('resetChatbots', () => {
     describe('when the licensee has a message on reset chatbot', () => {
       it('sends a message to the contact that the chatbot conversation has been closed', async () => {
         const licenseeRepository = new LicenseeRepositoryDatabase()
+        const inboxRepository = new InboxRepositoryDatabase()
         const licensee = await licenseeRepository.create(
           licenseeFactory.build({
             chatbotDefault: 'landbot',
@@ -229,6 +234,12 @@ describe('resetChatbots', () => {
             useChatbot: true,
             chatbotApiToken: 'api-token',
             messageOnResetChatbot: 'Encerrando',
+          }),
+        )
+        await inboxRepository.create(
+          inboxFactory.build({
+            licensee: licensee._id,
+            kind: 'messenger',
             whatsappDefault: 'utalk',
             whatsappToken: 'WTIgtlBwDk4kJNv7oMMderfTWihceFm2mI9K',
             whatsappUrl: 'https://v1.utalk.chat/send/',

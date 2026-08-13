@@ -3,13 +3,18 @@ async function transformChatBody(
   { bodyRepository, contactRepository, messageRepository, createChatPlugin }: Record<string, any> = {},
 ) {
   const { bodyId } = data
-  const body = await bodyRepository.findFirst({ _id: bodyId }, ['licensee'])
+  const body = await bodyRepository.findFirst({ _id: bodyId }, ['licensee', 'inbox'])
   if (!body) {
     return []
   }
   const licensee = body.licensee
+  const inbox = body.inbox
 
-  const chatPlugin = createChatPlugin(licensee)
+  if (!inbox) {
+    return []
+  }
+
+  const chatPlugin = createChatPlugin(licensee, { inbox })
 
   const actions = []
   const messages = await chatPlugin.responseToMessages(body.content)
@@ -27,7 +32,7 @@ async function transformChatBody(
           messageId: messageToSend._id,
           contactId: message.contact._id,
           licenseeId: licensee._id,
-          url: licensee.chatUrl,
+          url: inbox.chatUrl,
           token: '',
         }
 
@@ -44,8 +49,8 @@ async function transformChatBody(
       messageId: message._id,
       contactId: message.contact._id,
       licenseeId: licensee._id,
-      url: licensee.whatsappUrl,
-      token: licensee.whatsappToken,
+      url: inbox.whatsappUrl,
+      token: inbox.whatsappToken,
     }
 
     actions.push({

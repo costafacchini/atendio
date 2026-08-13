@@ -11,7 +11,7 @@ function createChatPlugin(
   dependencies: Record<string, unknown> = {},
   inbox: IInbox | null = null,
 ): IChatPlugin {
-  const plugin = inbox?.chatDefault || licensee.chatDefault
+  const plugin = inbox?.chatDefault
   switch (plugin) {
     case 'rocketchat':
       return new Rocketchat(licensee, dependencies)

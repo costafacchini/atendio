@@ -2,9 +2,11 @@ import Template from '@models/Template'
 import { Dialog } from '@plugins/messengers/Dialog'
 import { TemplatesImporter } from '@plugins/importers/template/index'
 import { licensee as licenseeFactory } from '@factories/licensee'
+import { inbox as inboxFactory } from '@factories/inbox'
 import { template as templateFactory } from '@factories/template'
 import { installMemoryRepositories, resetMemoryRepositories } from '@repositories/testing'
 import { LicenseeRepositoryDatabase } from '@repositories/licensee'
+import { InboxRepositoryDatabase } from '@repositories/inbox'
 import { createRuntimeDependencies } from '../../../runtime/dependencies'
 
 let dependencies
@@ -21,8 +23,16 @@ describe('TemplatesImporter', () => {
 
   it('imports the templates of whatsapp', async () => {
     const licenseeRepository = new LicenseeRepositoryDatabase()
-    const licensee = await licenseeRepository.create(
-      licenseeFactory.build({ whatsappDefault: 'dialog', whatsappUrl: 'https://dialog.com', whatsappToken: 'token' }),
+    const inboxRepository = new InboxRepositoryDatabase()
+    const licensee = await licenseeRepository.create(licenseeFactory.build())
+    await inboxRepository.create(
+      inboxFactory.build({
+        licensee: licensee._id,
+        kind: 'messenger',
+        whatsappDefault: 'dialog',
+        whatsappUrl: 'https://dialog.com',
+        whatsappToken: 'token',
+      }),
     )
     const template = await Template.create(templateFactory.build({ licensee }))
 

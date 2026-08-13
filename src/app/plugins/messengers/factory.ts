@@ -11,7 +11,7 @@ function createMessengerPlugin(
   dependencies: Record<string, unknown> = {},
   inbox: IInbox | null = null,
 ): IMessengerPlugin {
-  const plugin = inbox?.whatsappDefault || licensee.whatsappDefault
+  const plugin = inbox?.whatsappDefault
   switch (plugin) {
     case 'utalk':
       return new Utalk(licensee, dependencies)
