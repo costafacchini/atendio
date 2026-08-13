@@ -373,6 +373,7 @@ function installMemoryRepositories() {
 
   repositories.bodyRepository.relationLoaders = {
     licensee: loadRelation(repositories.licenseeRepository),
+    inbox: loadRelation(repositories.inboxRepository),
   }
   repositories.contactRepository.relationLoaders = {
     licensee: loadRelation(repositories.licenseeRepository),

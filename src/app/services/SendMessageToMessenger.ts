@@ -1,6 +1,6 @@
 async function sendMessageToMessenger(
   data: any,
-  { messageRepository, createMessengerPlugin }: Record<string, any> = {},
+  { messageRepository, inboxRepository, createMessengerPlugin }: Record<string, any> = {},
 ) {
   const { messageId, url, token } = data
   const message = await messageRepository.findFirst({ _id: messageId }, ['licensee', 'contact'])
@@ -12,13 +12,17 @@ async function sendMessageToMessenger(
     return
   }
 
+  const inbox = await inboxRepository.findFirst({ licensee: licensee._id, kind: 'messenger' })
   const extras: any = {}
   if (message.department) {
     extras.department = message.department
   }
+  if (inbox) {
+    extras.inbox = inbox
+  }
   const messegnerPlugin = createMessengerPlugin(licensee, extras)
 
-  await messegnerPlugin.sendMessage(messageId, url ?? licensee.whatsappUrl, token ?? licensee.whatsappToken)
+  await messegnerPlugin.sendMessage(messageId, url ?? inbox?.whatsappUrl, token ?? inbox?.whatsappToken)
 }
 
 export { sendMessageToMessenger }

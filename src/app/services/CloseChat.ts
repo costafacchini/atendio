@@ -1,14 +1,20 @@
-async function closeChat(data: any, { messageRepository, createChatPlugin }: Record<string, any> = {}) {
+async function closeChat(data: any, { messageRepository, inboxRepository, createChatPlugin }: Record<string, any> = {}) {
   const { messageId } = data
   const message = await messageRepository.findFirst({ _id: messageId }, ['licensee'])
   const licensee = message.licensee
   const actions = []
 
-  const chatPlugin = createChatPlugin(licensee)
+  const chatInbox = await inboxRepository.findFirst({ licensee: licensee._id, kind: 'chat' })
+  if (!chatInbox) return actions
+
+  const chatPlugin = createChatPlugin(licensee, { inbox: chatInbox })
 
   const messagesOnCloseChat = await chatPlugin.closeChat(messageId)
 
   if (messagesOnCloseChat.length > 0) {
+    const messengerInbox = await inboxRepository.findFirst({ licensee: licensee._id, kind: 'messenger' })
+    if (!messengerInbox) return actions
+
     for (const messageCloseChat of messagesOnCloseChat) {
       const contactId = message.contact?._id ?? message.contact
 
@@ -16,8 +22,8 @@ async function closeChat(data: any, { messageRepository, createChatPlugin }: Rec
         messageId: messageCloseChat._id,
         contactId,
         licenseeId: licensee._id,
-        url: licensee.whatsappUrl,
-        token: licensee.whatsappToken,
+        url: messengerInbox.whatsappUrl,
+        token: messengerInbox.whatsappToken,
       }
 
       actions.push({

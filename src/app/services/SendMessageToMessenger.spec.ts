@@ -4,7 +4,9 @@ import { installMemoryRepositories, resetMemoryRepositories } from '@repositorie
 import { licensee as licenseeFactory } from '@factories/licensee'
 import { contact as contactFactory } from '@factories/contact'
 import { message as messageFactory } from '@factories/message'
+import { inbox as inboxFactory } from '@factories/inbox'
 import { LicenseeRepositoryDatabase } from '@repositories/licensee'
+import { InboxRepositoryDatabase } from '@repositories/inbox'
 import { ContactRepositoryDatabase } from '@repositories/contact'
 import { MessageRepositoryDatabase } from '@repositories/message'
 import { createRuntimeDependencies } from '../runtime/dependencies'
@@ -26,8 +28,13 @@ describe('sendMessageToMessenger', () => {
 
   it('asks the plugin to send message to messenger', async () => {
     const licenseeRepository = new LicenseeRepositoryDatabase()
-    const licensee = await licenseeRepository.create(
-      licenseeFactory.build({
+    const licensee = await licenseeRepository.create(licenseeFactory.build())
+
+    const inboxRepository = new InboxRepositoryDatabase()
+    await inboxRepository.create(
+      inboxFactory.build({
+        licensee: licensee._id,
+        kind: 'messenger',
         whatsappDefault: 'dialog',
         whatsappUrl: 'https://chat.url',
         whatsappToken: 'token',
@@ -60,13 +67,18 @@ describe('sendMessageToMessenger', () => {
     expect(dialogSendMessageSpy).toHaveBeenCalledWith(message._id, 'https://www.dialog.com', 'k4d5h8fyt')
   })
 
-  it('falls back to licensee whatsappUrl and whatsappToken when url and token are absent from data', async () => {
+  it('falls back to inbox whatsappUrl and whatsappToken when url and token are absent from data', async () => {
     const licenseeRepository = new LicenseeRepositoryDatabase()
-    // dialog normalizes whatsappUrl to 'https://waba.360dialog.io/' on save
-    const licensee = await licenseeRepository.create(
-      licenseeFactory.build({
+    const licensee = await licenseeRepository.create(licenseeFactory.build())
+
+    const inboxRepository = new InboxRepositoryDatabase()
+    await inboxRepository.create(
+      inboxFactory.build({
+        licensee: licensee._id,
+        kind: 'messenger',
         whatsappDefault: 'dialog',
-        whatsappToken: 'licensee-token',
+        whatsappUrl: 'https://waba.360dialog.io/',
+        whatsappToken: 'inbox-token',
       }),
     )
 
@@ -78,13 +90,18 @@ describe('sendMessageToMessenger', () => {
 
     await sendMessageToMessenger({ messageId: message._id }, dependencies)
 
-    expect(dialogSendMessageSpy).toHaveBeenCalledWith(message._id, 'https://waba.360dialog.io/', 'licensee-token')
+    expect(dialogSendMessageSpy).toHaveBeenCalledWith(message._id, 'https://waba.360dialog.io/', 'inbox-token')
   })
 
   it('skips messenger plugin and marks message as sent when contact type is web', async () => {
     const licenseeRepository = new LicenseeRepositoryDatabase()
-    const licensee = await licenseeRepository.create(
-      licenseeFactory.build({
+    const licensee = await licenseeRepository.create(licenseeFactory.build())
+
+    const inboxRepository = new InboxRepositoryDatabase()
+    await inboxRepository.create(
+      inboxFactory.build({
+        licensee: licensee._id,
+        kind: 'messenger',
         whatsappDefault: 'dialog',
         whatsappUrl: 'https://chat.url',
         whatsappToken: 'token',

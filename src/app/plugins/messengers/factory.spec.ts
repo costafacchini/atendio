@@ -6,63 +6,43 @@ import { Pabbly } from './Pabbly'
 import { licensee as licenseeFactory } from '@factories/licensee'
 
 describe('createMessengerPlugin', () => {
-  it('returns the utalk plugin if it is configured on licensee', () => {
-    const licensee = licenseeFactory.build({ whatsappDefault: 'utalk' })
+  it('returns the utalk plugin if it is configured on inbox', () => {
+    const licensee = licenseeFactory.build()
 
-    const body = {
-      type: 'test',
-    }
-
-    const plugin = createMessengerPlugin(licensee, body)
+    const plugin = createMessengerPlugin(licensee, {}, { whatsappDefault: 'utalk' } as any)
 
     expect(plugin).toBeInstanceOf(Utalk)
   })
 
-  it('returns the dialog plugin if it is configured on licensee', () => {
-    const licensee = licenseeFactory.build({ whatsappDefault: 'dialog' })
+  it('returns the dialog plugin if it is configured on inbox', () => {
+    const licensee = licenseeFactory.build()
 
-    const body = {
-      type: 'test',
-    }
-
-    const plugin = createMessengerPlugin(licensee, body)
+    const plugin = createMessengerPlugin(licensee, {}, { whatsappDefault: 'dialog' } as any)
 
     expect(plugin).toBeInstanceOf(Dialog)
   })
 
-  it('returns the ycloud plugin if it is configured on licensee', () => {
-    const licensee = licenseeFactory.build({ whatsappDefault: 'ycloud' })
+  it('returns the ycloud plugin if it is configured on inbox', () => {
+    const licensee = licenseeFactory.build()
 
-    const body = {
-      type: 'test',
-    }
-
-    const plugin = createMessengerPlugin(licensee, body)
+    const plugin = createMessengerPlugin(licensee, {}, { whatsappDefault: 'ycloud' } as any)
 
     expect(plugin).toBeInstanceOf(YCloud)
   })
 
-  it('returns the pabbly plugin if it is configured on licensee', () => {
-    const licensee = licenseeFactory.build({ whatsappDefault: 'pabbly' })
+  it('returns the pabbly plugin if it is configured on inbox', () => {
+    const licensee = licenseeFactory.build()
 
-    const body = {
-      type: 'test',
-    }
-
-    const plugin = createMessengerPlugin(licensee, body)
+    const plugin = createMessengerPlugin(licensee, {}, { whatsappDefault: 'pabbly' } as any)
 
     expect(plugin).toBeInstanceOf(Pabbly)
   })
 
   it('throws if option plugin is unknow', () => {
-    const licensee = licenseeFactory.build({ whatsappDefault: 'something' })
-
-    const body = {
-      field: 'test',
-    }
+    const licensee = licenseeFactory.build()
 
     expect(() => {
-      createMessengerPlugin(licensee, body)
+      createMessengerPlugin(licensee, {}, { whatsappDefault: 'something' } as any)
     }).toThrow('Plugin de messenger não configurado: something')
   })
 })

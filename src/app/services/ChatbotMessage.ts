@@ -1,7 +1,12 @@
 async function transformChatbotBody(data: any, { bodyRepository, createChatbotPlugin }: Record<string, any> = {}) {
   const { bodyId } = data
-  const body = await bodyRepository.findFirst({ _id: bodyId }, ['licensee'])
+  const body = await bodyRepository.findFirst({ _id: bodyId }, ['licensee', 'inbox'])
   const licensee = body.licensee
+  const inbox = body.inbox
+
+  if (!inbox) {
+    return []
+  }
 
   const chatbotPlugin = createChatbotPlugin(licensee)
 
@@ -13,8 +18,8 @@ async function transformChatbotBody(data: any, { bodyRepository, createChatbotPl
       messageId: message._id,
       contactId: message.contact._id,
       licenseeId: licensee._id,
-      url: licensee.whatsappUrl,
-      token: licensee.whatsappToken,
+      url: inbox.whatsappUrl,
+      token: inbox.whatsappToken,
     }
 
     actions.push({

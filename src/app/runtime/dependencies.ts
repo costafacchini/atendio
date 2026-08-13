@@ -47,13 +47,20 @@ function buildRuntimeDependencies({
   whatsappSessionRepository,
 }: Record<string, any> = {}) {
   const parseText = (text: any, contact: any) => parseTextHelper(text, contact, {})
-  const createChatPlugin = (licensee: any) =>
-    createChatPluginFactory(licensee, {
-      contactRepository,
-      messageRepository,
-      roomRepository,
-      triggerRepository,
-    })
+  const createChatPlugin = (licensee: any, extras: Record<string, any> = {}) => {
+    const { inbox = null, ...rest } = extras
+    return createChatPluginFactory(
+      licensee,
+      {
+        contactRepository,
+        messageRepository,
+        roomRepository,
+        triggerRepository,
+        ...rest,
+      },
+      inbox,
+    )
+  }
   const createChatbotPlugin = (licensee: any) =>
     createChatbotPluginFactory(licensee, {
       contactRepository,
@@ -61,19 +68,26 @@ function buildRuntimeDependencies({
       roomRepository,
       triggerRepository,
     })
-  const createMessengerPlugin = (licensee: any, extras: Record<string, any> = {}) =>
-    createMessengerPluginFactory(licensee, {
-      contactRepository,
-      messageRepository,
-      triggerRepository,
-      templateRepository,
-      parseText,
-      whatsappSessionRepository,
-      ...extras,
-    })
+  const createMessengerPlugin = (licensee: any, extras: Record<string, any> = {}) => {
+    const { inbox = null, ...rest } = extras
+    return createMessengerPluginFactory(
+      licensee,
+      {
+        contactRepository,
+        messageRepository,
+        triggerRepository,
+        templateRepository,
+        parseText,
+        whatsappSessionRepository,
+        ...rest,
+      },
+      inbox,
+    )
+  }
   const createTemplatesImporter = (licenseeId: any) =>
     new TemplatesImporter(licenseeId, {
       licenseeRepository,
+      inboxRepository,
       templateRepository,
       createMessengerPlugin,
     })

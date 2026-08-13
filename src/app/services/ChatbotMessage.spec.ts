@@ -4,13 +4,16 @@ import { Landbot } from '../plugins/chatbots/Landbot'
 import { installMemoryRepositories, resetMemoryRepositories } from '@repositories/testing'
 import { licensee as licenseeFactory } from '@factories/licensee'
 import { body as bodyFactory } from '@factories/body'
+import { inbox as inboxFactory } from '@factories/inbox'
 import { LicenseeRepositoryDatabase } from '@repositories/licensee'
+import { InboxRepositoryDatabase } from '@repositories/inbox'
 import { createRuntimeDependencies } from '../runtime/dependencies'
 
 let dependencies
 
 describe('transformChatbotBody', () => {
   let licensee
+  let inbox
 
   beforeEach(async () => {
     installMemoryRepositories()
@@ -19,8 +22,14 @@ describe('transformChatbotBody', () => {
 
     const licenseeRepository = new LicenseeRepositoryDatabase()
     licensee = await licenseeRepository.create(
-      licenseeFactory.build({
-        chatbotDefault: 'landbot',
+      licenseeFactory.build({ chatbotDefault: 'landbot' }),
+    )
+
+    const inboxRepository = new InboxRepositoryDatabase()
+    inbox = await inboxRepository.create(
+      inboxFactory.build({
+        licensee: licensee._id,
+        kind: 'messenger',
         whatsappDefault: 'dialog',
         whatsappUrl: 'https://waba.360dialog.io/',
         whatsappToken: 'token',
@@ -45,6 +54,7 @@ describe('transformChatbotBody', () => {
     const body = await Body.create(
       bodyFactory.build({
         licensee: licensee,
+        inbox: inbox._id,
         concluded: false,
       }),
     )
@@ -81,6 +91,19 @@ describe('transformChatbotBody', () => {
     expect(actions.length).toEqual(2)
   })
 
+  it('returns empty actions when body has no linked inbox', async () => {
+    const body = await Body.create(
+      bodyFactory.build({
+        licensee: licensee,
+        concluded: false,
+      }),
+    )
+
+    const actions = await transformChatbotBody({ bodyId: body._id }, dependencies)
+
+    expect(actions.length).toEqual(0)
+  })
+
   it('responds with blank actions if body is invalid and update body', async () => {
     const chatbotPluginResponseToMessages = jest
       .spyOn(Landbot.prototype, 'responseToMessages')
@@ -94,6 +117,7 @@ describe('transformChatbotBody', () => {
           is: 'invalid',
         },
         licensee: licensee,
+        inbox: inbox._id,
         concluded: false,
       }),
     )
