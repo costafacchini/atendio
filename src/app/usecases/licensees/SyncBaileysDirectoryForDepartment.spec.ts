@@ -1,6 +1,8 @@
 import { licenseeComplete as licenseeCompleteFactory } from '@factories/licensee'
+import { inbox as inboxFactory } from '@factories/inbox'
 import { contact as contactFactory } from '@factories/contact'
 import { LicenseeRepositoryMemory } from '@repositories/licensee'
+import { InboxRepositoryMemory } from '@repositories/inbox'
 import { ContactRepositoryMemory } from '@repositories/contact'
 import { DepartmentRepositoryMemory } from '@repositories/department'
 import { SyncBaileysDirectoryForDepartment, NOT_BAILEYS_MESSAGE } from './SyncBaileysDirectoryForDepartment'
@@ -23,6 +25,7 @@ const DEFAULT_GROUPS = [
 function buildUseCase({ groups, syncBaileysDirectoryForInbox }: Record<string, any> = {}) {
   const departmentRepository = new DepartmentRepositoryMemory()
   const licenseeRepository = new LicenseeRepositoryMemory()
+  const inboxRepository = new InboxRepositoryMemory()
   const contactRepository = new ContactRepositoryMemory()
   const resolvedGroups = groups !== undefined ? groups : DEFAULT_GROUPS
   const plugin = { fetchGroups: jest.fn().mockResolvedValue({ groups: resolvedGroups }) }
@@ -31,6 +34,7 @@ function buildUseCase({ groups, syncBaileysDirectoryForInbox }: Record<string, a
   const useCase = new SyncBaileysDirectoryForDepartment({
     departmentRepository,
     licenseeRepository,
+    inboxRepository,
     contactRepository,
     createMessengerPlugin,
     syncBaileysDirectoryForInbox: resolvedSyncForInbox,
@@ -38,6 +42,7 @@ function buildUseCase({ groups, syncBaileysDirectoryForInbox }: Record<string, a
   return {
     departmentRepository,
     licenseeRepository,
+    inboxRepository,
     contactRepository,
     createMessengerPlugin,
     plugin,
@@ -56,9 +61,10 @@ describe('SyncBaileysDirectoryForDepartment', () => {
     expect(result).toEqual({ message: 'Departamento não encontrado' })
   })
 
-  it('returns NOT_BAILEYS_MESSAGE when licensee does not use baileys', async () => {
-    const { departmentRepository, licenseeRepository, useCase, createMessengerPlugin } = buildUseCase()
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'dialog' }))
+  it('returns NOT_BAILEYS_MESSAGE when licensee has no baileys inbox', async () => {
+    const { departmentRepository, licenseeRepository, inboxRepository, useCase, createMessengerPlugin } = buildUseCase()
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'dialog' }))
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
 
     const result = await useCase.execute(department._id)
@@ -78,8 +84,9 @@ describe('SyncBaileysDirectoryForDepartment', () => {
   })
 
   it('imports new groups as contacts with isGroup: true', async () => {
-    const { departmentRepository, licenseeRepository, contactRepository, useCase, plugin } = buildUseCase()
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'baileys' }))
+    const { departmentRepository, licenseeRepository, inboxRepository, contactRepository, useCase, plugin } = buildUseCase()
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }))
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
 
     const result = await useCase.execute(department._id)
@@ -94,8 +101,9 @@ describe('SyncBaileysDirectoryForDepartment', () => {
   })
 
   it('updates existing contacts matched by waId', async () => {
-    const { departmentRepository, licenseeRepository, contactRepository, useCase } = buildUseCase()
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'baileys' }))
+    const { departmentRepository, licenseeRepository, inboxRepository, contactRepository, useCase } = buildUseCase()
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }))
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
     await contactRepository.create(
       contactFactory.build({
@@ -120,10 +128,11 @@ describe('SyncBaileysDirectoryForDepartment', () => {
   })
 
   it('updates existing contacts matched by number+type when waId does not match any existing', async () => {
-    const { departmentRepository, licenseeRepository, contactRepository, useCase } = buildUseCase({
+    const { departmentRepository, licenseeRepository, inboxRepository, contactRepository, useCase } = buildUseCase({
       groups: [{ waId: '1234567890@g.us', name: 'Grupo Alpha', number: '1234567890', type: '@g.us' }],
     })
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'baileys' }))
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }))
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
     await contactRepository.create(
       contactFactory.build({
@@ -146,19 +155,21 @@ describe('SyncBaileysDirectoryForDepartment', () => {
     expect(contacts[0].isGroup).toBe(true)
   })
 
-  it('passes department to createMessengerPlugin', async () => {
-    const { departmentRepository, licenseeRepository, createMessengerPlugin, useCase } = buildUseCase()
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'baileys' }))
+  it('passes licensee, department, and inbox to createMessengerPlugin', async () => {
+    const { departmentRepository, licenseeRepository, inboxRepository, createMessengerPlugin, useCase } = buildUseCase()
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    const inbox = await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }))
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
 
     await useCase.execute(department._id)
 
-    expect(createMessengerPlugin).toHaveBeenCalledWith(licensee, { department })
+    expect(createMessengerPlugin).toHaveBeenCalledWith(licensee, { department, inbox })
   })
 
   it('deactivates existing groups for the licensee before syncing', async () => {
-    const { departmentRepository, licenseeRepository, contactRepository, useCase } = buildUseCase({ groups: [] })
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'baileys' }))
+    const { departmentRepository, licenseeRepository, inboxRepository, contactRepository, useCase } = buildUseCase({ groups: [] })
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }))
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
     const group = await contactRepository.create(
       contactFactory.build({
@@ -180,10 +191,11 @@ describe('SyncBaileysDirectoryForDepartment', () => {
   })
 
   it('reactivates an inactive group that matches during sync', async () => {
-    const { departmentRepository, licenseeRepository, contactRepository, useCase } = buildUseCase({
+    const { departmentRepository, licenseeRepository, inboxRepository, contactRepository, useCase } = buildUseCase({
       groups: [{ waId: '1234567890@g.us', name: 'Grupo Alpha', number: '1234567890', type: '@g.us' }],
     })
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'baileys' }))
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }))
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
     await contactRepository.create(
       contactFactory.build({
@@ -208,8 +220,9 @@ describe('SyncBaileysDirectoryForDepartment', () => {
   })
 
   it('returns zero counts when groups list is empty', async () => {
-    const { departmentRepository, licenseeRepository, useCase } = buildUseCase({ groups: [] })
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'baileys' }))
+    const { departmentRepository, licenseeRepository, inboxRepository, useCase } = buildUseCase({ groups: [] })
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }))
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
 
     const result = await useCase.execute(department._id)

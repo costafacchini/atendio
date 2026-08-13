@@ -63,11 +63,12 @@ const usersController = new UsersController({
 })
 const licenseesController = new LicenseesController({
   licenseeRepository,
+  inboxRepository,
   userRepository,
   createLicenseesQuery: () => new LicenseesQuery({ licenseeRepository }),
   createLicensee: new CreateLicensee({ licenseeRepository }),
   updateLicensee: new UpdateLicensee({ licenseeRepository }),
-  setDialogWebhook: new SetDialogWebhook({ licenseeRepository, createMessengerPlugin }),
+  setDialogWebhook: new SetDialogWebhook({ licenseeRepository, inboxRepository, createMessengerPlugin }),
   createMessengerPlugin,
   whatsappSessionRepository,
   contactRepository,
@@ -97,6 +98,7 @@ const messagesController = new MessagesController({
 const departmentsController = new DepartmentsController({
   departmentRepository,
   licenseeRepository,
+  inboxRepository,
   whatsappSessionRepository,
   contactRepository,
   createMessengerPlugin,

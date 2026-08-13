@@ -1,9 +1,10 @@
 import { IRepository } from '@repositories/repository'
-import { ILicensee, IDepartment, IWhatsappSession } from '../../../types'
+import { ILicensee, IInbox, IDepartment, IWhatsappSession } from '../../../types'
 
 interface GetBaileysStatusForDepartmentDeps {
   departmentRepository: IRepository<IDepartment>
   licenseeRepository: IRepository<ILicensee>
+  inboxRepository: IRepository<IInbox>
   whatsappSessionRepository: IRepository<IWhatsappSession>
   startBaileysSocket?: (licensee: ILicensee, department: IDepartment) => Promise<void>
   socketManager?: { isConnectedForLicensee(licenseeId: string, entityId: string): boolean }
@@ -13,6 +14,7 @@ interface GetBaileysStatusForDepartmentDeps {
 class GetBaileysStatusForDepartment {
   departmentRepository: IRepository<IDepartment>
   licenseeRepository: IRepository<ILicensee>
+  inboxRepository: IRepository<IInbox>
   whatsappSessionRepository: IRepository<IWhatsappSession>
   startBaileysSocket?: GetBaileysStatusForDepartmentDeps['startBaileysSocket']
   socketManager?: GetBaileysStatusForDepartmentDeps['socketManager']
@@ -21,6 +23,7 @@ class GetBaileysStatusForDepartment {
   constructor({
     departmentRepository,
     licenseeRepository,
+    inboxRepository,
     whatsappSessionRepository,
     startBaileysSocket,
     socketManager,
@@ -28,6 +31,7 @@ class GetBaileysStatusForDepartment {
   }: GetBaileysStatusForDepartmentDeps) {
     this.departmentRepository = departmentRepository
     this.licenseeRepository = licenseeRepository
+    this.inboxRepository = inboxRepository
     this.whatsappSessionRepository = whatsappSessionRepository
     this.startBaileysSocket = startBaileysSocket
     this.socketManager = socketManager
@@ -45,9 +49,10 @@ class GetBaileysStatusForDepartment {
     }
 
     const licensee = await this.licenseeRepository.findFirst({ _id: department.licensee })
-    if (!licensee || licensee.whatsappDefault !== 'baileys') {
-      return { connected: false }
-    }
+    if (!licensee) return { connected: false }
+
+    const inbox = await this.inboxRepository.findFirst({ licensee: String(department.licensee), kind: 'messenger', whatsappDefault: 'baileys' })
+    if (!inbox) return { connected: false }
 
     const session = await this.whatsappSessionRepository.findFirst({
       licensee: licensee._id,

@@ -1,5 +1,5 @@
 import { IRepository } from '@repositories/repository'
-import { ILicensee, IDepartment, IContact } from '../../../types'
+import { ILicensee, IInbox, IDepartment, IContact } from '../../../types'
 
 const WHATSAPP_DEFAULT_BAILEYS = 'baileys'
 const NOT_BAILEYS_MESSAGE = 'Licensee não usa Baileys'
@@ -11,6 +11,7 @@ interface ContactRepositoryWithGroups extends IRepository<IContact> {
 interface SyncBaileysDirectoryForDepartmentDeps {
   departmentRepository: IRepository<IDepartment>
   licenseeRepository: IRepository<ILicensee>
+  inboxRepository: IRepository<IInbox>
   contactRepository: ContactRepositoryWithGroups
   createMessengerPlugin: (licensee: ILicensee, extras: Record<string, any>) => any
   syncBaileysDirectoryForInbox: { execute(inboxId: string): Promise<Record<string, any>> }
@@ -19,6 +20,7 @@ interface SyncBaileysDirectoryForDepartmentDeps {
 class SyncBaileysDirectoryForDepartment {
   departmentRepository: IRepository<IDepartment>
   licenseeRepository: IRepository<ILicensee>
+  inboxRepository: IRepository<IInbox>
   contactRepository: ContactRepositoryWithGroups
   createMessengerPlugin: SyncBaileysDirectoryForDepartmentDeps['createMessengerPlugin']
   syncBaileysDirectoryForInbox: SyncBaileysDirectoryForDepartmentDeps['syncBaileysDirectoryForInbox']
@@ -26,12 +28,14 @@ class SyncBaileysDirectoryForDepartment {
   constructor({
     departmentRepository,
     licenseeRepository,
+    inboxRepository,
     contactRepository,
     createMessengerPlugin,
     syncBaileysDirectoryForInbox,
   }: SyncBaileysDirectoryForDepartmentDeps) {
     this.departmentRepository = departmentRepository
     this.licenseeRepository = licenseeRepository
+    this.inboxRepository = inboxRepository
     this.contactRepository = contactRepository
     this.createMessengerPlugin = createMessengerPlugin
     this.syncBaileysDirectoryForInbox = syncBaileysDirectoryForInbox
@@ -48,11 +52,12 @@ class SyncBaileysDirectoryForDepartment {
     }
 
     const licensee = await this.licenseeRepository.findFirst({ _id: department.licensee })
-    if (!licensee || licensee.whatsappDefault !== WHATSAPP_DEFAULT_BAILEYS) {
-      return { message: NOT_BAILEYS_MESSAGE }
-    }
+    if (!licensee) return { message: NOT_BAILEYS_MESSAGE }
 
-    const plugin = this.createMessengerPlugin(licensee, { department })
+    const inbox = await this.inboxRepository.findFirst({ licensee: String(department.licensee), kind: 'messenger', whatsappDefault: WHATSAPP_DEFAULT_BAILEYS })
+    if (!inbox) return { message: NOT_BAILEYS_MESSAGE }
+
+    const plugin = this.createMessengerPlugin(licensee, { department, inbox })
 
     await this.contactRepository.deactivateGroupsForLicensee(licensee._id)
 

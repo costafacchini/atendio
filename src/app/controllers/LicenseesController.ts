@@ -24,6 +24,7 @@ class LicenseesController {
 
   constructor({
     licenseeRepository,
+    inboxRepository,
     userRepository,
     createLicenseesQuery,
     createLicensee,
@@ -41,15 +42,17 @@ class LicenseesController {
     this.createLicensee = createLicensee!
     this.updateLicensee = updateLicensee!
     this.setDialogWebhookUseCase = setDialogWebhook!
-    this.getBaileysQrUseCase = new GetBaileysQr({ licenseeRepository, createMessengerPlugin, startBaileysSocket })
+    this.getBaileysQrUseCase = new GetBaileysQr({ licenseeRepository, inboxRepository, createMessengerPlugin, startBaileysSocket })
     this.getBaileysStatusUseCase = new GetBaileysStatus({
       licenseeRepository,
+      inboxRepository,
       whatsappSessionRepository,
       startBaileysSocket,
       socketManager,
     })
     this.syncBaileysDirectoryUseCase = new SyncBaileysDirectory({
       licenseeRepository,
+      inboxRepository,
       contactRepository,
       createMessengerPlugin,
     })
