@@ -61,7 +61,7 @@ yarn smoke:stop
 
 The smoke seed recreates:
 
-- one super-admin user using `DEFAULT_USER` and `DEFAULT_PASSWORD`
+- one super-admin user (credentials defined in the smoke seed script)
 - one demo licensee using the fixed `chatwoot + ycloud` pair
 - one contact with a prelinked Chatwoot contact id and source id
 - one open room so the chat outbound path can send immediately

@@ -13,8 +13,6 @@ Load this document when adding new env vars, auditing `.env.example`, or setting
 | `NODE_ENV` | Yes | — | Runtime mode. `production` enables secure cookies and disables debug output. |
 | `PORT` | No | `5000` | Port the Express server listens on. |
 | `SECRET` | Yes | — | JWT signing secret. Used to sign auth tokens and protect API routes. |
-| `DEFAULT_USER` | Yes (first boot) | — | Email of the admin user created on first startup. |
-| `DEFAULT_PASSWORD` | Yes (first boot) | — | Password of the admin user created on first startup. |
 
 ---
 

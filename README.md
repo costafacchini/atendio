@@ -53,8 +53,6 @@ cp .env.example .env
 3. Fill the required values in `.env`, especially:
 
 - `SECRET`
-- `DEFAULT_USER`
-- `DEFAULT_PASSWORD`
 - AWS variables if you need backup/storage flows
 
 See [docs/kb/architecture/env-vars.md](docs/kb/architecture/env-vars.md) for a full reference of all environment variables.
