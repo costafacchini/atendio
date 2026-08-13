@@ -46,6 +46,10 @@ const sampleMessages = [
 ]
 
 describe('<ChatPage>', () => {
+  beforeEach(() => {
+    (getInboxes as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [] })
+  })
+
   it('calls getRooms on mount', async () => {
     (getRooms as ReturnType<typeof vi.fn>).mockResolvedValue({ data: { rooms: [], hasMore: false } })
 
