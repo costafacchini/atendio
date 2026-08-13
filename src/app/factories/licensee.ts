@@ -17,13 +17,8 @@ const licenseeComplete = Factory.define(() => ({
   licenseKind: 'demo',
   useChatbot: true,
   chatbotDefault: 'landbot',
-  whatsappDefault: 'dialog',
-  chatDefault: 'rocketchat',
   chatbotUrl: 'https://chatbot.url',
   chatbotAuthorizationToken: 'chat-bot-token',
-  whatsappToken: 'whatsapp-token',
-  whatsappUrl: 'https://whatsapp.url',
-  chatUrl: 'https://chat.url',
 }))
 
 export { licensee, licenseeComplete }

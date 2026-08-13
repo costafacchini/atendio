@@ -135,16 +135,8 @@ class LicenseesController {
       licenseesQuery.page(page as number)
       licenseesQuery.limit(limit as number)
 
-      if (req.query.chatDefault) {
-        licenseesQuery.filterByChatDefault(req.query.chatDefault as string)
-      }
-
       if (req.query.chatbotDefault) {
         licenseesQuery.filterByChatbotDefault(req.query.chatbotDefault as string)
-      }
-
-      if (req.query.whatsappDefault) {
-        licenseesQuery.filterByWhatsappDefault(req.query.whatsappDefault as string)
       }
 
       if (req.query.expression) {
