@@ -1,9 +1,9 @@
 # Status: Remove plugin fields from admin CRUD layer
 
-**Current Status**: in-progress
+**Current Status**: complete
 **Last Updated**: 2026-08-13
 **Agent**: implementer
-**Branch**: plan/licensee-plugin-fields-to-inbox/phase-1/task-01-admin-layer
+**Branch**: task/licensee-plugin-fields-admin-layer
 **PR**: —
 
 ## Status History
@@ -12,6 +12,7 @@
 |-----------|--------|-------|-------|
 | 2026-08-13 | not-started | — | Task created |
 | 2026-08-13 | in-progress | implementer | Started execution |
+| 2026-08-13 | complete | implementer | All plugin fields removed from admin CRUD layer; tests pass |
 
 ## Blockers
 
