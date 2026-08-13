@@ -349,9 +349,7 @@ describe('Chatwoot plugin', () => {
 
       it('includes senderName when useSenderName is true and responseBody.content exists', async () => {
         const licenseeRepository = new LicenseeRepositoryDatabase()
-        const licenseeWithSenderName = await licenseeRepository.create(
-          licenseeFactory.build({ useSenderName: true }),
-        )
+        const licenseeWithSenderName = await licenseeRepository.create(licenseeFactory.build({ useSenderName: true }))
 
         const contactRepository = new ContactRepositoryDatabase()
         const contact = await contactRepository.create(
