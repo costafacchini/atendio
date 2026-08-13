@@ -1,6 +1,11 @@
 import { render, screen } from '@testing-library/react'
 import Navbar from './index'
 import { AppContext } from '../../contexts/App'
+import { getInboxes } from '../../services/inbox'
+
+vi.mock('../../services/inbox', () => ({
+  getInboxes: vi.fn().mockResolvedValue({ data: [] }),
+}))
 
 vi.mock('react-i18next', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-i18next')>()
@@ -51,14 +56,15 @@ describe('<Navbar>', () => {
   })
 
   describe('Chat nav link', () => {
-    it('is NOT rendered when chatDefault is not "local"', () => {
-      renderWithContext(<Navbar currentUser={{ role: 'agent', licensee: { chatDefault: 'dialog360' } }} />)
+    it('is NOT rendered when there is no chat inbox', () => {
+      renderWithContext(<Navbar currentUser={{ role: 'agent', licensee: { id: 'lic-1' } }} />)
       expect(screen.queryByText('navbar.chat')).not.toBeInTheDocument()
     })
 
-    it('is rendered when effectiveLicensee.chatDefault === "local"', () => {
-      renderWithContext(<Navbar currentUser={{ role: 'agent', licensee: { chatDefault: 'local' } }} />)
-      expect(screen.getByText('navbar.chat')).toBeInTheDocument()
+    it('is rendered when there is a chat inbox', async () => {
+      ;(getInboxes as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [{ id: 'inbox-1', kind: 'chat' }] })
+      renderWithContext(<Navbar currentUser={{ role: 'agent', licensee: { id: 'lic-1' } }} />)
+      expect(await screen.findByText('navbar.chat')).toBeInTheDocument()
     })
   })
 
