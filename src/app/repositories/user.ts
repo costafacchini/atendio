@@ -169,7 +169,7 @@ class PrismaUserDatabaseRepository extends PrismaRepository<IUser> {
     }
 
     const records = await getPrismaClient().user.findMany(query)
-    return this.fromDBMany(records) as IUser[]
+    return this.fromDBMany(records) as unknown as IUser[]
   }
 
   private async hashPasswordIfPresent<F extends Partial<IUser>>(fields: F): Promise<F> {

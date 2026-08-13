@@ -76,7 +76,7 @@ class PrismaTemplateDatabaseRepository extends PrismaRepository<ITemplate> {
       query.take = limit
     }
     const records = await getPrismaClient().template.findMany(query)
-    return this.fromDBMany(records) as ITemplate[]
+    return this.fromDBMany(records) as unknown as ITemplate[]
   }
 }
 

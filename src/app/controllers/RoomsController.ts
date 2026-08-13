@@ -204,7 +204,7 @@ class RoomsController {
 
       if ((room as any).closed) return res.status(200).json({ message: 'Already closed' })
 
-      await this.roomRepository.close(req.params.roomId)
+      await this.roomRepository.close(String(req.params.roomId))
       return res.status(200).json({ message: 'Room closed' })
     } catch (err: any) {
       return res.status(500).json({ errors: { message: `Erro interno do servidor: ${err.message}` } })

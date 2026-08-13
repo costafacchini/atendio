@@ -198,7 +198,7 @@ class PrismaContactDatabaseRepository extends PrismaRepository<IContact> {
       query.take = limit
     }
     const records = await getPrismaClient().contact.findMany(query)
-    return this.fromDBMany(records) as IContact[]
+    return this.fromDBMany(records) as unknown as IContact[]
   }
 
   private normalizeNumber<F extends Partial<IContact>>(fields: F): F {

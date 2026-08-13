@@ -381,7 +381,7 @@ class PrismaMessageDatabaseRepository extends PrismaRepository<IMessage> {
         NOT: { text: 'Chat encerrado pelo agente' },
       },
     })
-    return this.fromDBMany(records) as IMessage[]
+    return this.fromDBMany(records) as unknown as IMessage[]
   }
 
   async findSended(startDate: Date | string, endDate: Date | string, licenseeId: string): Promise<IMessage[]> {
@@ -393,7 +393,7 @@ class PrismaMessageDatabaseRepository extends PrismaRepository<IMessage> {
         licensee: licId,
       },
     })
-    return this.fromDBMany(records) as IMessage[]
+    return this.fromDBMany(records) as unknown as IMessage[]
   }
 
   async findManyMessages({
@@ -441,7 +441,7 @@ class PrismaMessageDatabaseRepository extends PrismaRepository<IMessage> {
       query.take = limit
     }
     const records = await getPrismaClient().message.findMany(query)
-    return this.fromDBMany(records) as IMessage[]
+    return this.fromDBMany(records) as unknown as IMessage[]
   }
 
   async countManyMessages({
