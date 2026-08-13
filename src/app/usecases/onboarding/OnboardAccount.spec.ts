@@ -1,6 +1,6 @@
-import { licensee as licenseeFactory } from '@factories/licensee'
 import { LicenseeRepositoryMemory } from '@repositories/licensee'
 import { UserRepositoryMemory } from '@repositories/user'
+import { InboxRepositoryMemory } from '@repositories/inbox'
 import { OnboardAccount } from './OnboardAccount'
 
 const validInput = {
@@ -17,12 +17,14 @@ const validInput = {
 describe('OnboardAccount', () => {
   let licenseeRepository: LicenseeRepositoryMemory
   let userRepository: UserRepositoryMemory
+  let inboxRepository: InboxRepositoryMemory
   let onboardAccount: OnboardAccount
 
   beforeEach(() => {
     licenseeRepository = new LicenseeRepositoryMemory()
     userRepository = new UserRepositoryMemory()
-    onboardAccount = new OnboardAccount({ licenseeRepository, userRepository })
+    inboxRepository = new InboxRepositoryMemory()
+    onboardAccount = new OnboardAccount({ licenseeRepository, userRepository, inboxRepository })
   })
 
   it('creates a licensee and a user, returning both', async () => {
@@ -66,24 +68,69 @@ describe('OnboardAccount', () => {
     expect(result.user.email).toEqual('john@acme.com')
   })
 
-  it('forwards optional chat fields to the licensee', async () => {
-    const result = await onboardAccount.execute({
+  it('creates a chat inbox when chatDefault is provided', async () => {
+    await onboardAccount.execute({
       ...validInput,
       chatDefault: 'rocketchat',
       chatUrl: 'https://chat.example.com',
     })
 
-    expect(result.licensee.chatDefault).toEqual('rocketchat')
-    expect(result.licensee.chatUrl).toEqual('https://chat.example.com')
+    const inboxes = await inboxRepository.find({ kind: 'chat' })
+    expect(inboxes).toHaveLength(1)
+    expect(inboxes[0].name).toEqual('Chat')
+    expect(inboxes[0].chatDefault).toEqual('rocketchat')
+    expect(inboxes[0].chatUrl).toEqual('https://chat.example.com')
   })
 
-  it('forwards optional WhatsApp fields to the licensee', async () => {
-    const result = await onboardAccount.execute({
+  it('creates a messenger inbox when whatsappDefault is provided', async () => {
+    await onboardAccount.execute({
       ...validInput,
+      whatsappDefault: 'baileys',
+      whatsappToken: 'tk-123',
+    })
+
+    const inboxes = await inboxRepository.find({ kind: 'messenger' })
+    expect(inboxes).toHaveLength(1)
+    expect(inboxes[0].name).toEqual('WhatsApp')
+    expect(inboxes[0].whatsappDefault).toEqual('baileys')
+    expect(inboxes[0].whatsappToken).toEqual('tk-123')
+  })
+
+  it('creates two inboxes when both chat and WhatsApp are provided', async () => {
+    await onboardAccount.execute({
+      ...validInput,
+      chatDefault: 'rocketchat',
       whatsappDefault: 'baileys',
     })
 
-    expect(result.licensee.whatsappDefault).toEqual('baileys')
+    const allInboxes = await inboxRepository.find()
+    expect(allInboxes).toHaveLength(2)
+    expect(allInboxes.map((i: any) => i.kind).sort()).toEqual(['chat', 'messenger'])
+  })
+
+  it('does not create any inbox when no plugin is provided', async () => {
+    await onboardAccount.execute(validInput)
+
+    const allInboxes = await inboxRepository.find()
+    expect(allInboxes).toHaveLength(0)
+  })
+
+  it('links the inbox to the created licensee', async () => {
+    const result = await onboardAccount.execute({ ...validInput, chatDefault: 'rocketchat' })
+
+    const inboxes = await inboxRepository.find()
+    expect(inboxes[0].licensee.toString()).toEqual(result.licensee._id.toString())
+  })
+
+  it('does not save plugin fields to the licensee record', async () => {
+    const result = await onboardAccount.execute({
+      ...validInput,
+      chatDefault: 'rocketchat',
+      whatsappDefault: 'baileys',
+    })
+
+    expect((result.licensee as any).chatDefault).toBeUndefined()
+    expect((result.licensee as any).whatsappDefault).toBeUndefined()
   })
 
   it('forwards useDepartments to the licensee when provided', async () => {
@@ -114,7 +161,8 @@ describe('OnboardAccount', () => {
     const result1 = await onboardAccount.execute(validInput)
     licenseeRepository = new LicenseeRepositoryMemory()
     userRepository = new UserRepositoryMemory()
-    onboardAccount = new OnboardAccount({ licenseeRepository, userRepository })
+    inboxRepository = new InboxRepositoryMemory()
+    onboardAccount = new OnboardAccount({ licenseeRepository, userRepository, inboxRepository })
     const result2 = await onboardAccount.execute({
       ...validInput,
       licenseeEmail: 'other@acme.com',

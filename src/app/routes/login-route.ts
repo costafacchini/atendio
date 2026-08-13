@@ -6,6 +6,7 @@ import { LoginController } from '../controllers/LoginController'
 import { OnboardingController } from '../controllers/OnboardingController'
 import { PrismaUserDatabaseRepository } from '../repositories/user'
 import { PrismaLicenseeDatabaseRepository } from '../repositories/licensee'
+import { PrismaInboxDatabaseRepository } from '../repositories/inbox'
 import { AuthenticateUser } from '../usecases/auth/AuthenticateUser'
 import { OnboardAccount } from '../usecases/onboarding/OnboardAccount'
 import { redisConnection } from '../../config/redis'
@@ -45,6 +46,7 @@ const onboardingLimiter = rateLimit({
 const SECRET = process.env.SECRET
 const userRepository = new PrismaUserDatabaseRepository()
 const licenseeRepository = new PrismaLicenseeDatabaseRepository()
+const inboxRepository = new PrismaInboxDatabaseRepository()
 const tokenService = {
   sign: jwt.sign,
   secret: SECRET,
@@ -52,7 +54,7 @@ const tokenService = {
 const authenticateUser = new AuthenticateUser({ userRepository, tokenService })
 const loginController = new LoginController({ authenticateUser })
 
-const onboardAccount = new OnboardAccount({ licenseeRepository, userRepository })
+const onboardAccount = new OnboardAccount({ licenseeRepository, userRepository, inboxRepository })
 const onboardingController = new OnboardingController({ onboardAccount })
 
 router.post('/', loginLimiter, loginController.login)
