@@ -28,7 +28,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!targetLicenseeId) { setInboxes([]); return }
-    getInboxes({ licensee: targetLicenseeId }).then(res => setInboxes(res.data ?? []))
+    getInboxes({ licensee: targetLicenseeId }).then(res => setInboxes((res.data as IInbox[]) ?? []))
   }, [targetLicenseeId])
 
   const baileysInbox = inboxes.find(i => i.whatsappDefault === 'baileys') ?? null

@@ -16,7 +16,7 @@ export default function Navbar({ currentUser }: { currentUser?: IUser | null }) 
 
   useEffect(() => {
     if (!licenseeId) { setInboxes([]); return }
-    getInboxes({ licensee: licenseeId }).then(res => setInboxes(res.data ?? []))
+    getInboxes({ licensee: licenseeId }).then(res => setInboxes((res.data as IInbox[]) ?? []))
   }, [licenseeId])
 
   function handleSwitchLicensee() {

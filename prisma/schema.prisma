@@ -22,13 +22,6 @@ model Licensee {
   messageOnResetChatbot     String?
   messageOnCloseChat        String?
   chatbotAuthorizationToken String?
-  whatsappDefault           String?
-  whatsappToken             String?
-  whatsappUrl               String?
-  chatDefault               String?
-  chatUrl                   String?
-  chatKey                   String?
-  chatIdentifier            String?
   unidadeId                 String?
   statusId                  String?
   useWhatsappWindow         Boolean  @default(false)

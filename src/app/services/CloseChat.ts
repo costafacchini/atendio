@@ -2,7 +2,7 @@ async function closeChat(data: any, { messageRepository, inboxRepository, create
   const { messageId } = data
   const message = await messageRepository.findFirst({ _id: messageId }, ['licensee'])
   const licensee = message.licensee
-  const actions = []
+  const actions: Record<string, any>[] = []
 
   const chatInbox = await inboxRepository.findFirst({ licensee: licensee._id, kind: 'chat' })
   if (!chatInbox) return actions

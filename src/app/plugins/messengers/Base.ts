@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { S3 } from '../storage/S3'
 import { LocalStorage } from '../storage/Local'
 import { requireDependency } from '../../helpers/RequireDependency'
-import { ILicensee, IContact, IMessage, ITrigger, MessageKind, MessageDestination } from '../../../types'
+import { ILicensee, IInbox, IContact, IMessage, ITrigger, MessageKind, MessageDestination } from '../../../types'
 
 interface ITriggerRepository {
   findFirst(params?: Record<string, unknown>): Promise<ITrigger | null>
@@ -34,6 +34,7 @@ const uploadFile = (licensee: any, contact: any, fileName: any, fileBase64: any)
 
 class MessengersBase implements IMessengerPlugin {
   licensee: ILicensee
+  inbox: IInbox | null
   _contactRepository: IRepository<IContact>
   _messageRepository: IRepository<IMessage>
   _triggerRepository: ITriggerRepository
@@ -46,11 +47,13 @@ class MessengersBase implements IMessengerPlugin {
   constructor(
     licensee: ILicensee,
     {
+      inbox,
       contactRepository,
       messageRepository,
       triggerRepository,
       productRepository,
     }: {
+      inbox?: IInbox | null
       contactRepository?: IRepository<IContact>
       messageRepository?: IRepository<IMessage>
       triggerRepository?: ITriggerRepository
@@ -58,6 +61,7 @@ class MessengersBase implements IMessengerPlugin {
     } = {},
   ) {
     this.licensee = licensee
+    this.inbox = inbox ?? null
     this._contactRepository = contactRepository!
     this._messageRepository = messageRepository!
     this._triggerRepository = triggerRepository!
@@ -248,8 +252,8 @@ class MessengersBase implements IMessengerPlugin {
         } else {
           messageToSend.url = await this.getMediaUrl(
             messageToSend.attachmentWaId,
-            this.licensee.whatsappUrl,
-            this.licensee.whatsappToken,
+            this.inbox?.whatsappUrl,
+            this.inbox?.whatsappToken,
             contact,
           )
         }

@@ -137,6 +137,7 @@ function buildRuntimeDependencies({
   const getBaileysQrForDepartment = new GetBaileysQrForDepartment({
     departmentRepository,
     licenseeRepository,
+    inboxRepository,
     createMessengerPlugin,
     startBaileysSocket,
     getBaileysQrForInbox,
@@ -145,6 +146,7 @@ function buildRuntimeDependencies({
   const getBaileysStatusForDepartment = new GetBaileysStatusForDepartment({
     departmentRepository,
     licenseeRepository,
+    inboxRepository,
     whatsappSessionRepository,
     startBaileysSocket,
     socketManager,
@@ -154,6 +156,7 @@ function buildRuntimeDependencies({
   const syncBaileysDirectoryForDepartment = new SyncBaileysDirectoryForDepartment({
     departmentRepository,
     licenseeRepository,
+    inboxRepository,
     contactRepository,
     createMessengerPlugin,
     syncBaileysDirectoryForInbox,

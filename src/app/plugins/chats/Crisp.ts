@@ -206,7 +206,7 @@ class Crisp extends ChatsBase {
     const messageToSend = await this.messageRepository.findFirst({ _id: messageId }, ['contact'])
     if (!messageToSend) return
     const messageContact = messageToSend.contact as IContact
-    const basicToken = Buffer.from(`${this.licensee.chatIdentifier}:${this.licensee.chatKey}`).toString('base64')
+    const basicToken = Buffer.from(`${this.inbox?.chatIdentifier}:${this.inbox?.chatKey}`).toString('base64')
     const headers = { Authorization: `Basic ${basicToken}`, 'X-Crisp-Tier': 'plugin' }
     const openRoom = await this.roomRepository.findFirst({ contact: messageContact, closed: false })
     let room = openRoom

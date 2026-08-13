@@ -12,17 +12,18 @@ function createChatPlugin(
   inbox: IInbox | null = null,
 ): IChatPlugin {
   const plugin = inbox?.chatDefault
+  const deps = { ...dependencies, inbox }
   switch (plugin) {
     case 'rocketchat':
-      return new Rocketchat(licensee, dependencies)
+      return new Rocketchat(licensee, deps)
     case 'crisp':
-      return new Crisp(licensee, dependencies)
+      return new Crisp(licensee, deps)
     case 'cuboup':
-      return new Cuboup(licensee, dependencies)
+      return new Cuboup(licensee, deps)
     case 'chatwoot':
-      return new Chatwoot(licensee, dependencies)
+      return new Chatwoot(licensee, deps)
     case 'local':
-      return new LocalChat(licensee, dependencies)
+      return new LocalChat(licensee, deps)
     default:
       throw `Plugin de chat não configurado: ${plugin}`
   }

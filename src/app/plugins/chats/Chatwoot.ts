@@ -277,7 +277,7 @@ class Chatwoot extends ChatsBase {
     const messageToSend = await this.messageRepository.findFirst({ _id: messageId }, ['contact'])
     if (!messageToSend) return
     const messageContact = messageToSend.contact as IContact
-    const headers = { api_access_token: this.licensee.chatKey, 'Content-Type': 'application/json' }
+    const headers = { api_access_token: this.inbox?.chatKey, 'Content-Type': 'application/json' }
 
     if (!messageContact.chatwootSourceId) {
       const { sourceId, id: chatwootId } = await searchContact(
@@ -312,7 +312,7 @@ class Chatwoot extends ChatsBase {
     let room = openRoom
 
     if (!room) {
-      room = await createConversation(url, headers, messageContact, this.licensee.chatIdentifier, this.roomRepository)
+      room = await createConversation(url, headers, messageContact, this.inbox?.chatIdentifier, this.roomRepository)
       if (!room) {
         messageToSend.error =
           'Chatwoot - erro: Não foi possível criar a conversa na Chatwoot! Você vai encontrar mais detalhes nos logs do servidor.'
@@ -340,7 +340,7 @@ class Chatwoot extends ChatsBase {
         contact.chatwootId = chatwootId ?? undefined
       }
 
-      room = await createConversation(url, headers, contact, this.licensee.chatIdentifier, this.roomRepository)
+      room = await createConversation(url, headers, contact, this.inbox?.chatIdentifier, this.roomRepository)
       if (!room) {
         messageToSend.error =
           'Chatwoot - erro 2: Não foi possível criar a conversa na Chatwoot! Você vai encontrar mais detalhes nos logs do servidor.'
