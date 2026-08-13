@@ -1,22 +1,21 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { QRCodeSVG } from 'qrcode.react'
-import { getBaileysQr, getBaileysStatus } from '../../../services/licensee'
+import { getInboxBaileysQr, getInboxBaileysStatus } from '../../../services/inbox'
+import type { IInbox } from '../../../types/inbox'
 import type { IBaileysStatusResponse, IBaileysQrResponse } from '../../../types'
 
 interface Props {
-  licenseeId: string
+  inbox: IInbox
   onConnected: () => void
 }
 
-export default function BaileysSetupCard({ licenseeId, onConnected }: Props) {
+export default function BaileysSetupCard({ inbox, onConnected }: Props) {
   const { t } = useTranslation()
   const [qr, setQr] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [statusMessage, setStatusMessage] = useState('')
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  const licensee = { id: licenseeId }
 
   function stopPolling() {
     if (pollingRef.current) {
@@ -26,7 +25,7 @@ export default function BaileysSetupCard({ licenseeId, onConnected }: Props) {
   }
 
   async function checkStatus(): Promise<boolean> {
-    const res = await getBaileysStatus(licensee)
+    const res = await getInboxBaileysStatus(inbox.id)
     const statusData = res.data as IBaileysStatusResponse
     if (statusData?.connected) {
       stopPolling()
@@ -40,7 +39,7 @@ export default function BaileysSetupCard({ licenseeId, onConnected }: Props) {
     setLoading(true)
     setQr(null)
     setStatusMessage('')
-    const res = await getBaileysQr(licensee)
+    const res = await getInboxBaileysQr(inbox.id)
     setLoading(false)
     const qrData = res.data as IBaileysQrResponse
     if (qrData?.qr) {
@@ -63,7 +62,7 @@ export default function BaileysSetupCard({ licenseeId, onConnected }: Props) {
     init()
 
     return () => stopPolling()
-  }, [licenseeId])
+  }, [inbox.id])
 
   return (
     <div className='card border-warning'>
