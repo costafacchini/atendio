@@ -191,10 +191,13 @@ describe('transformChatBody', () => {
     expect(actions.length).toEqual(1)
   })
 
-  it('returns empty actions when body has no linked inbox', async () => {
+  it('returns empty actions when no inbox is found for the licensee', async () => {
+    const licenseeWithoutInbox = await new LicenseeRepositoryDatabase().create(licenseeFactory.build())
+    // intentionally no inbox created for this licensee
+
     const body = await Body.create(
       bodyFactory.build({
-        licensee: licensee,
+        licensee: licenseeWithoutInbox,
         concluded: false,
       }),
     )

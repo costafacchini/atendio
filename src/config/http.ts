@@ -72,7 +72,7 @@ if (process.env.ROLLBAR_ACCESS_TOKEN) {
 
 const SECRET = process.env.SECRET as string
 
-const OBJECT_ID_REGEX = /^[a-f0-9]{24}$/
+const LICENSEE_ID_REGEX = /^\d+$/
 
 const server = http.createServer(app)
 
@@ -93,7 +93,7 @@ io.use((socket, next) => {
 
 io.on('connection', (socket) => {
   socket.on('join-licensee', (licenseeId: string) => {
-    if (typeof licenseeId === 'string' && OBJECT_ID_REGEX.test(licenseeId)) {
+    if (typeof licenseeId === 'string' && LICENSEE_ID_REGEX.test(licenseeId)) {
       socket.join(`licensee:${licenseeId}`)
     }
   })

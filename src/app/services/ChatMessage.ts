@@ -1,14 +1,26 @@
 async function transformChatBody(
   data: any,
-  { bodyRepository, contactRepository, messageRepository, createChatPlugin }: Record<string, any> = {},
+  {
+    bodyRepository,
+    inboxRepository,
+    licenseeRepository,
+    contactRepository,
+    messageRepository,
+    createChatPlugin,
+  }: Record<string, any> = {},
 ) {
   const { bodyId } = data
-  const body = await bodyRepository.findFirst({ _id: bodyId }, ['licensee', 'inbox'])
+  const body = await bodyRepository.findFirst({ _id: bodyId })
   if (!body) {
     return []
   }
-  const licensee = body.licensee
-  const inbox = body.inbox
+
+  const [licensee, inbox] = await Promise.all([
+    licenseeRepository.findFirst({ _id: body.licensee }),
+    body.inbox
+      ? inboxRepository.findFirst({ _id: body.inbox })
+      : inboxRepository.findFirst({ licensee: body.licensee, kind: 'chat' }),
+  ])
 
   if (!inbox) {
     return []
@@ -21,16 +33,17 @@ async function transformChatBody(
 
   for (const message of messages) {
     if (licensee.useWhatsappWindow) {
-      const messageDoesNotHaveSended = await contactRepository.contactWithWhatsappWindowClosed(message.contact._id)
+      const contactId = (message.contact as any)?._id ?? String(message.contact)
+      const messageDoesNotHaveSended = await contactRepository.contactWithWhatsappWindowClosed(contactId)
       if (messageDoesNotHaveSended && message.kind !== 'template') {
         const messageToSend = await messageRepository.createMessageToWarnAboutWindowOfWhatsassHasExpired(
-          message.contact,
+          contactId,
           licensee,
         )
 
         const bodyToSend = {
           messageId: messageToSend._id,
-          contactId: message.contact._id,
+          contactId,
           licenseeId: licensee._id,
           url: inbox.chatUrl,
           token: '',
@@ -45,9 +58,10 @@ async function transformChatBody(
       }
     }
 
+    const contactId = (message.contact as any)?._id ?? String(message.contact)
     const bodyToSend = {
       messageId: message._id,
-      contactId: message.contact._id,
+      contactId,
       licenseeId: licensee._id,
       url: inbox.whatsappUrl,
       token: inbox.whatsappToken,
@@ -59,7 +73,7 @@ async function transformChatBody(
     })
   }
 
-  await bodyRepository.update({ _id: bodyId }, { concluded: true })
+  await bodyRepository.update(bodyId, { concluded: true })
 
   return actions
 }
