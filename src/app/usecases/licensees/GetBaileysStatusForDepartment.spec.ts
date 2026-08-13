@@ -1,11 +1,14 @@
 import { GetBaileysStatusForDepartment } from './GetBaileysStatusForDepartment'
 import { LicenseeRepositoryMemory } from '@repositories/licensee'
+import { InboxRepositoryMemory } from '@repositories/inbox'
 import { WhatsappSessionRepositoryMemory } from '@repositories/whatsappsession'
 import { DepartmentRepositoryMemory } from '@repositories/department'
 import { licenseeComplete as licenseeCompleteFactory } from '@factories/licensee'
+import { inbox as inboxFactory } from '@factories/inbox'
 
 function buildUseCase(overrides: Record<string, any> = {}) {
   const licenseeRepository = overrides.licenseeRepository ?? new LicenseeRepositoryMemory()
+  const inboxRepository = overrides.inboxRepository ?? new InboxRepositoryMemory()
   const whatsappSessionRepository = overrides.whatsappSessionRepository ?? new WhatsappSessionRepositoryMemory()
   const departmentRepository = overrides.departmentRepository ?? new DepartmentRepositoryMemory()
   const startBaileysSocket = overrides.startBaileysSocket
@@ -13,13 +16,14 @@ function buildUseCase(overrides: Record<string, any> = {}) {
   const getBaileysStatusForInbox = overrides.getBaileysStatusForInbox ?? { execute: jest.fn() }
   const useCase = new GetBaileysStatusForDepartment({
     licenseeRepository,
+    inboxRepository,
     whatsappSessionRepository,
     departmentRepository,
     startBaileysSocket,
     socketManager,
     getBaileysStatusForInbox,
   })
-  return { licenseeRepository, whatsappSessionRepository, departmentRepository, getBaileysStatusForInbox, useCase }
+  return { licenseeRepository, inboxRepository, whatsappSessionRepository, departmentRepository, getBaileysStatusForInbox, useCase }
 }
 
 describe('GetBaileysStatusForDepartment', () => {
@@ -42,9 +46,10 @@ describe('GetBaileysStatusForDepartment', () => {
     expect(result).toEqual({ connected: false })
   })
 
-  it('returns { connected: false } when licensee does not use baileys', async () => {
-    const { licenseeRepository, departmentRepository, useCase } = buildUseCase()
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'dialog' }))
+  it('returns { connected: false } when licensee has no baileys inbox', async () => {
+    const { licenseeRepository, inboxRepository, departmentRepository, useCase } = buildUseCase()
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'dialog' }))
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
 
     const result = await useCase.execute(department._id)
@@ -53,8 +58,9 @@ describe('GetBaileysStatusForDepartment', () => {
   })
 
   it('returns { connected: false } when no session exists for the licensee', async () => {
-    const { licenseeRepository, departmentRepository, useCase } = buildUseCase()
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'baileys' }))
+    const { licenseeRepository, inboxRepository, departmentRepository, useCase } = buildUseCase()
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }))
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
 
     const result = await useCase.execute(department._id)
@@ -63,8 +69,9 @@ describe('GetBaileysStatusForDepartment', () => {
   })
 
   it('returns { connected: false } when department session exists but creds are empty', async () => {
-    const { licenseeRepository, whatsappSessionRepository, departmentRepository, useCase } = buildUseCase()
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'baileys' }))
+    const { licenseeRepository, inboxRepository, whatsappSessionRepository, departmentRepository, useCase } = buildUseCase()
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }))
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
     await whatsappSessionRepository.create({ licensee: licensee._id, department: department._id, creds: {}, keys: {} })
 
@@ -74,8 +81,9 @@ describe('GetBaileysStatusForDepartment', () => {
   })
 
   it('returns { connected: true } when department session has non-empty creds', async () => {
-    const { licenseeRepository, whatsappSessionRepository, departmentRepository, useCase } = buildUseCase()
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'baileys' }))
+    const { licenseeRepository, inboxRepository, whatsappSessionRepository, departmentRepository, useCase } = buildUseCase()
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }))
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
     await whatsappSessionRepository.create({
       licensee: licensee._id,
@@ -89,8 +97,9 @@ describe('GetBaileysStatusForDepartment', () => {
   })
 
   it('returns { connected: false } when only a general licensee session (no department) exists', async () => {
-    const { licenseeRepository, whatsappSessionRepository, departmentRepository, useCase } = buildUseCase()
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'baileys' }))
+    const { licenseeRepository, inboxRepository, whatsappSessionRepository, departmentRepository, useCase } = buildUseCase()
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }))
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
     await whatsappSessionRepository.create({
       licensee: licensee._id,
@@ -106,11 +115,12 @@ describe('GetBaileysStatusForDepartment', () => {
     process.env.ENABLE_BAILEYS_SOCKET = 'true'
     const startBaileysSocket = jest.fn().mockResolvedValue(undefined)
     const socketManager = { isConnectedForLicensee: jest.fn().mockReturnValue(false) }
-    const { licenseeRepository, whatsappSessionRepository, departmentRepository, useCase } = buildUseCase({
+    const { licenseeRepository, inboxRepository, whatsappSessionRepository, departmentRepository, useCase } = buildUseCase({
       startBaileysSocket,
       socketManager,
     })
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'baileys' }))
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }))
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
     await whatsappSessionRepository.create({
       licensee: licensee._id,
@@ -127,11 +137,12 @@ describe('GetBaileysStatusForDepartment', () => {
     process.env.ENABLE_BAILEYS_SOCKET = 'true'
     const startBaileysSocket = jest.fn().mockResolvedValue(undefined)
     const socketManager = { isConnectedForLicensee: jest.fn().mockReturnValue(true) }
-    const { licenseeRepository, whatsappSessionRepository, departmentRepository, useCase } = buildUseCase({
+    const { licenseeRepository, inboxRepository, whatsappSessionRepository, departmentRepository, useCase } = buildUseCase({
       startBaileysSocket,
       socketManager,
     })
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'baileys' }))
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }))
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
     await whatsappSessionRepository.create({
       licensee: licensee._id,

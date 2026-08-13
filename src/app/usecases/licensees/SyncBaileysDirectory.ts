@@ -1,5 +1,5 @@
 import { IRepository } from '@repositories/repository'
-import { ILicensee, IContact } from '../../../types'
+import { ILicensee, IInbox, IContact } from '../../../types'
 
 const WHATSAPP_DEFAULT_BAILEYS = 'baileys'
 const NOT_BAILEYS_MESSAGE = 'Licensee não usa Baileys'
@@ -10,29 +10,32 @@ interface ContactRepositoryWithGroups extends IRepository<IContact> {
 
 interface SyncBaileysDirectoryDeps {
   licenseeRepository: IRepository<ILicensee>
+  inboxRepository: IRepository<IInbox>
   contactRepository: ContactRepositoryWithGroups
-  createMessengerPlugin: (licensee: ILicensee) => any
+  createMessengerPlugin: (licensee: ILicensee, extras: Record<string, any>) => any
 }
 
 class SyncBaileysDirectory {
   licenseeRepository: IRepository<ILicensee>
+  inboxRepository: IRepository<IInbox>
   contactRepository: ContactRepositoryWithGroups
   createMessengerPlugin: SyncBaileysDirectoryDeps['createMessengerPlugin']
 
-  constructor({ licenseeRepository, contactRepository, createMessengerPlugin }: SyncBaileysDirectoryDeps) {
+  constructor({ licenseeRepository, inboxRepository, contactRepository, createMessengerPlugin }: SyncBaileysDirectoryDeps) {
     this.licenseeRepository = licenseeRepository
+    this.inboxRepository = inboxRepository
     this.contactRepository = contactRepository
     this.createMessengerPlugin = createMessengerPlugin
   }
 
   async execute(id: string) {
     const licensee = await this.licenseeRepository.findFirst({ _id: id })
+    if (!licensee) return { message: NOT_BAILEYS_MESSAGE }
 
-    if (!licensee || licensee.whatsappDefault !== WHATSAPP_DEFAULT_BAILEYS) {
-      return { message: NOT_BAILEYS_MESSAGE }
-    }
+    const inbox = await this.inboxRepository.findFirst({ licensee: id, kind: 'messenger', whatsappDefault: WHATSAPP_DEFAULT_BAILEYS })
+    if (!inbox) return { message: NOT_BAILEYS_MESSAGE }
 
-    const plugin = this.createMessengerPlugin(licensee)
+    const plugin = this.createMessengerPlugin(licensee, { inbox })
 
     await this.contactRepository.deactivateGroupsForLicensee(licensee._id)
 
