@@ -64,5 +64,4 @@ describe('licensee repository memory', () => {
       expect(result.length).toEqual(2)
     })
   })
-
 })

@@ -35,7 +35,6 @@ describeIf('PrismaLicenseeDatabaseRepository', () => {
       expect((result as any).id).toBeDefined()
       expect((result as any).name).toEqual('Alcateia Ltds')
     })
-
   })
 
   describe('#findFirst', () => {
