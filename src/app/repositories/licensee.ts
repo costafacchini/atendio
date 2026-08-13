@@ -130,7 +130,7 @@ class PrismaLicenseeDatabaseRepository extends PrismaRepository<ILicensee> {
       query.take = limit
     }
     const records = await getPrismaClient().licensee.findMany(query)
-    return this.fromDBMany(records) as ILicensee[]
+    return this.fromDBMany(records) as unknown as ILicensee[]
   }
 
   private applyWhatsappUrl<F extends Partial<ILicensee>>(fields: F): F {

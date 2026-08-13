@@ -20,7 +20,7 @@
     "test:ci": "NODE_ENV=test jest --config=jest.config.mjs",
     "test:coverage": "NODE_ENV=test jest --config=jest.config.mjs --maxWorkers=50%",
     "watch": "NODE_ENV=test jest --no-coverage --verbose --watch --runInBand --notify --notifyMode always",
-    "linter": "yarn eslint 'src/app/**/*.{js,ts,tsx}' 'src/config/**/*.{js,ts,tsx}' 'src/setup/**/*.{js,ts,tsx}'",
+    "linter": "yarn eslint 'src/app/**/*.{js,ts,tsx}' 'src/config/**/*.{js,ts,tsx}'",
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",

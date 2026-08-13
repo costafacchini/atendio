@@ -31,7 +31,7 @@ class PrismaRoomDatabaseRepository extends PrismaRepository<IRoom> {
   async findById(id: string | number): Promise<IRoom | null> {
     const intId = typeof id === 'string' ? parseInt(id, 10) : id
     const record = await getPrismaClient().room.findUnique({ where: { id: intId } })
-    return this.fromDB(record)
+    return this.fromDB(record) as unknown as IRoom | null
   }
 
   async close(id: string | number): Promise<void> {
@@ -47,7 +47,7 @@ class PrismaRoomDatabaseRepository extends PrismaRepository<IRoom> {
     const record = await getPrismaClient().room.findFirst({
       where: { contact: intId, closed: false },
     })
-    return this.fromDB(record)
+    return this.fromDB(record) as unknown as IRoom | null
   }
 
   async avgDuration(contactIds: number[] | null, startDate: Date, endDate: Date): Promise<number> {
@@ -71,7 +71,7 @@ class PrismaRoomDatabaseRepository extends PrismaRepository<IRoom> {
       skip: (page - 1) * limit,
       take: limit + 1,
     })
-    return this.fromDBMany(records) as IRoom[]
+    return this.fromDBMany(records) as unknown as IRoom[]
   }
 
   async findForLicensee(

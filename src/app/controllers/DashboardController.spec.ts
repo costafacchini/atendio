@@ -193,10 +193,7 @@ describe('DashboardController', () => {
     it('returns correct percentages on cache miss', async () => {
       const redis = buildRedis({ cachedValue: null })
       const { controller, messageRepository } = buildController({ user: SUPER_USER, redisConnection: redis })
-      messageRepository.countMessages
-        .mockResolvedValueOnce(80)
-        .mockResolvedValueOnce(20)
-        .mockResolvedValueOnce(35)
+      messageRepository.countMessages.mockResolvedValueOnce(80).mockResolvedValueOnce(20).mockResolvedValueOnce(35)
       const req = { userId: 'user-id', query: {} }
       const res = buildResponse()
 

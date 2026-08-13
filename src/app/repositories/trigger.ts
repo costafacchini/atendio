@@ -91,7 +91,7 @@ class PrismaTriggerDatabaseRepository extends PrismaRepository<ITrigger> {
       query.take = limit
     }
     const records = await getPrismaClient().trigger.findMany(query)
-    return this.fromDBMany(records) as ITrigger[]
+    return this.fromDBMany(records) as unknown as ITrigger[]
   }
 }
 
