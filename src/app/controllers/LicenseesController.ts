@@ -42,7 +42,12 @@ class LicenseesController {
     this.createLicensee = createLicensee!
     this.updateLicensee = updateLicensee!
     this.setDialogWebhookUseCase = setDialogWebhook!
-    this.getBaileysQrUseCase = new GetBaileysQr({ licenseeRepository, inboxRepository, createMessengerPlugin, startBaileysSocket })
+    this.getBaileysQrUseCase = new GetBaileysQr({
+      licenseeRepository,
+      inboxRepository,
+      createMessengerPlugin,
+      startBaileysSocket,
+    })
     this.getBaileysStatusUseCase = new GetBaileysStatus({
       licenseeRepository,
       inboxRepository,

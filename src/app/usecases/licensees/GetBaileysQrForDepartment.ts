@@ -47,7 +47,11 @@ class GetBaileysQrForDepartment {
     const licensee = await this.licenseeRepository.findFirst({ _id: department.licensee })
     if (!licensee) return { message: 'Licensee não usa Baileys' }
 
-    const inbox = await this.inboxRepository.findFirst({ licensee: String(department.licensee), kind: 'messenger', whatsappDefault: 'baileys' })
+    const inbox = await this.inboxRepository.findFirst({
+      licensee: String(department.licensee),
+      kind: 'messenger',
+      whatsappDefault: 'baileys',
+    })
     if (!inbox) return { message: 'Licensee não usa Baileys' }
 
     const plugin = this.createMessengerPlugin(licensee, { department, inbox })

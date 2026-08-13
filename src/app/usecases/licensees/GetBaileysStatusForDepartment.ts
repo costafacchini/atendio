@@ -51,7 +51,11 @@ class GetBaileysStatusForDepartment {
     const licensee = await this.licenseeRepository.findFirst({ _id: department.licensee })
     if (!licensee) return { connected: false }
 
-    const inbox = await this.inboxRepository.findFirst({ licensee: String(department.licensee), kind: 'messenger', whatsappDefault: 'baileys' })
+    const inbox = await this.inboxRepository.findFirst({
+      licensee: String(department.licensee),
+      kind: 'messenger',
+      whatsappDefault: 'baileys',
+    })
     if (!inbox) return { connected: false }
 
     const session = await this.whatsappSessionRepository.findFirst({

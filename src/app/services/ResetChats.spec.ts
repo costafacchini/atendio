@@ -35,11 +35,18 @@ describe('resetChats', () => {
         const licenseeRepository = new LicenseeRepositoryDatabase()
         const inboxRepository = new InboxRepositoryDatabase()
 
-        const licensee = await licenseeRepository.create(
-          licenseeFactory.build({ useWhatsappWindow: true }),
+        const licensee = await licenseeRepository.create(licenseeFactory.build({ useWhatsappWindow: true }))
+        await inboxRepository.create(
+          inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'dialog' }),
         )
-        await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'dialog' }))
-        await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'chat', chatDefault: 'rocketchat', chatUrl: 'https://chat.url' }))
+        await inboxRepository.create(
+          inboxFactory.build({
+            licensee: licensee._id,
+            kind: 'chat',
+            chatDefault: 'rocketchat',
+            chatUrl: 'https://chat.url',
+          }),
+        )
 
         const contactRepository = new ContactRepositoryDatabase()
         const contactWithWhatsappWindowEnding = await contactRepository.create(
@@ -73,7 +80,9 @@ describe('resetChats', () => {
         const licenseeWhatsappWindowOff = await licenseeRepository.create(
           licenseeFactory.build({ useWhatsappWindow: false }),
         )
-        await inboxRepository.create(inboxFactory.build({ licensee: licenseeWhatsappWindowOff._id, kind: 'messenger', whatsappDefault: 'dialog' }))
+        await inboxRepository.create(
+          inboxFactory.build({ licensee: licenseeWhatsappWindowOff._id, kind: 'messenger', whatsappDefault: 'dialog' }),
+        )
 
         const contactLicenseeWindowOff = await contactRepository.create(
           contactFactory.build({
@@ -85,7 +94,9 @@ describe('resetChats', () => {
         const licenseeThatNotUseDialog = await licenseeRepository.create(
           licenseeFactory.build({ useWhatsappWindow: true }),
         )
-        await inboxRepository.create(inboxFactory.build({ licensee: licenseeThatNotUseDialog._id, kind: 'messenger', whatsappDefault: 'utalk' }))
+        await inboxRepository.create(
+          inboxFactory.build({ licensee: licenseeThatNotUseDialog._id, kind: 'messenger', whatsappDefault: 'utalk' }),
+        )
 
         const contactLicenseeThatNotUseDialog = await contactRepository.create(
           contactFactory.build({
@@ -126,11 +137,18 @@ describe('resetChats', () => {
         const licenseeRepository = new LicenseeRepositoryDatabase()
         const inboxRepository = new InboxRepositoryDatabase()
 
-        const licensee = await licenseeRepository.create(
-          licenseeFactory.build({ useWhatsappWindow: true }),
+        const licensee = await licenseeRepository.create(licenseeFactory.build({ useWhatsappWindow: true }))
+        await inboxRepository.create(
+          inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'dialog' }),
         )
-        await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'dialog' }))
-        await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'chat', chatDefault: 'rocketchat', chatUrl: 'https://chat.url' }))
+        await inboxRepository.create(
+          inboxFactory.build({
+            licensee: licensee._id,
+            kind: 'chat',
+            chatDefault: 'rocketchat',
+            chatUrl: 'https://chat.url',
+          }),
+        )
 
         const contactRepository = new ContactRepositoryDatabase()
         const contactWithWhatsappWindowEnding = await contactRepository.create(
@@ -150,7 +168,9 @@ describe('resetChats', () => {
         const licenseeWhatsappWindowOff = await licenseeRepository.create(
           licenseeFactory.build({ useWhatsappWindow: false }),
         )
-        await inboxRepository.create(inboxFactory.build({ licensee: licenseeWhatsappWindowOff._id, kind: 'messenger', whatsappDefault: 'dialog' }))
+        await inboxRepository.create(
+          inboxFactory.build({ licensee: licenseeWhatsappWindowOff._id, kind: 'messenger', whatsappDefault: 'dialog' }),
+        )
 
         const contactLicenseeWindowOff = await contactRepository.create(
           contactFactory.build({
@@ -162,7 +182,9 @@ describe('resetChats', () => {
         const licenseeThatNotUseDialog = await licenseeRepository.create(
           licenseeFactory.build({ useWhatsappWindow: true }),
         )
-        await inboxRepository.create(inboxFactory.build({ licensee: licenseeThatNotUseDialog._id, kind: 'messenger', whatsappDefault: 'utalk' }))
+        await inboxRepository.create(
+          inboxFactory.build({ licensee: licenseeThatNotUseDialog._id, kind: 'messenger', whatsappDefault: 'utalk' }),
+        )
 
         const contactLicenseeThatNotUseDialog = await contactRepository.create(
           contactFactory.build({

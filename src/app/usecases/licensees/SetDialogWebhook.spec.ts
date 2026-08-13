@@ -13,7 +13,13 @@ describe('SetDialogWebhook', () => {
     const setDialogWebhook = new SetDialogWebhook({ licenseeRepository, inboxRepository, createMessengerPlugin })
     const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
     const inbox = await inboxRepository.create(
-      inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'dialog', whatsappUrl: 'https://dialog.url', whatsappToken: 'dialog-token' }),
+      inboxFactory.build({
+        licensee: licensee._id,
+        kind: 'messenger',
+        whatsappDefault: 'dialog',
+        whatsappUrl: 'https://dialog.url',
+        whatsappToken: 'dialog-token',
+      }),
     )
 
     const response = await setDialogWebhook.execute(licensee._id)

@@ -3,7 +3,12 @@ import moment from 'moment-timezone'
 const WINDOW_HOURS = 24
 const WARNING_MINUTES = 10
 
-async function sendMessageToChat(licensee: any, chatInbox: any, messageToSend: any, { createChatPlugin }: Record<string, any> = {}) {
+async function sendMessageToChat(
+  licensee: any,
+  chatInbox: any,
+  messageToSend: any,
+  { createChatPlugin }: Record<string, any> = {},
+) {
   const chatPlugin = createChatPlugin(licensee, { inbox: chatInbox })
   await chatPlugin.sendMessage(messageToSend._id, chatInbox.chatUrl)
 }
@@ -74,7 +79,11 @@ async function resetChats({
   const dialogInboxes = await inboxRepository.find({ whatsappDefault: 'dialog', kind: 'messenger' })
 
   for (const messengerInbox of dialogInboxes) {
-    const licensee = await licenseeRepository.findFirst({ _id: messengerInbox.licensee, active: true, useWhatsappWindow: true })
+    const licensee = await licenseeRepository.findFirst({
+      _id: messengerInbox.licensee,
+      active: true,
+      useWhatsappWindow: true,
+    })
     if (!licensee) continue
 
     const chatInbox = await inboxRepository.findFirst({ licensee: licensee._id, kind: 'chat' })

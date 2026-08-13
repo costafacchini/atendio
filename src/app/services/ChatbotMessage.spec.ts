@@ -21,9 +21,7 @@ describe('transformChatbotBody', () => {
     jest.clearAllMocks()
 
     const licenseeRepository = new LicenseeRepositoryDatabase()
-    licensee = await licenseeRepository.create(
-      licenseeFactory.build({ chatbotDefault: 'landbot' }),
-    )
+    licensee = await licenseeRepository.create(licenseeFactory.build({ chatbotDefault: 'landbot' }))
 
     const inboxRepository = new InboxRepositoryDatabase()
     inbox = await inboxRepository.create(

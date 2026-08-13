@@ -54,7 +54,11 @@ class SyncBaileysDirectoryForDepartment {
     const licensee = await this.licenseeRepository.findFirst({ _id: department.licensee })
     if (!licensee) return { message: NOT_BAILEYS_MESSAGE }
 
-    const inbox = await this.inboxRepository.findFirst({ licensee: String(department.licensee), kind: 'messenger', whatsappDefault: WHATSAPP_DEFAULT_BAILEYS })
+    const inbox = await this.inboxRepository.findFirst({
+      licensee: String(department.licensee),
+      kind: 'messenger',
+      whatsappDefault: WHATSAPP_DEFAULT_BAILEYS,
+    })
     if (!inbox) return { message: NOT_BAILEYS_MESSAGE }
 
     const plugin = this.createMessengerPlugin(licensee, { department, inbox })

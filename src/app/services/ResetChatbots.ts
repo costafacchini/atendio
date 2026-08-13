@@ -38,7 +38,11 @@ async function sendMessageToMessegner(
   })
 
   const messegnerPlugin = createMessengerPlugin(licensee, { inbox: messengerInbox })
-  await messegnerPlugin.sendMessage(messageToSend._id.toString(), messengerInbox.whatsappUrl, messengerInbox.whatsappToken)
+  await messegnerPlugin.sendMessage(
+    messageToSend._id.toString(),
+    messengerInbox.whatsappUrl,
+    messengerInbox.whatsappToken,
+  )
 }
 
 async function resetChatbots({

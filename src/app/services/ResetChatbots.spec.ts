@@ -42,7 +42,9 @@ describe('resetChatbots', () => {
           chatbotApiToken: 'api-token',
         }),
       )
-      await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'dialog' }))
+      await inboxRepository.create(
+        inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'dialog' }),
+      )
 
       const contactRepository = new ContactRepositoryDatabase()
       const contact = await contactRepository.create(

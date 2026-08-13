@@ -23,7 +23,9 @@ describe('GetBaileysQr', () => {
     const createMessengerPlugin = jest.fn().mockReturnValue(plugin)
     const useCase = new GetBaileysQr({ licenseeRepository, inboxRepository, createMessengerPlugin })
     const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
-    const inbox = await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }))
+    const inbox = await inboxRepository.create(
+      inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }),
+    )
 
     const response = await useCase.execute(licensee._id)
 
@@ -39,7 +41,9 @@ describe('GetBaileysQr', () => {
     const createMessengerPlugin = jest.fn().mockReturnValue(plugin)
     const useCase = new GetBaileysQr({ licenseeRepository, inboxRepository, createMessengerPlugin })
     const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
-    await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }))
+    await inboxRepository.create(
+      inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }),
+    )
 
     const response = await useCase.execute(licensee._id)
 
@@ -53,7 +57,9 @@ describe('GetBaileysQr', () => {
     const createMessengerPlugin = jest.fn().mockReturnValue(plugin)
     const useCase = new GetBaileysQr({ licenseeRepository, inboxRepository, createMessengerPlugin })
     const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
-    await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'dialog' }))
+    await inboxRepository.create(
+      inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'dialog' }),
+    )
 
     const response = await useCase.execute(licensee._id)
 
@@ -71,7 +77,9 @@ describe('GetBaileysQr', () => {
     const startBaileysSocket = jest.fn().mockResolvedValue(undefined)
     const useCase = new GetBaileysQr({ licenseeRepository, inboxRepository, createMessengerPlugin, startBaileysSocket })
     const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
-    await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }))
+    await inboxRepository.create(
+      inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }),
+    )
 
     const response = await useCase.execute(licensee._id)
 
@@ -88,7 +96,9 @@ describe('GetBaileysQr', () => {
     const startBaileysSocket = jest.fn().mockResolvedValue(undefined)
     const useCase = new GetBaileysQr({ licenseeRepository, inboxRepository, createMessengerPlugin, startBaileysSocket })
     const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
-    const inbox = await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }))
+    const inbox = await inboxRepository.create(
+      inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }),
+    )
 
     const response = await useCase.execute(licensee._id)
 
@@ -104,7 +114,9 @@ describe('GetBaileysQr', () => {
     const startBaileysSocket = jest.fn()
     const useCase = new GetBaileysQr({ licenseeRepository, inboxRepository, createMessengerPlugin, startBaileysSocket })
     const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
-    await inboxRepository.create(inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }))
+    await inboxRepository.create(
+      inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }),
+    )
 
     await useCase.execute(licensee._id)
 

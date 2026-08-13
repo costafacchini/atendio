@@ -21,7 +21,12 @@ class SyncBaileysDirectory {
   contactRepository: ContactRepositoryWithGroups
   createMessengerPlugin: SyncBaileysDirectoryDeps['createMessengerPlugin']
 
-  constructor({ licenseeRepository, inboxRepository, contactRepository, createMessengerPlugin }: SyncBaileysDirectoryDeps) {
+  constructor({
+    licenseeRepository,
+    inboxRepository,
+    contactRepository,
+    createMessengerPlugin,
+  }: SyncBaileysDirectoryDeps) {
     this.licenseeRepository = licenseeRepository
     this.inboxRepository = inboxRepository
     this.contactRepository = contactRepository
@@ -32,7 +37,11 @@ class SyncBaileysDirectory {
     const licensee = await this.licenseeRepository.findFirst({ _id: id })
     if (!licensee) return { message: NOT_BAILEYS_MESSAGE }
 
-    const inbox = await this.inboxRepository.findFirst({ licensee: id, kind: 'messenger', whatsappDefault: WHATSAPP_DEFAULT_BAILEYS })
+    const inbox = await this.inboxRepository.findFirst({
+      licensee: id,
+      kind: 'messenger',
+      whatsappDefault: WHATSAPP_DEFAULT_BAILEYS,
+    })
     if (!inbox) return { message: NOT_BAILEYS_MESSAGE }
 
     const plugin = this.createMessengerPlugin(licensee, { inbox })
