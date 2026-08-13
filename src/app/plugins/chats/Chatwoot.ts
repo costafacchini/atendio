@@ -284,7 +284,7 @@ class Chatwoot extends ChatsBase {
         url,
         headers,
         messageContact,
-        this.licensee,
+        this.inbox,
         this.contactRepository,
       )
       if (!sourceId && !chatwootId) {
@@ -292,7 +292,7 @@ class Chatwoot extends ChatsBase {
           url,
           headers,
           messageContact,
-          this.licensee,
+          this.inbox,
           this.contactRepository,
         )
       } else {
@@ -330,11 +330,11 @@ class Chatwoot extends ChatsBase {
         url,
         headers,
         contact,
-        this.licensee,
+        this.inbox,
         this.contactRepository,
       )
       if (!sourceId && !chatwootId) {
-        contact.chatwootSourceId = await createContact(url, headers, contact, this.licensee, this.contactRepository)
+        contact.chatwootSourceId = await createContact(url, headers, contact, this.inbox, this.contactRepository)
       } else {
         contact.chatwootSourceId = sourceId ?? undefined
         contact.chatwootId = chatwootId ?? undefined

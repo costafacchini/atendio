@@ -33,16 +33,13 @@ describe('Chatwoot plugin', () => {
 
   beforeEach(async () => {
     installMemoryRepositories()
-    dependencies = createRuntimeDependencies()
     jest.clearAllMocks()
 
     const licenseeRepository = new LicenseeRepositoryDatabase()
-    licensee = await licenseeRepository.create(
-      licenseeFactory.build({
-        chatIdentifier: 'inbox_123',
-        chatKey: 'api_token_123',
-      }),
-    )
+    licensee = await licenseeRepository.create(licenseeFactory.build())
+
+    const inbox = { chatIdentifier: 'inbox_123', chatKey: 'api_token_123', chatDefault: 'chatwoot' }
+    dependencies = { ...createRuntimeDependencies(), inbox }
   })
 
   afterEach(() => {
@@ -353,11 +350,7 @@ describe('Chatwoot plugin', () => {
       it('includes senderName when useSenderName is true and responseBody.content exists', async () => {
         const licenseeRepository = new LicenseeRepositoryDatabase()
         const licenseeWithSenderName = await licenseeRepository.create(
-          licenseeFactory.build({
-            chatIdentifier: 'inbox_123',
-            chatKey: 'api_token_123',
-            useSenderName: true,
-          }),
+          licenseeFactory.build({ useSenderName: true }),
         )
 
         const contactRepository = new ContactRepositoryDatabase()
