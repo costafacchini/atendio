@@ -5,22 +5,10 @@ import { useTranslation } from 'react-i18next'
 import { createAccount, OnboardingFields } from '../../services/onboarding'
 import { LanguageSwitcher } from '../../components/LanguageSwitcher'
 
-type StepId = 'identity' | 'integrations' | 'chat' | 'whatsapp' | 'user'
-
-function buildSteps(wantsChat: boolean | null, wantsWhatsapp: boolean | null): StepId[] {
-  return [
-    'identity',
-    'integrations',
-    ...(wantsChat === true ? ['chat' as StepId] : []),
-    ...(wantsWhatsapp === true ? ['whatsapp' as StepId] : []),
-    'user',
-  ]
-}
+type StepId = 'identity' | 'user'
 
 const stepFields: Partial<Record<StepId, string[]>> = {
   identity: ['licenseeName', 'kind', 'document', 'licenseeEmail', 'phone'],
-  chat:     ['chatDefault', 'chatUrl', 'chatIdentifier', 'chatKey'],
-  whatsapp: ['whatsappDefault', 'whatsappToken', 'whatsappUrl'],
   user:     ['userName', 'userEmail', 'password', 'confirmPassword'],
 }
 
@@ -30,48 +18,10 @@ const initialValues = {
   document:        '',
   licenseeEmail:   '',
   phone:           '',
-  chatDefault:     '',
-  chatUrl:         '',
-  chatIdentifier:  '',
-  chatKey:         '',
-  whatsappDefault: '',
-  whatsappToken:   '',
-  whatsappUrl:     '',
-  useDepartments:      false,
   userName:        '',
   userEmail:       '',
   password:        '',
   confirmPassword: '',
-}
-
-function YesNoGate({ label, isYes, onChange, yesLabel, noLabel }: {
-  label: string
-  isYes: boolean | null
-  onChange: (v: boolean) => void
-  yesLabel: string
-  noLabel: string
-}) {
-  return (
-    <div className='mb-3'>
-      <p className='fw-semibold'>{label}</p>
-      <div className='btn-group' role='group'>
-        <button
-          type='button'
-          className={`btn ${isYes === true ? 'btn-primary' : 'btn-outline-primary'}`}
-          onClick={() => onChange(true)}
-        >
-          {yesLabel}
-        </button>
-        <button
-          type='button'
-          className={`btn ${isYes === false ? 'btn-secondary' : 'btn-outline-secondary'}`}
-          onClick={() => onChange(false)}
-        >
-          {noLabel}
-        </button>
-      </div>
-    </div>
-  )
 }
 
 interface Props {
@@ -83,11 +33,11 @@ interface Props {
 function OnboardingModal({ isOpen, onClose, onSuccess }: Props) {
   const { t, i18n } = useTranslation()
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
-  const [wantsChat, setWantsChat]               = useState<boolean | null>(null)
-  const [wantsWhatsapp, setWantsWhatsapp]       = useState<boolean | null>(null)
   const [stepErrors, setStepErrors]             = useState<string[] | null>(null)
   const [submitError, setSubmitError]           = useState('')
   const formikRef                               = useRef<FormikProps<typeof initialValues> | null>(null)
+
+  const steps: StepId[] = ['identity', 'user']
 
   // Dynamic schemas — re-created when t() changes (i.e. on language switch)
   const identitySchema = useMemo(
@@ -98,42 +48,6 @@ function OnboardingModal({ isOpen, onClose, onSuccess }: Props) {
         document:      Yup.string().required(t('onboarding.identity.documentRequired')),
         licenseeEmail: Yup.string().email(t('onboarding.identity.emailInvalid')).required(t('onboarding.identity.licenseeEmailRequired')),
         phone:         Yup.string().required(t('onboarding.identity.phoneRequired')),
-      }),
-    [t],
-  )
-
-  const chatSchema = useMemo(
-    () =>
-      Yup.object().shape({
-        chatDefault: Yup.string().required(t('onboarding.chat.chatDefaultRequired')),
-        chatUrl: Yup.string().when('chatDefault', {
-          is: (v: string) => v && v !== 'local',
-          then: (s) => s.required(t('onboarding.chat.chatUrlRequired')),
-        }),
-        chatIdentifier: Yup.string().when('chatDefault', {
-          is: (v: string) => ['crisp', 'chatwoot'].includes(v),
-          then: (s) => s.required(t('onboarding.chat.chatIdentifierRequired')),
-        }),
-        chatKey: Yup.string().when('chatDefault', {
-          is: (v: string) => ['crisp', 'chatwoot'].includes(v),
-          then: (s) => s.required(t('onboarding.chat.chatKeyRequired')),
-        }),
-      }),
-    [t],
-  )
-
-  const whatsappSchema = useMemo(
-    () =>
-      Yup.object().shape({
-        whatsappDefault: Yup.string().required(t('onboarding.whatsapp.whatsappDefaultRequired')),
-        whatsappToken: Yup.string().when('whatsappDefault', {
-          is: (v: string) => v && v !== 'baileys',
-          then: (s) => s.required(t('onboarding.whatsapp.whatsappTokenRequired')),
-        }),
-        whatsappUrl: Yup.string().when('whatsappDefault', {
-          is: (v: string) => v && v !== 'baileys',
-          then: (s) => s.required(t('onboarding.whatsapp.whatsappUrlRequired')),
-        }),
       }),
     [t],
   )
@@ -154,36 +68,22 @@ function OnboardingModal({ isOpen, onClose, onSuccess }: Props) {
   const schemaMap = useMemo<Partial<Record<StepId, Yup.ObjectSchema<any>>>>(
     () => ({
       identity: identitySchema,
-      chat:     chatSchema,
-      whatsapp: whatsappSchema,
       user:     userSchema,
     }),
-    [identitySchema, chatSchema, whatsappSchema, userSchema],
+    [identitySchema, userSchema],
   )
 
   if (!isOpen) return null
 
-  const steps   = buildSteps(wantsChat, wantsWhatsapp)
   const stepId  = steps[currentStepIndex]
   const isLast  = currentStepIndex === steps.length - 1
 
   const stepTitles: Record<StepId, string> = {
-    identity:     t('onboarding.steps.identity'),
-    integrations: t('onboarding.steps.integrations'),
-    chat:         t('onboarding.steps.chat'),
-    whatsapp:     t('onboarding.steps.whatsapp'),
-    user:         t('onboarding.steps.user'),
+    identity: t('onboarding.steps.identity'),
+    user:     t('onboarding.steps.user'),
   }
 
   async function validateCurrentStep(values: typeof initialValues): Promise<boolean> {
-    if (stepId === 'integrations') {
-      if (wantsChat === null || wantsWhatsapp === null) {
-        setStepErrors([t('onboarding.integrations.answerBothRequired')])
-        return false
-      }
-      setStepErrors(null)
-      return true
-    }
     const schema = schemaMap[stepId]
     if (!schema) return true
     try {
@@ -238,18 +138,6 @@ function OnboardingModal({ isOpen, onClose, onSuccess }: Props) {
       userEmail:     values.userEmail,
       password:      values.password,
       language:      i18n.language as 'pt' | 'en',
-      ...(wantsChat ? {
-        chatDefault:    values.chatDefault,
-        chatUrl:        values.chatUrl,
-        chatIdentifier: values.chatIdentifier,
-        chatKey:        values.chatKey,
-      } : {}),
-      ...(wantsWhatsapp ? {
-        whatsappDefault: values.whatsappDefault,
-        whatsappToken:   values.whatsappToken,
-        whatsappUrl:     values.whatsappUrl,
-        useDepartments:      values.useDepartments ?? false,
-      } : {}),
     }
 
     const response = await createAccount(payload)
@@ -361,200 +249,6 @@ function OnboardingModal({ isOpen, onClose, onSuccess }: Props) {
               <div className='text-danger small'>{formik.errors.licenseeEmail as string}</div>
             )}
           </div>
-        </>
-      )
-    }
-
-    if (stepId === 'integrations') {
-      return (
-        <>
-          <YesNoGate
-            label={t('onboarding.integrations.chatGateLabel')}
-            isYes={wantsChat}
-            onChange={setWantsChat}
-            yesLabel={t('onboarding.yesNo.yes')}
-            noLabel={t('onboarding.yesNo.no')}
-          />
-          <YesNoGate
-            label={t('onboarding.integrations.whatsappGateLabel')}
-            isYes={wantsWhatsapp}
-            onChange={setWantsWhatsapp}
-            yesLabel={t('onboarding.yesNo.yes')}
-            noLabel={t('onboarding.yesNo.no')}
-          />
-        </>
-      )
-    }
-
-    if (stepId === 'chat') {
-      return (
-        <>
-          <div className='mb-3'>
-            <label htmlFor='chatDefault' className='form-label'>{t('onboarding.chat.chatDefaultLabel')}</label>
-            <select
-              id='chatDefault'
-              name='chatDefault'
-              className='form-select'
-              value={formik.values.chatDefault}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-            >
-              <option value='' disabled>{t('onboarding.chat.selectPlaceholder')}</option>
-              <option value='rocketchat'>Rocketchat</option>
-              <option value='crisp'>Crisp</option>
-              <option value='cuboup'>CuboUp</option>
-              <option value='chatwoot'>Chatwoot</option>
-              <option value='local'>Local</option>
-            </select>
-            {formik.touched.chatDefault && formik.errors.chatDefault && (
-              <div className='text-danger small'>{formik.errors.chatDefault as string}</div>
-            )}
-          </div>
-
-          {['rocketchat', 'crisp', 'chatwoot', 'cuboup'].includes(formik.values.chatDefault) && (
-            <div className='mb-3'>
-              <label htmlFor='chatUrl' className='form-label'>{t('onboarding.chat.chatUrlLabel')}</label>
-              <input
-                id='chatUrl'
-                name='chatUrl'
-                type='text'
-                className='form-control'
-                placeholder={t('onboarding.chat.chatUrlPlaceholder')}
-                value={formik.values.chatUrl}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-              <small className='text-muted'>{t('onboarding.chat.chatUrlHint')}</small>
-              {formik.touched.chatUrl && formik.errors.chatUrl && (
-                <div className='text-danger small'>{formik.errors.chatUrl as string}</div>
-              )}
-            </div>
-          )}
-
-          {['crisp', 'chatwoot'].includes(formik.values.chatDefault) && (
-            <>
-              <div className='mb-3'>
-                <label htmlFor='chatIdentifier' className='form-label'>{t('onboarding.chat.chatIdentifierLabel')}</label>
-                <input
-                  id='chatIdentifier'
-                  name='chatIdentifier'
-                  type='text'
-                  className='form-control'
-                  placeholder={t('onboarding.chat.chatIdentifierPlaceholder')}
-                  value={formik.values.chatIdentifier}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
-                <small className='text-muted'>{t('onboarding.chat.chatIdentifierHint')}</small>
-                {formik.touched.chatIdentifier && formik.errors.chatIdentifier && (
-                  <div className='text-danger small'>{formik.errors.chatIdentifier as string}</div>
-                )}
-              </div>
-
-              <div className='mb-3'>
-                <label htmlFor='chatKey' className='form-label'>{t('onboarding.chat.chatKeyLabel')}</label>
-                <input
-                  id='chatKey'
-                  name='chatKey'
-                  type='text'
-                  className='form-control'
-                  placeholder={t('onboarding.chat.chatKeyPlaceholder')}
-                  value={formik.values.chatKey}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
-                <small className='text-muted'>{t('onboarding.chat.chatKeyHint')}</small>
-                {formik.touched.chatKey && formik.errors.chatKey && (
-                  <div className='text-danger small'>{formik.errors.chatKey as string}</div>
-                )}
-              </div>
-            </>
-          )}
-        </>
-      )
-    }
-
-    if (stepId === 'whatsapp') {
-      return (
-        <>
-          <div className='mb-3'>
-            <label htmlFor='whatsappDefault' className='form-label'>{t('onboarding.whatsapp.whatsappDefaultLabel')}</label>
-            <select
-              id='whatsappDefault'
-              name='whatsappDefault'
-              className='form-select'
-              value={formik.values.whatsappDefault}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-            >
-              <option value='' disabled>{t('onboarding.whatsapp.selectPlaceholder')}</option>
-              <option value='utalk'>Utalk</option>
-              <option value='dialog'>Dialog360</option>
-              <option value='ycloud'>YCloud</option>
-              <option value='pabbly'>Pabbly</option>
-              <option value='baileys'>Baileys</option>
-            </select>
-            {formik.touched.whatsappDefault && formik.errors.whatsappDefault && (
-              <div className='text-danger small'>{formik.errors.whatsappDefault as string}</div>
-            )}
-          </div>
-
-          {formik.values.whatsappDefault === 'baileys' && (
-            <div className='mb-3 form-check'>
-              <input
-                type='checkbox'
-                className='form-check-input'
-                id='useDepartments'
-                name='useDepartments'
-                checked={formik.values.useDepartments ?? false}
-                onChange={formik.handleChange}
-              />
-              <label className='form-check-label' htmlFor='useDepartments'>
-                {t('onboarding.whatsapp.useDepartmentsLabel')}
-                <small className='text-muted d-block'>{t('onboarding.whatsapp.useDepartmentsHint')}</small>
-              </label>
-            </div>
-          )}
-
-          {formik.values.whatsappDefault && formik.values.whatsappDefault !== 'baileys' && (
-            <>
-              <div className='mb-3'>
-                <label htmlFor='whatsappToken' className='form-label'>{t('onboarding.whatsapp.whatsappTokenLabel')}</label>
-                <input
-                  id='whatsappToken'
-                  name='whatsappToken'
-                  type='text'
-                  className='form-control'
-                  placeholder={t('onboarding.whatsapp.whatsappTokenPlaceholder')}
-                  value={formik.values.whatsappToken}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
-                <small className='text-muted'>{t('onboarding.whatsapp.whatsappTokenHint')}</small>
-                {formik.touched.whatsappToken && formik.errors.whatsappToken && (
-                  <div className='text-danger small'>{formik.errors.whatsappToken as string}</div>
-                )}
-              </div>
-
-              <div className='mb-3'>
-                <label htmlFor='whatsappUrl' className='form-label'>{t('onboarding.whatsapp.whatsappUrlLabel')}</label>
-                <input
-                  id='whatsappUrl'
-                  name='whatsappUrl'
-                  type='text'
-                  className='form-control'
-                  placeholder={t('onboarding.whatsapp.whatsappUrlPlaceholder')}
-                  value={formik.values.whatsappUrl}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
-                <small className='text-muted'>{t('onboarding.whatsapp.whatsappUrlHint')}</small>
-                {formik.touched.whatsappUrl && formik.errors.whatsappUrl && (
-                  <div className='text-danger small'>{formik.errors.whatsappUrl as string}</div>
-                )}
-              </div>
-            </>
-          )}
         </>
       )
     }

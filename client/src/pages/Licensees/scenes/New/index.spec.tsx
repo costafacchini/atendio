@@ -45,14 +45,7 @@ describe('<LicenseeNew />', () => {
     await fillIdentityStep()
     fireEvent.click(screen.getByRole('button', { name: 'licensees.wizard.nextButton' }))
 
-    // Steps 2-3: WhatsApp and Chat — click Next without choosing Sim (treated as No)
-    // Step 4: ChatBot is the last step (shows Salvar, not Next)
-    for (let i = 0; i < 2; i++) {
-      await waitFor(() => expect(screen.getByRole('button', { name: 'licensees.wizard.nextButton' })).toBeInTheDocument())
-      fireEvent.click(screen.getByRole('button', { name: 'licensees.wizard.nextButton' }))
-    }
-
-    // Now on last step (ChatBot)
+    // Step 2: ChatBot is the last step (shows Salvar, not Next)
     await waitFor(() => expect(screen.getByRole('button', { name: 'common.save' })).toBeInTheDocument())
   }
 
@@ -77,50 +70,28 @@ describe('<LicenseeNew />', () => {
     await waitFor(() => expect(screen.getByText('licensees.wizard.identity.nameRequired')).toBeInTheDocument())
   })
 
-  it('advances to Chat step after filling all required Identity fields', async () => {
+  it('advances to ChatBot step after filling all required Identity fields', async () => {
     mount()
 
     await fillIdentityStep()
     fireEvent.click(screen.getByRole('button', { name: 'licensees.wizard.nextButton' }))
 
-    await waitFor(() => expect(screen.getByText('licensees.wizard.whatsappGateLabel')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('licensees.wizard.chatbotGateLabel')).toBeInTheDocument())
   })
 
-  it('shows Chat panel fields when Sim is selected on Chat step', async () => {
+  it('does NOT show chat or whatsapp steps', async () => {
     mount()
 
     await fillIdentityStep()
     fireEvent.click(screen.getByRole('button', { name: 'licensees.wizard.nextButton' }))
 
-    // Step 2 is WhatsApp — click Next to reach step 3 (Chat)
-    await waitFor(() => expect(screen.getByText('licensees.wizard.whatsappGateLabel')).toBeInTheDocument())
-    fireEvent.click(screen.getByRole('button', { name: 'licensees.wizard.nextButton' }))
+    await waitFor(() => expect(screen.getByText('licensees.wizard.chatbotGateLabel')).toBeInTheDocument())
 
-    await waitFor(() => expect(screen.getByText('licensees.wizard.chatGateLabel')).toBeInTheDocument())
-
-    fireEvent.click(screen.getByRole('button', { name: 'common.yes' }))
-
-    await waitFor(() => expect(screen.getByLabelText(/^licensees\.form\.chat\.chatDefaultLabel/)).toBeInTheDocument())
+    expect(screen.queryByText('licensees.wizard.chatGateLabel')).not.toBeInTheDocument()
+    expect(screen.queryByText('licensees.wizard.whatsappGateLabel')).not.toBeInTheDocument()
   })
 
-  it('does not show Chat fields when Não is selected', async () => {
-    mount()
-
-    await fillIdentityStep()
-    fireEvent.click(screen.getByRole('button', { name: 'licensees.wizard.nextButton' }))
-
-    // Step 2 is WhatsApp — click Next to reach step 3 (Chat)
-    await waitFor(() => expect(screen.getByText('licensees.wizard.whatsappGateLabel')).toBeInTheDocument())
-    fireEvent.click(screen.getByRole('button', { name: 'licensees.wizard.nextButton' }))
-
-    await waitFor(() => expect(screen.getByText('licensees.wizard.chatGateLabel')).toBeInTheDocument())
-
-    fireEvent.click(screen.getByRole('button', { name: 'common.no' }))
-
-    expect(screen.queryByLabelText(/^licensees\.form\.chat\.chatDefaultLabel/)).not.toBeInTheDocument()
-  })
-
-  it('creates a new licensee when all integration steps answered with Não', async () => {
+  it('creates a new licensee when chatbot step answered with Não', async () => {
     createLicensee.mockResolvedValue({ status: 201, data: {} })
     mount()
 
@@ -154,11 +125,11 @@ describe('<LicenseeNew />', () => {
     await fillIdentityStep()
     fireEvent.click(screen.getByRole('button', { name: 'licensees.wizard.nextButton' }))
 
-    await waitFor(() => expect(screen.getByText('licensees.wizard.whatsappGateLabel')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('licensees.wizard.chatbotGateLabel')).toBeInTheDocument())
 
     fireEvent.click(screen.getByRole('button', { name: 'licensees.wizard.backButton' }))
 
     await waitFor(() => expect(screen.getByLabelText(/^licensees\.wizard\.identity\.nameLabel/)).toBeInTheDocument())
-    expect(screen.queryByText('licensees.wizard.whatsappGateLabel')).not.toBeInTheDocument()
+    expect(screen.queryByText('licensees.wizard.chatbotGateLabel')).not.toBeInTheDocument()
   })
 })
