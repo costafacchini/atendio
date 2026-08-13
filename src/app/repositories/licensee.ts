@@ -14,18 +14,14 @@ class LicenseeRepositoryMemory extends RepositoryMemory<ILicensee> {
   }
 
   async findManyLicensees({
-    chatDefault,
     chatbotDefault,
-    whatsappDefault,
     active,
     expression,
     excludedIds,
     page,
     limit,
   }: {
-    chatDefault?: string
     chatbotDefault?: string
-    whatsappDefault?: string
     active?: boolean
     expression?: string
     excludedIds?: string[]
@@ -33,9 +29,7 @@ class LicenseeRepositoryMemory extends RepositoryMemory<ILicensee> {
     limit?: number
   }): Promise<ILicensee[]> {
     const params: any = {}
-    if (chatDefault) params.chatDefault = chatDefault
     if (chatbotDefault) params.chatbotDefault = chatbotDefault
-    if (whatsappDefault) params.whatsappDefault = whatsappDefault
     if (active !== undefined) params.active = active
     if (excludedIds && excludedIds.length > 0) params._id = { $nin: excludedIds }
     if (expression) {
@@ -59,26 +53,8 @@ class LicenseeRepositoryMemory extends RepositoryMemory<ILicensee> {
       }
     })
 
-    if (normalizedFields.whatsappDefault === 'utalk') {
-      normalizedFields.whatsappUrl = 'https://v1.utalk.chat/send/'
-    }
-
-    if (normalizedFields.whatsappDefault === 'dialog') {
-      normalizedFields.whatsappUrl = 'https://waba.360dialog.io/'
-    }
-
-    if (normalizedFields.whatsappDefault === 'ycloud') {
-      normalizedFields.whatsappUrl = 'https://api.ycloud.com/v2/'
-    }
-
     return normalizedFields
   }
-}
-
-const WHATSAPP_URLS: Record<string, string> = {
-  utalk: 'https://v1.utalk.chat/send/',
-  dialog: 'https://waba.360dialog.io/',
-  ycloud: 'https://api.ycloud.com/v2/',
 }
 
 class PrismaLicenseeDatabaseRepository extends PrismaRepository<ILicensee> {
@@ -86,27 +62,15 @@ class PrismaLicenseeDatabaseRepository extends PrismaRepository<ILicensee> {
     return getPrismaClient().licensee
   }
 
-  async create(fields: Partial<ILicensee> = {}): Promise<ILicensee> {
-    return await super.create(this.applyWhatsappUrl(fields))
-  }
-
-  async save(document: ILicensee): Promise<ILicensee> {
-    return await super.save(this.applyWhatsappUrl(document) as ILicensee)
-  }
-
   async findManyLicensees({
-    chatDefault,
     chatbotDefault,
-    whatsappDefault,
     active,
     expression,
     excludedIds,
     page,
     limit,
   }: {
-    chatDefault?: string
     chatbotDefault?: string
-    whatsappDefault?: string
     active?: boolean
     expression?: string
     excludedIds?: string[]
@@ -114,9 +78,7 @@ class PrismaLicenseeDatabaseRepository extends PrismaRepository<ILicensee> {
     limit?: number
   }): Promise<ILicensee[]> {
     const where: any = {}
-    if (chatDefault) where.chatDefault = chatDefault
     if (chatbotDefault) where.chatbotDefault = chatbotDefault
-    if (whatsappDefault) where.whatsappDefault = whatsappDefault
     if (active !== undefined) where.active = active
     if (excludedIds && excludedIds.length > 0) where.id = { notIn: excludedIds.map((id) => parseInt(id, 10)) }
     if (expression) {
@@ -131,14 +93,6 @@ class PrismaLicenseeDatabaseRepository extends PrismaRepository<ILicensee> {
     }
     const records = await getPrismaClient().licensee.findMany(query)
     return this.fromDBMany(records) as unknown as ILicensee[]
-  }
-
-  private applyWhatsappUrl<F extends Partial<ILicensee>>(fields: F): F {
-    const whatsappDefault = (fields as any).whatsappDefault as string | undefined
-    if (whatsappDefault && WHATSAPP_URLS[whatsappDefault]) {
-      return { ...fields, whatsappUrl: WHATSAPP_URLS[whatsappDefault] }
-    }
-    return fields
   }
 }
 

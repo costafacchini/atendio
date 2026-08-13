@@ -36,25 +36,6 @@ describeIf('PrismaLicenseeDatabaseRepository', () => {
       expect((result as any).name).toEqual('Alcateia Ltds')
     })
 
-    it('sets whatsappUrl from whatsappDefault=utalk', async () => {
-      const result = await repo.create({
-        ...baseFields,
-        apiToken: 'test-token-prisma-2',
-        whatsappDefault: 'utalk',
-        whatsappToken: 'tok',
-      } as any)
-      expect((result as any).whatsappUrl).toEqual('https://v1.utalk.chat/send/')
-    })
-
-    it('sets whatsappUrl from whatsappDefault=dialog', async () => {
-      const result = await repo.create({
-        ...baseFields,
-        apiToken: 'test-token-prisma-3',
-        whatsappDefault: 'dialog',
-        whatsappToken: 'tok',
-      } as any)
-      expect((result as any).whatsappUrl).toEqual('https://waba.360dialog.io/')
-    })
   })
 
   describe('#findFirst', () => {

@@ -65,17 +65,4 @@ describe('licensee repository memory', () => {
     })
   })
 
-  describe('normalizeLicenseeFields', () => {
-    it('sets whatsappUrl for utalk', async () => {
-      const licenseeRepository = new LicenseeRepositoryMemory()
-      const licensee = await licenseeRepository.create(licenseeFactory.build({ whatsappDefault: 'utalk' }))
-      expect(licensee.whatsappUrl).toEqual('https://v1.utalk.chat/send/')
-    })
-
-    it('sets whatsappUrl for dialog', async () => {
-      const licenseeRepository = new LicenseeRepositoryMemory()
-      const licensee = await licenseeRepository.create(licenseeFactory.build({ whatsappDefault: 'dialog' }))
-      expect(licensee.whatsappUrl).toEqual('https://waba.360dialog.io/')
-    })
-  })
 })
