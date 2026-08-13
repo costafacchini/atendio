@@ -6,8 +6,6 @@ import { getLicensees } from '../../services/licensee'
 interface LicenseeOption {
   value: string
   label: string
-  chatDefault?: string
-  whatsappDefault?: string
 }
 
 /** Raw record returned by the API uses MongoDB-style _id */
@@ -53,7 +51,7 @@ export default function SelectLicenseesWithFilter({ isDisabled, onChange, select
   }
 
   function transformData(values: LicenseeRecord[]): LicenseeOption[] {
-    return values.map((value) => ({ value: value._id, label: value.name, chatDefault: value.chatDefault as string | undefined, whatsappDefault: value.whatsappDefault as string | undefined }))
+    return values.map((value) => ({ value: value._id, label: value.name }))
   }
 
   function handleSetSearchInput(value: string) {

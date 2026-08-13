@@ -4,9 +4,7 @@ import { Formik } from 'formik'
 import * as Yup from 'yup'
 import { useTranslation } from 'react-i18next'
 import { FieldWithError } from '../../../../components/form'
-import ChatPanel from '../Form/panels/ChatPanel'
 import ChatbotPanel from '../Form/panels/ChatbotPanel'
-import WhatsAppPanel from '../Form/panels/WhatsAppPanel'
 import type { ILicenseeFormValues } from '../../../../types'
 import type { FormikErrors, FormikTouched } from 'formik'
 
@@ -24,6 +22,7 @@ const licenseeInitialValues: ILicenseeFormValues = {
   chatbotAuthorizationToken: '',
   messageOnResetChatbot: '',
   chatbotApiToken: '',
+  // Plugin fields kept for type compatibility — UI removed; Phase 3 will drop these from the type.
   whatsappDefault: '',
   whatsappToken: '',
   whatsappUrl: '',
@@ -153,13 +152,9 @@ function LicenseeWizard({ onSubmit, errors: backendErrors }: LicenseeWizardProps
   const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState(0)
   const [stepErrors, setStepErrors] = useState<string[] | null>(null)
-  const [useChat,     setUseChat]     = useState<boolean | null>(null)
-  const [useWhatsapp, setUseWhatsapp] = useState<boolean | null>(null)
 
   const STEPS = useMemo(() => [
     { id: 'identity', title: t('licensees.wizard.stepIdentity') },
-    { id: 'whatsapp', title: t('licensees.wizard.stepWhatsApp') },
-    { id: 'chat',     title: t('licensees.wizard.stepChat') },
     { id: 'chatbot',  title: t('licensees.wizard.stepChatBot') },
   ], [t])
 
@@ -172,22 +167,6 @@ function LicenseeWizard({ onSubmit, errors: backendErrors }: LicenseeWizardProps
     phone:       Yup.string().required(t('licensees.wizard.identity.phoneRequired')),
   }), [t])
 
-  const chatSchema = useMemo(() => Yup.object().shape({
-    chatDefault: Yup.string().required(t('licensees.wizard.chat.chatDefaultRequired')),
-    chatUrl: Yup.string().when('chatDefault', {
-      is: (v: string) => ['rocketchat', 'crisp', 'chatwoot', 'cuboup'].includes(v),
-      then: (s: Yup.StringSchema) => s.required(t('licensees.wizard.chat.chatUrlRequired')),
-    }),
-    chatIdentifier: Yup.string().when('chatDefault', {
-      is: (v: string) => ['crisp', 'chatwoot'].includes(v),
-      then: (s: Yup.StringSchema) => s.required(t('licensees.wizard.chat.identifierRequired')),
-    }),
-    chatKey: Yup.string().when('chatDefault', {
-      is: (v: string) => ['crisp', 'chatwoot'].includes(v),
-      then: (s: Yup.StringSchema) => s.required(t('licensees.wizard.chat.keyRequired')),
-    }),
-  }), [t])
-
   const chatbotSchema = useMemo(() => Yup.object().shape({
     chatbotDefault:            Yup.string().required(t('licensees.wizard.chatbot.chatbotDefaultRequired')),
     chatbotUrl:                Yup.string().required(t('licensees.wizard.chatbot.chatbotUrlRequired')),
@@ -195,18 +174,6 @@ function LicenseeWizard({ onSubmit, errors: backendErrors }: LicenseeWizardProps
     chatbotApiToken:           Yup.string().required(t('licensees.wizard.chatbot.chatbotApiTokenRequired')),
     messageOnResetChatbot:     Yup.string().required(t('licensees.wizard.chatbot.messageOnResetRequired')),
     messageOnCloseChat:        Yup.string().required(t('licensees.wizard.chatbot.messageOnCloseRequired')),
-  }), [t])
-
-  const whatsappSchema = useMemo(() => Yup.object().shape({
-    whatsappDefault: Yup.string().required(t('licensees.wizard.whatsapp.whatsappDefaultRequired')),
-    whatsappToken: Yup.string().when('whatsappDefault', {
-      is: (v: string) => !!v && v !== 'baileys',
-      then: (s: Yup.StringSchema) => s.required(t('licensees.wizard.whatsapp.whatsappTokenRequired')),
-    }),
-    whatsappUrl: Yup.string().when('whatsappDefault', {
-      is: (v: string) => !!v && v !== 'baileys',
-      then: (s: Yup.StringSchema) => s.required(t('licensees.wizard.whatsapp.whatsappUrlRequired')),
-    }),
   }), [t])
 
   const totalSteps = STEPS.length
@@ -217,9 +184,7 @@ function LicenseeWizard({ onSubmit, errors: backendErrors }: LicenseeWizardProps
   async function validateStep(values: ILicenseeFormValues) {
     const schemas: Record<string, Yup.ObjectSchema<object> | null> = {
       identity: identitySchema,
-      chat:     useChat           ? chatSchema    : null,
       chatbot:  values.useChatbot ? chatbotSchema : null,
-      whatsapp: useWhatsapp       ? whatsappSchema : null,
     }
     const schema = schemas[step.id]
     if (!schema) return true
@@ -238,13 +203,6 @@ function LicenseeWizard({ onSubmit, errors: backendErrors }: LicenseeWizardProps
     <Formik initialValues={licenseeInitialValues} validationSchema={Yup.object()} onSubmit={(values) => {
         if (currentStep !== totalSteps - 1) return
         const cleaned = { ...values }
-        if (!useChat) {
-          cleaned.chatDefault = ''
-          cleaned.chatUrl = ''
-          cleaned.chatIdentifier = ''
-          cleaned.chatKey = ''
-          cleaned.useSenderName = false
-        }
         if (!cleaned.useChatbot) {
           cleaned.chatbotDefault = ''
           cleaned.chatbotUrl = ''
@@ -252,12 +210,6 @@ function LicenseeWizard({ onSubmit, errors: backendErrors }: LicenseeWizardProps
           cleaned.chatbotApiToken = ''
           cleaned.messageOnResetChatbot = ''
           cleaned.messageOnCloseChat = ''
-        }
-        if (!useWhatsapp) {
-          cleaned.whatsappDefault = ''
-          cleaned.whatsappToken = ''
-          cleaned.whatsappUrl = ''
-          cleaned.useFileIDYcloud = false
         }
         onSubmit(cleaned)
       }}>
@@ -294,24 +246,6 @@ function LicenseeWizard({ onSubmit, errors: backendErrors }: LicenseeWizardProps
                 handleBlur={formik.handleBlur}
               />
             )}
-            {step.id === 'chat' && (
-              <>
-                <YesNoGate
-                  label={t('licensees.wizard.chatGateLabel')}
-                  isYes={useChat}
-                  onChange={setUseChat}
-                />
-                {useChat && (
-                  <ChatPanel
-                    values={formik.values}
-                    errors={formik.errors}
-                    touched={formik.touched}
-                    handleChange={formik.handleChange}
-                    handleBlur={formik.handleBlur}
-                  />
-                )}
-              </>
-            )}
             {step.id === 'chatbot' && (
               <>
                 <YesNoGate
@@ -321,24 +255,6 @@ function LicenseeWizard({ onSubmit, errors: backendErrors }: LicenseeWizardProps
                 />
                 {formik.values.useChatbot && (
                   <ChatbotPanel
-                    values={formik.values}
-                    errors={formik.errors}
-                    touched={formik.touched}
-                    handleChange={formik.handleChange}
-                    handleBlur={formik.handleBlur}
-                  />
-                )}
-              </>
-            )}
-            {step.id === 'whatsapp' && (
-              <>
-                <YesNoGate
-                  label={t('licensees.wizard.whatsappGateLabel')}
-                  isYes={useWhatsapp}
-                  onChange={setUseWhatsapp}
-                />
-                {useWhatsapp && (
-                  <WhatsAppPanel
                     values={formik.values}
                     errors={formik.errors}
                     touched={formik.touched}

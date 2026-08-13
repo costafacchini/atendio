@@ -36,8 +36,7 @@ describe('<OnboardingModal />', () => {
     render(<OnboardingModal {...defaultProps} {...props} />)
   }
 
-  async function navigateToWhatsappStep() {
-    // Step 1: identity — fill required fields using translation keys (t(k) => k in tests)
+  async function fillIdentityAndAdvance() {
     fireEvent.change(screen.getByLabelText('onboarding.identity.companyNameLabel'), { target: { value: 'Acme Corp' } })
     fireEvent.change(screen.getByLabelText('onboarding.identity.kindLabel'), { target: { value: 'company' } })
     fireEvent.change(screen.getByLabelText('onboarding.identity.documentLabel'), { target: { value: '12345678000195' } })
@@ -45,80 +44,16 @@ describe('<OnboardingModal />', () => {
     fireEvent.change(screen.getByLabelText('onboarding.identity.licenseeEmailLabel'), { target: { value: 'acme@acme.com' } })
     fireEvent.click(screen.getByText('onboarding.buttons.next'))
 
-    // Step 2: integrations — choose no chat, yes whatsapp
-    await screen.findByText('onboarding.integrations.whatsappGateLabel')
-    const yesButtons = screen.getAllByText('onboarding.yesNo.yes')
-    const noButtons  = screen.getAllByText('onboarding.yesNo.no')
-    fireEvent.click(noButtons[0])   // no chat
-    fireEvent.click(yesButtons[1])  // yes whatsapp
-    fireEvent.click(screen.getByText('onboarding.buttons.next'))
-
-    await screen.findByText('onboarding.whatsapp.whatsappDefaultLabel')
+    await screen.findByText('onboarding.user.userNameLabel')
   }
 
-  describe('useDepartments checkbox', () => {
-    it('does not show useDepartments checkbox when baileys is not selected', async () => {
-      mount()
-      await navigateToWhatsappStep()
-
-      fireEvent.change(screen.getByLabelText('onboarding.whatsapp.whatsappDefaultLabel'), { target: { value: 'utalk' } })
-
-      expect(screen.queryByLabelText(/onboarding\.whatsapp\.useDepartmentsLabel/)).not.toBeInTheDocument()
-    })
-
-    it('shows useDepartments checkbox when baileys is selected', async () => {
-      mount()
-      await navigateToWhatsappStep()
-
-      fireEvent.change(screen.getByLabelText('onboarding.whatsapp.whatsappDefaultLabel'), { target: { value: 'baileys' } })
-
-      expect(await screen.findByLabelText(/onboarding\.whatsapp\.useDepartmentsLabel/)).toBeInTheDocument()
-    })
-  })
-
   describe('onboarding payload', () => {
-    it('includes useDepartments in the whatsapp submission payload', async () => {
-      ;(createAccount as any).mockResolvedValue({ status: 201 })
-
-      mount()
-      await navigateToWhatsappStep()
-
-      // Select baileys
-      fireEvent.change(screen.getByLabelText('onboarding.whatsapp.whatsappDefaultLabel'), { target: { value: 'baileys' } })
-
-      // Check useDepartments
-      const checkbox = await screen.findByLabelText(/onboarding\.whatsapp\.useDepartmentsLabel/)
-      fireEvent.click(checkbox)
-
-      // Navigate to user step
-      fireEvent.click(screen.getByText('onboarding.buttons.next'))
-
-      await screen.findByText('onboarding.user.userNameLabel')
-      fireEvent.change(screen.getByLabelText('onboarding.user.userNameLabel'), { target: { value: 'John Doe' } })
-      fireEvent.change(screen.getByLabelText('onboarding.user.userEmailLabel'), { target: { value: 'john@acme.com' } })
-      fireEvent.change(screen.getByLabelText('onboarding.user.passwordLabel'), { target: { value: 'senha123' } })
-      fireEvent.change(screen.getByLabelText('onboarding.user.confirmPasswordLabel'), { target: { value: 'senha123' } })
-
-      fireEvent.click(screen.getByRole('button', { name: 'onboarding.buttons.submit' }))
-
-      await waitFor(() =>
-        expect(createAccount).toHaveBeenCalledWith(
-          expect.objectContaining({ useDepartments: true })
-        )
-      )
-    })
-
     it('includes language in the submission payload', async () => {
       ;(createAccount as any).mockResolvedValue({ status: 201 })
 
       mount()
-      await navigateToWhatsappStep()
+      await fillIdentityAndAdvance()
 
-      fireEvent.change(screen.getByLabelText('onboarding.whatsapp.whatsappDefaultLabel'), { target: { value: 'baileys' } })
-
-      fireEvent.click(screen.getByText('onboarding.buttons.next'))
-
-      await screen.findByText('onboarding.user.userNameLabel')
       fireEvent.change(screen.getByLabelText('onboarding.user.userNameLabel'), { target: { value: 'John Doe' } })
       fireEvent.change(screen.getByLabelText('onboarding.user.userEmailLabel'), { target: { value: 'john@acme.com' } })
       fireEvent.change(screen.getByLabelText('onboarding.user.passwordLabel'), { target: { value: 'senha123' } })
@@ -131,6 +66,31 @@ describe('<OnboardingModal />', () => {
           expect.objectContaining({ language: 'pt' })
         )
       )
+    })
+
+    it('does not include chat or whatsapp fields in the submission payload', async () => {
+      ;(createAccount as any).mockResolvedValue({ status: 201 })
+
+      mount()
+      await fillIdentityAndAdvance()
+
+      fireEvent.change(screen.getByLabelText('onboarding.user.userNameLabel'), { target: { value: 'John Doe' } })
+      fireEvent.change(screen.getByLabelText('onboarding.user.userEmailLabel'), { target: { value: 'john@acme.com' } })
+      fireEvent.change(screen.getByLabelText('onboarding.user.passwordLabel'), { target: { value: 'senha123' } })
+      fireEvent.change(screen.getByLabelText('onboarding.user.confirmPasswordLabel'), { target: { value: 'senha123' } })
+
+      fireEvent.click(screen.getByRole('button', { name: 'onboarding.buttons.submit' }))
+
+      await waitFor(() => expect(createAccount).toHaveBeenCalled())
+
+      const payload = (createAccount as any).mock.calls[0][0]
+      expect(payload).not.toHaveProperty('chatDefault')
+      expect(payload).not.toHaveProperty('chatUrl')
+      expect(payload).not.toHaveProperty('chatIdentifier')
+      expect(payload).not.toHaveProperty('chatKey')
+      expect(payload).not.toHaveProperty('whatsappDefault')
+      expect(payload).not.toHaveProperty('whatsappToken')
+      expect(payload).not.toHaveProperty('whatsappUrl')
     })
   })
 
