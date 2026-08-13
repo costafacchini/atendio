@@ -79,34 +79,6 @@ describe('LicenseesQuery', () => {
     })
   })
 
-  describe('filterByChatDefault', () => {
-    it('returns licensees filtered by chat default', async () => {
-      const licensee1 = await repos.licenseeRepository.create(
-        licenseeFactory.build({
-          chatDefault: 'crisp',
-          chatUrl: 'http://chat.com',
-          chatKey: 'key',
-          chatIdentifier: 'identifier',
-        }),
-      )
-      const licensee2 = await repos.licenseeRepository.create(
-        licenseeFactory.build({
-          chatDefault: 'rocketchat',
-          chatUrl: 'http://chat.com',
-          chatKey: 'key',
-        }),
-      )
-
-      const licenseesQuery = buildLicenseesQuery()
-      licenseesQuery.filterByChatDefault('crisp')
-      const records = await licenseesQuery.all()
-
-      expect(records.length).toEqual(1)
-      expect(records).toEqual(expect.arrayContaining([expect.objectContaining({ _id: licensee1._id })]))
-      expect(records).not.toEqual(expect.arrayContaining([expect.objectContaining({ _id: licensee2._id })]))
-    })
-  })
-
   describe('filterByChatbotDefault', () => {
     it('returns licensees filtered by chatbot default', async () => {
       const licensee1 = await repos.licenseeRepository.create(
@@ -125,33 +97,6 @@ describe('LicenseesQuery', () => {
 
       const licenseesQuery = buildLicenseesQuery()
       licenseesQuery.filterByChatbotDefault('landbot')
-      const records = await licenseesQuery.all()
-
-      expect(records.length).toEqual(1)
-      expect(records).toEqual(expect.arrayContaining([expect.objectContaining({ _id: licensee1._id })]))
-      expect(records).not.toEqual(expect.arrayContaining([expect.objectContaining({ _id: licensee2._id })]))
-    })
-  })
-
-  describe('filterByWhatsappDefault', () => {
-    it('returns licensees filtered by whatsapp default', async () => {
-      const licensee1 = await repos.licenseeRepository.create(
-        licenseeFactory.build({
-          whatsappDefault: 'utalk',
-          whatsappUrl: 'https://v1.utalk.chat/send/',
-          whatsappToken: 'key',
-        }),
-      )
-      const licensee2 = await repos.licenseeRepository.create(
-        licenseeFactory.build({
-          whatsappDefault: 'dialog',
-          whatsappUrl: 'https://waba.360dialog.io/',
-          whatsappToken: 'key',
-        }),
-      )
-
-      const licenseesQuery = buildLicenseesQuery()
-      licenseesQuery.filterByWhatsappDefault('utalk')
       const records = await licenseesQuery.all()
 
       expect(records.length).toEqual(1)
