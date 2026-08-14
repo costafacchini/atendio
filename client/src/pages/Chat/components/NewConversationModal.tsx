@@ -16,23 +16,26 @@ interface NewConversationModalProps {
   show: boolean
   onClose: () => void
   onRoomCreated: (room: IRoom) => void
+  inboxId?: string
 }
 
-export default function NewConversationModal({ show, onClose, onRoomCreated }: NewConversationModalProps) {
+export default function NewConversationModal({ show, onClose, onRoomCreated, inboxId }: NewConversationModalProps) {
   const { t } = useTranslation()
   const { currentUser, activeLicensee } = useApp()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   const effectiveLicenseeId = activeLicensee?.id ??
-    (typeof currentUser?.licensee === 'object' ? (currentUser.licensee as { id?: string })?.id : undefined)
+    (typeof currentUser?.licensee === 'object' && currentUser.licensee !== null
+      ? (currentUser.licensee as { id?: string })?.id
+      : currentUser?.licensee != null ? String(currentUser.licensee) : undefined)
 
   async function handleContactChange(option: SingleValue<IContactOption>) {
     if (!option) return
     setError(null)
     setLoading(true)
     try {
-      const res = await createRoom(option.value)
+      const res = await createRoom(option.value, inboxId)
       onRoomCreated(res.data.room)
       onClose()
     } catch (_) {

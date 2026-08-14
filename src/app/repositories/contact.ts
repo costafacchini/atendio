@@ -44,6 +44,12 @@ class ContactRepositoryMemory extends RepositoryMemory<IContact> {
     })
   }
 
+  async findByIds(ids: (string | number)[]): Promise<IContact[]> {
+    const all = (await this.find()) as IContact[]
+    const strIds = new Set(ids.map(String))
+    return all.filter((c: any) => strIds.has(String(c._id)) || strIds.has(String(c.id)))
+  }
+
   async deactivateGroupsForLicensee(licenseeId: any) {
     return await this.updateMany({ licensee: licenseeId, isGroup: true }, { active: false })
   }
@@ -199,6 +205,20 @@ class PrismaContactDatabaseRepository extends PrismaRepository<IContact> {
     }
     const records = await getPrismaClient().contact.findMany(query)
     return this.fromDBMany(records) as unknown as IContact[]
+  }
+
+  async findByIds(ids: (string | number)[]): Promise<IContact[]> {
+    const intIds = ids.map((id) => parseInt(String(id), 10)).filter((id) => !isNaN(id))
+    if (intIds.length === 0) return []
+    const records = await getPrismaClient().contact.findMany({ where: { id: { in: intIds } } })
+    return this.fromDBMany(records) as unknown as IContact[]
+  }
+
+  async deactivateGroupsForLicensee(licenseeId: string) {
+    await getPrismaClient().contact.updateMany({
+      where: { licensee: parseInt(String(licenseeId), 10), isGroup: true },
+      data: { active: false },
+    })
   }
 
   private normalizeNumber<F extends Partial<IContact>>(fields: F): F {

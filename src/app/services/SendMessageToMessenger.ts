@@ -1,12 +1,17 @@
 async function sendMessageToMessenger(
   data: any,
-  { messageRepository, inboxRepository, createMessengerPlugin }: Record<string, any> = {},
+  { messageRepository, inboxRepository, licenseeRepository, contactRepository, createMessengerPlugin }: Record<string, any> = {},
 ) {
   const { messageId, url, token } = data
-  const message = await messageRepository.findFirst({ _id: messageId }, ['licensee', 'contact'])
-  const licensee = message.licensee
+  const message = await messageRepository.findFirst({ _id: messageId })
+  if (!message) return
+  const [licensee, contact] = await Promise.all([
+    licenseeRepository.findFirst({ _id: message.licensee }),
+    message.contact ? contactRepository.findFirst({ _id: message.contact }) : null,
+  ])
+  if (!licensee) return
 
-  if (message.contact?.type === 'web') {
+  if (contact?.type === 'web') {
     message.sended = true
     await messageRepository.save(message)
     return

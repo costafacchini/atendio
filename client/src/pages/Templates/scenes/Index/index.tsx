@@ -52,8 +52,11 @@ function TemplatesIndex({ currentUser }: TemplatesIndexProps) {
   useEffect(() => {
     if (isEmpty(templateFilters) || !currentUser) return
 
-    const licenseeObj = currentUser.licensee as { id?: string } | string | null
-    const effectiveLicensee = activeLicensee?.id ?? (typeof licenseeObj === 'object' && licenseeObj !== null ? licenseeObj.id : undefined)
+    const licenseeObj = currentUser.licensee as { id?: string } | string | number | null
+    const effectiveLicensee = activeLicensee?.id ??
+      (typeof licenseeObj === 'object' && licenseeObj !== null
+        ? licenseeObj.id
+        : licenseeObj != null ? String(licenseeObj) : undefined)
     if (effectiveLicensee && templateFilters?.licensee !== effectiveLicensee) {
       const newFilters = { ...templateFilters, licensee: effectiveLicensee, page: 1 }
       onFilter(newFilters)

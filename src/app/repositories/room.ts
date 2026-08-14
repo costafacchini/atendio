@@ -76,18 +76,28 @@ class PrismaRoomDatabaseRepository extends PrismaRepository<IRoom> {
 
   async findForLicensee(
     licenseeId: string | number,
-    opts: { departmentIds?: number[]; page?: number; limit?: number; contactIds?: number[] } = {},
+    opts: { departmentIds?: number[]; page?: number; limit?: number; contactIds?: number[]; inboxId?: string } = {},
   ): Promise<any[]> {
-    const { departmentIds = [], page = 1, limit = 20, contactIds = [] } = opts
+    const { departmentIds = [], page = 1, limit = 20, contactIds = [], inboxId } = opts
 
     const where: Record<string, any> = { closed: false }
+    const andConditions: any[] = []
 
     if (contactIds.length > 0) {
       where.contact = { in: contactIds }
     }
 
     if (departmentIds.length > 0) {
-      where.OR = [{ department: null }, { department: { in: departmentIds } }]
+      andConditions.push({ OR: [{ department: null }, { department: { in: departmentIds } }] })
+    }
+
+    if (inboxId) {
+      // Also include rooms without an inbox (legacy / pre-migration data)
+      andConditions.push({ OR: [{ inbox: parseInt(String(inboxId), 10) }, { inbox: null }] })
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions
     }
 
     return await getPrismaClient().room.findMany({

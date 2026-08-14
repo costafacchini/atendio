@@ -11,7 +11,7 @@ interface InboxQueryParams {
 }
 
 function getInboxes(queryParams: InboxQueryParams) {
-  const url = parseUrl('resources/inboxes/', queryParams)
+  const url = parseUrl('resources/inboxes/', queryParams as unknown as Record<string, unknown>)
   return api().get(url, { headers: headers() })
 }
 

@@ -134,6 +134,7 @@ const roomsController = new RoomsController({
 const chatRoomsController = new ChatRoomsController({
   userRepository,
   roomRepository,
+  contactRepository,
   ingestChatMessage: new IngestChatMessage({ chatRepository: bodyRepository, jobQueue: queueServer }),
 })
 const templatesController = new TemplatesController({

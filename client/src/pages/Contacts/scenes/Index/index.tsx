@@ -45,11 +45,11 @@ function ContactsIndex({ currentUser }: ContactsIndexProps) {
       if (!currentUser) return
 
       const initialFilters: IContactFilters = { page: 1 }
-      const licenseeObj = currentUser.licensee
+      const licenseeObj = currentUser.licensee as { id?: string; _id?: string } | string | number | null | undefined
       const effectiveLicensee = activeLicensee?.id ??
         (typeof licenseeObj === 'object' && licenseeObj !== null
-          ? ((licenseeObj as { id?: string; _id?: string }).id ?? (licenseeObj as { id?: string; _id?: string })._id)
-          : undefined)
+          ? (licenseeObj.id ?? licenseeObj._id)
+          : licenseeObj != null ? String(licenseeObj) : undefined)
       if (effectiveLicensee) initialFilters.licensee = effectiveLicensee
 
       onFilter(initialFilters)

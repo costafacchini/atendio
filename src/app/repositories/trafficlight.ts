@@ -23,6 +23,21 @@ class RedisTrafficlightRepository {
     return record ? [record] : []
   }
 
+  async create(fields: Partial<ITrafficlight>): Promise<ITrafficlight> {
+    const { key, token, expiresAt } = fields as ITrafficlight
+    const expiresAtDate = new Date(expiresAt)
+    const unixSeconds = Math.floor(expiresAtDate.getTime() / 1000)
+    const record: ITrafficlight = { _id: key, key, token, expiresAt: expiresAtDate }
+    // SET NX — only set if key does not exist (distributed lock semantics)
+    const result = await redisConnection.set(redisKey(key), JSON.stringify(record), 'EXAT', unixSeconds, 'NX')
+    if (result === null) {
+      const err: any = new Error('Lock already held')
+      err.code = 11000
+      throw err
+    }
+    return record
+  }
+
   async save(document: ITrafficlight): Promise<ITrafficlight> {
     const expiresAt = new Date(document.expiresAt)
     const unixSeconds = Math.floor(expiresAt.getTime() / 1000)

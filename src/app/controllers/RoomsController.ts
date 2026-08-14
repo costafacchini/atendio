@@ -5,7 +5,7 @@ import { IUser, IRoom, IContact } from '../../types'
 interface IRoomRepository extends IRepository<IRoom> {
   findForLicensee(
     licenseeId: string | number,
-    opts?: { departmentIds?: number[]; contactIds?: number[]; page?: number; limit?: number },
+    opts?: { departmentIds?: number[]; contactIds?: number[]; page?: number; limit?: number; inboxId?: string },
   ): Promise<any[]>
   findOpenForContact(contactId: string): Promise<IRoom | null>
   findById(id: string | number): Promise<IRoom | null>
@@ -24,6 +24,7 @@ interface IDepartmentRepository {
 
 interface IContactRepository extends IRepository<IContact> {
   findIds(params: Record<string, unknown>): Promise<number[]>
+  findByIds(ids: (string | number)[]): Promise<IContact[]>
 }
 
 class RoomsController {
@@ -93,6 +94,7 @@ class RoomsController {
 
       const page = Math.max(1, parseInt(req.query.page as string) || 1)
       const limit = 20
+      const inboxId = req.query.inbox as string | undefined
 
       // Step 3: get rooms
       const results = await this.roomRepository.findForLicensee(licenseeId, {
@@ -100,12 +102,19 @@ class RoomsController {
         contactIds,
         page,
         limit,
+        inboxId,
       })
 
       const hasMore = results.length > limit
       const rooms: any[] = hasMore ? results.slice(0, limit) : results
 
-      // Step 4: last message per room
+      // Step 4: populate contacts
+      const roomContactIds = [...new Set(rooms.map((r: any) => r.contact).filter(Boolean))]
+      const contacts = await this.contactRepository.findByIds(roomContactIds)
+      const contactMap: Record<string, any> = {}
+      for (const c of contacts) contactMap[String((c as any).id ?? (c as any)._id)] = c
+
+      // Step 5: last message per room
       const roomIds = rooms.map((r: any) => r.id as number)
       const lastMessages = await this.messageRepository.lastMessagePerRoom(roomIds)
       const lastMsgMap: Record<number, any> = {}
@@ -113,6 +122,8 @@ class RoomsController {
 
       const roomsWithLast = rooms.map((r: any) => ({
         ...r,
+        _id: String(r.id),
+        contact: contactMap[String(r.contact)] ?? r.contact,
         lastMessage: lastMsgMap[r.id] ?? null,
       }))
 
@@ -141,12 +152,17 @@ class RoomsController {
 
       const existingRoom = await this.roomRepository.findOpenForContact(contact._id as string)
       if (existingRoom) {
-        return res.status(200).json({ room: existingRoom })
+        return res.status(200).json({ room: { ...(existingRoom as any), contact } })
       }
 
-      await this.roomRepository.create({ contact: contact._id as string, status: 'pending' })
+      const inboxId = req.body.inboxId
+      await this.roomRepository.create({
+        contact: contact._id as string,
+        status: 'pending',
+        ...(inboxId ? { inbox: inboxId } : {}),
+      })
       const room = await this.roomRepository.findOpenForContact(contact._id as string)
-      return res.status(201).json({ room })
+      return res.status(201).json({ room: { ...(room as any), contact } })
     } catch (err: any) {
       return res.status(500).json({ errors: { message: `Erro interno do servidor: ${err.message}` } })
     }
@@ -157,13 +173,13 @@ class RoomsController {
       const user = await this._resolveUser(req)
       if (!user) return res.status(404).json({ errors: { message: 'User not found' } })
 
-      const room = await this.roomRepository.findFirst({ _id: req.params.roomId as string }, ['contact'])
+      const room = await this.roomRepository.findFirst({ _id: req.params.roomId as string })
       if (!room) return res.status(404).json({ errors: { message: 'Room not found' } })
 
       if (user.role !== 'super') {
         const userLicenseeId = this._resolveLicenseeId(user)?.toString()
-        const roomLicenseeId =
-          (room.contact as any)?.licensee?._id?.toString() ?? (room.contact as any)?.licensee?.toString() ?? null
+        const contact = await this.contactRepository.findFirst({ _id: (room as any).contact })
+        const roomLicenseeId = (contact?.licensee as any)?._id?.toString() ?? contact?.licensee?.toString() ?? null
 
         if (userLicenseeId !== roomLicenseeId) {
           return res.status(403).json({ errors: { message: 'Forbidden' } })

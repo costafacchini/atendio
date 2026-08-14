@@ -106,11 +106,11 @@ function MessagesIndex({ currentUser }: MessagesIndexProps) {
   )
 
   useEffect(() => {
-    const licenseeObj = currentUser?.licensee as { id?: string } | string | null | undefined
+    const licenseeObj = currentUser?.licensee as { id?: string; _id?: string } | string | number | null | undefined
     const effectiveLicensee = activeLicensee?.id ??
       (typeof licenseeObj === 'object' && licenseeObj !== null
-        ? ((licenseeObj as { id?: string; _id?: string }).id ?? (licenseeObj as { id?: string; _id?: string })._id)
-        : undefined)
+        ? (licenseeObj.id ?? licenseeObj._id)
+        : licenseeObj != null ? String(licenseeObj) : undefined)
     if (currentUser && effectiveLicensee && filters.licensee !== effectiveLicensee) {
       setFilters({ ...filters, licensee: effectiveLicensee })
     }

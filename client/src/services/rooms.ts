@@ -9,7 +9,7 @@ interface IRoomMessagesResponse { messages: IMessage[]; total: number; page: num
 
 const headers = () => ({ 'x-access-token': getToken() })
 
-export function getRooms(params: { page?: number; licensee?: string } = {}) {
+export function getRooms(params: { page?: number; licensee?: string; inbox?: string } = {}) {
   const url = parseUrl('resources/rooms', params as Record<string, unknown>)
   return api().get<IRoomListResponse>(url, { headers: headers() })
 }

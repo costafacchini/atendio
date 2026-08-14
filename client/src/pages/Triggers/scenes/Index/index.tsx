@@ -52,8 +52,11 @@ function TriggersIndex({ currentUser }: TriggersIndexProps) {
   useEffect(() => {
     if (isEmpty(triggerFilters) || !currentUser) return
 
-    const licenseeObj = currentUser.licensee as { id?: string } | string | null
-    const effectiveLicensee = activeLicensee?.id ?? (typeof licenseeObj === 'object' && licenseeObj !== null ? licenseeObj.id : undefined)
+    const licenseeObj = currentUser.licensee as { id?: string } | string | number | null
+    const effectiveLicensee = activeLicensee?.id ??
+      (typeof licenseeObj === 'object' && licenseeObj !== null
+        ? licenseeObj.id
+        : licenseeObj != null ? String(licenseeObj) : undefined)
     if (effectiveLicensee && triggerFilters?.licensee !== effectiveLicensee) {
       const newFilters = { ...triggerFilters, licensee: effectiveLicensee, page: 1 }
       onFilter(newFilters)

@@ -667,7 +667,9 @@
     "closeModalAriaLabel": "Fechar",
     "createRoomError": "Erro ao criar conversa. Tente novamente.",
     "selectInbox": "Selecione uma inbox",
-    "selectInboxDescription": "Esta conversa pertence a qual inbox?"
+    "selectInboxDescription": "Esta conversa pertence a qual inbox?",
+    "switchInbox": "Trocar inbox",
+    "switchInboxAriaLabel": "Trocar inbox de chat"
   },
   "reports": {
     "title": "Mensagens",

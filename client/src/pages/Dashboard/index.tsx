@@ -18,12 +18,17 @@ export default function Dashboard() {
   const { t } = useTranslation()
   const { currentUser, activeLicensee } = useApp()
 
-  const licenseeObj = currentUser?.licensee as { id?: string } | string | null | undefined
+  const licenseeObj = currentUser?.licensee as { id?: string } | string | number | null | undefined
   const [connectedLicensees, setConnectedLicensees] = useState<Set<string>>(new Set())
   const [inboxes, setInboxes] = useState<IInbox[]>([])
 
   const licenseeId = activeLicensee?.id
-  const licenseeObjId = typeof licenseeObj === 'object' && licenseeObj !== null ? licenseeObj.id : undefined
+  const licenseeObjId =
+    typeof licenseeObj === 'object' && licenseeObj !== null
+      ? licenseeObj.id
+      : licenseeObj != null
+      ? String(licenseeObj)
+      : undefined
   const targetLicenseeId = licenseeId ?? licenseeObjId
 
   useEffect(() => {

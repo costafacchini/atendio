@@ -54,8 +54,10 @@ class InboxesController {
 
   async index(req: Request, res: Response) {
     try {
-      const params: Record<string, string> = {}
+      const params: Record<string, unknown> = {}
       if (req.query.licensee) params.licensee = req.query.licensee as string
+      if (req.query.kind) params.kind = req.query.kind as string
+      if (req.query.active !== undefined) params.active = req.query.active === 'true'
 
       const inboxes = await this.inboxRepository.find(params, ['licensee'])
       return res.status(200).send(inboxes)

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../../contexts/App'
 import { getRooms, getRoomMessages, sendRoomMessage, closeRoom } from '../../services/rooms'
 import { getInboxes } from '../../services/inbox'
@@ -15,20 +15,48 @@ import Navbar from '../Navbar'
 export default function ChatPage() {
   const { currentUser, activeLicensee } = useApp()
   const effectiveLicenseeId = activeLicensee?.id ??
-    (typeof currentUser?.licensee === 'object' ? (currentUser.licensee as { id?: string })?.id : undefined)
+    (typeof currentUser?.licensee === 'object' && currentUser.licensee !== null
+      ? (currentUser.licensee as { id?: string })?.id
+      : currentUser?.licensee != null ? String(currentUser.licensee) : undefined)
 
   const [rooms, setRooms] = useState<IRoom[]>([])
   const [selectedRoom, setSelectedRoom] = useState<IRoom | null>(null)
   const [messages, setMessages] = useState<IMessage[]>([])
   const [messagesLoading, setMessagesLoading] = useState(false)
   const [showNewConvo, setShowNewConvo] = useState(false)
-  const [pendingChatInboxes, setPendingChatInboxes] = useState<IInbox[]>([])
   const [mobileView, setMobileView] = useState<'rooms' | 'conversation'>('rooms')
 
+  const [chatInboxes, setChatInboxes] = useState<IInbox[]>([])
+  const [activeInbox, setActiveInbox] = useState<IInbox | null>(null)
+  const [showInboxPicker, setShowInboxPicker] = useState(false)
+
+  // Keep a ref so the socket callback always sees the latest activeInbox
+  const activeInboxRef = useRef<IInbox | null>(null)
+  useEffect(() => { activeInboxRef.current = activeInbox }, [activeInbox])
+
+  // Load chat inboxes when licensee is known; auto-select if only one
   useEffect(() => {
     if (!effectiveLicenseeId) return
-    getRooms({ licensee: effectiveLicenseeId }).then(res => setRooms(res.data.rooms)).catch(console.error)
+    getInboxes({ licensee: effectiveLicenseeId, kind: 'chat', active: true })
+      .then(res => {
+        const inboxes = (res.data as IInbox[]) ?? []
+        setChatInboxes(inboxes)
+        if (inboxes.length === 1) {
+          setActiveInbox(inboxes[0])
+        } else if (inboxes.length > 1) {
+          setShowInboxPicker(true)
+        }
+      })
+      .catch(console.error)
   }, [effectiveLicenseeId])
+
+  // Load rooms whenever the active inbox changes
+  useEffect(() => {
+    if (!effectiveLicenseeId || !activeInbox) return
+    getRooms({ licensee: effectiveLicenseeId, inbox: activeInbox._id })
+      .then(res => setRooms(res.data.rooms))
+      .catch(console.error)
+  }, [effectiveLicenseeId, activeInbox])
 
   function loadMessages(roomId: string) {
     setMessagesLoading(true)
@@ -122,7 +150,9 @@ export default function ChatPage() {
       const roomExists = prev.some(r => r._id === roomId)
       if (!roomExists) {
         if (effectiveLicenseeId) {
-          getRooms({ licensee: effectiveLicenseeId }).then(res => setRooms(res.data.rooms)).catch(console.error)
+          getRooms({ licensee: effectiveLicenseeId, inbox: activeInboxRef.current?._id })
+            .then(res => setRooms(res.data.rooms))
+            .catch(console.error)
         }
         return prev
       }
@@ -147,27 +177,24 @@ export default function ChatPage() {
     setMobileView('rooms')
   }
 
-  async function handleNewConversation() {
-    const licenseeId = effectiveLicenseeId
-    if (!licenseeId) {
-      setShowNewConvo(true)
-      return
-    }
-    const inboxes = await getInboxes({ licensee: licenseeId, kind: 'chat', active: true })
-    if (inboxes.length > 1) {
-      setPendingChatInboxes(inboxes)
-    } else {
-      setShowNewConvo(true)
-    }
-  }
-
-  function handleInboxSelected(_inbox: IInbox) {
-    setPendingChatInboxes([])
+  function handleNewConversation() {
     setShowNewConvo(true)
   }
 
+  function handleSwitchInbox() {
+    setShowInboxPicker(true)
+  }
+
+  function handleInboxSelected(inbox: IInbox) {
+    setActiveInbox(inbox)
+    setShowInboxPicker(false)
+    setSelectedRoom(null)
+    setMessages([])
+  }
+
   function handleInboxPickerDismiss() {
-    setPendingChatInboxes([])
+    // Only dismissable when an inbox is already active (switching flow)
+    if (activeInbox) setShowInboxPicker(false)
   }
 
   function handleRoomCreated(room: IRoom) {
@@ -189,6 +216,9 @@ export default function ChatPage() {
             selectedRoomId={selectedRoom?._id}
             onSelect={handleRoomSelect}
             onNewConversation={handleNewConversation}
+            activeInbox={activeInbox}
+            hasMultipleInboxes={chatInboxes.length > 1}
+            onSwitchInbox={handleSwitchInbox}
           />
         </div>
         <div className={`${styles.chatConversation}${conversationMobileVisible ? ` ${styles.chatConversationMobileVisible}` : ''}`}>
@@ -206,10 +236,11 @@ export default function ChatPage() {
         show={showNewConvo}
         onClose={() => setShowNewConvo(false)}
         onRoomCreated={handleRoomCreated}
+        inboxId={activeInbox?._id}
       />
-      {pendingChatInboxes.length > 0 && (
+      {showInboxPicker && (
         <InboxPickerModal
-          inboxes={pendingChatInboxes}
+          inboxes={chatInboxes}
           onSelect={handleInboxSelected}
           onDismiss={handleInboxPickerDismiss}
         />

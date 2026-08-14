@@ -1,10 +1,12 @@
 async function sendMessageToChat(
   data: any,
-  { messageRepository, inboxRepository, createChatPlugin }: Record<string, any> = {},
+  { messageRepository, inboxRepository, licenseeRepository, createChatPlugin }: Record<string, any> = {},
 ) {
   const { messageId, url } = data
-  const message = await messageRepository.findFirst({ _id: messageId }, ['licensee'])
-  const licensee = message.licensee
+  const message = await messageRepository.findFirst({ _id: messageId })
+  if (!message) return
+  const licensee = await licenseeRepository.findFirst({ _id: message.licensee })
+  if (!licensee) return
 
   const chatInbox = await inboxRepository.findFirst({ licensee: licensee._id, kind: 'chat' })
   const chatPlugin = createChatPlugin(licensee, { inbox: chatInbox })

@@ -56,8 +56,11 @@ function UsersIndex({ currentUser }: UsersIndexProps) {
   useEffect(() => {
     if (isEmpty(userFilters)) return
 
-    const licenseeObj = currentUser?.licensee as { id?: string } | string | null | undefined
-    const licenseId = typeof licenseeObj === 'object' && licenseeObj !== null ? licenseeObj.id : undefined
+    const licenseeObj = currentUser?.licensee as { id?: string } | string | number | null | undefined
+    const licenseId =
+      typeof licenseeObj === 'object' && licenseeObj !== null
+        ? licenseeObj.id
+        : licenseeObj != null ? String(licenseeObj) : undefined
     if (currentUser && currentUser.role !== 'super' && userFilters?.licensee !== licenseId) {
       const newFilters: IUserFilters = { ...userFilters, licensee: licenseId, page: 1 }
       onFilter(newFilters)

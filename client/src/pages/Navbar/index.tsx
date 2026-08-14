@@ -12,7 +12,11 @@ export default function Navbar({ currentUser }: { currentUser?: IUser | null }) 
   const [inboxes, setInboxes] = useState<IInbox[]>([])
 
   const effectiveLicensee = activeLicensee ?? (typeof currentUser?.licensee === 'object' ? currentUser.licensee : null)
-  const licenseeId = effectiveLicensee?.id
+  const licenseeId: string | undefined =
+    effectiveLicensee?.id ??
+    (currentUser?.licensee != null && typeof currentUser.licensee !== 'object'
+      ? String(currentUser.licensee)
+      : undefined)
 
   useEffect(() => {
     if (!licenseeId) { setInboxes([]); return }
