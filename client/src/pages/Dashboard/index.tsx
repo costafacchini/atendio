@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApp } from '../../contexts/App'
+import { getInboxes } from '../../services/inbox'
+import type { IInbox } from '../../types/inbox'
 import SuperLicenseesCard from './cards/SuperLicenseesCard'
 import SuperMessageVolumeCard from './cards/SuperMessageVolumeCard'
 import SuperDeliveryRateCard from './cards/SuperDeliveryRateCard'
@@ -16,8 +18,20 @@ export default function Dashboard() {
   const { t } = useTranslation()
   const { currentUser, activeLicensee } = useApp()
 
-  const licenseeObj = currentUser?.licensee as { id?: string; whatsappDefault?: string; chatDefault?: string } | string | null | undefined
+  const licenseeObj = currentUser?.licensee as { id?: string } | string | null | undefined
   const [connectedLicensees, setConnectedLicensees] = useState<Set<string>>(new Set())
+  const [inboxes, setInboxes] = useState<IInbox[]>([])
+
+  const licenseeId = activeLicensee?.id
+  const licenseeObjId = typeof licenseeObj === 'object' && licenseeObj !== null ? licenseeObj.id : undefined
+  const targetLicenseeId = licenseeId ?? licenseeObjId
+
+  useEffect(() => {
+    if (!targetLicenseeId) { setInboxes([]); return }
+    getInboxes({ licensee: targetLicenseeId }).then(res => setInboxes((res.data as IInbox[]) ?? []))
+  }, [targetLicenseeId])
+
+  const baileysInbox = inboxes.find(i => i.whatsappDefault === 'baileys') ?? null
 
   if (!currentUser) {
     return (
@@ -45,23 +59,15 @@ export default function Dashboard() {
     }
 
     if (currentUser!.role === 'super' || currentUser!.role === 'admin') {
-      const licenseeId = activeLicensee?.id
-      const licenseeObjId = typeof licenseeObj === 'object' && licenseeObj !== null ? licenseeObj.id : undefined
-      const targetLicenseeId = licenseeId ?? licenseeObjId
-      const usesLocalChat = activeLicensee
-        ? activeLicensee.chatDefault === 'local'
-        : typeof licenseeObj === 'object' && licenseeObj !== null && licenseeObj.chatDefault === 'local'
-      const usesBaileys = activeLicensee
-        ? activeLicensee.whatsappDefault === 'baileys'
-        : typeof licenseeObj === 'object' && licenseeObj !== null && licenseeObj.whatsappDefault === 'baileys'
-      const showBaileysCard = usesBaileys && targetLicenseeId != null && !connectedLicensees.has(targetLicenseeId)
+      const usesLocalChat = inboxes.some(i => i.kind === 'chat' && i.chatDefault === 'local')
+      const showBaileysCard = !!baileysInbox && targetLicenseeId != null && !connectedLicensees.has(targetLicenseeId)
       return (
         <div className="row g-3">
-          {showBaileysCard && targetLicenseeId && (
+          {showBaileysCard && baileysInbox && (
             <div className="col-12">
               <BaileysSetupCard
-                licenseeId={targetLicenseeId}
-                onConnected={() => setConnectedLicensees((prev) => new Set(prev).add(targetLicenseeId))}
+                inbox={baileysInbox}
+                onConnected={() => setConnectedLicensees((prev) => new Set(prev).add(targetLicenseeId!))}
               />
             </div>
           )}

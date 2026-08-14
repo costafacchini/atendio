@@ -1,6 +1,7 @@
 class TemplatesImporter {
   licenseeId: any
   licenseeRepository: any
+  inboxRepository: any
   templateRepository: any
   createMessengerPlugin: any
 
@@ -8,12 +9,14 @@ class TemplatesImporter {
     licenseeId: any,
     {
       licenseeRepository,
+      inboxRepository,
       templateRepository,
       createMessengerPlugin,
-    }: { licenseeRepository?: any; templateRepository?: any; createMessengerPlugin?: any } = {},
+    }: { licenseeRepository?: any; inboxRepository?: any; templateRepository?: any; createMessengerPlugin?: any } = {},
   ) {
     this.licenseeId = licenseeId
     this.licenseeRepository = licenseeRepository
+    this.inboxRepository = inboxRepository
     this.templateRepository = templateRepository
     this.createMessengerPlugin = createMessengerPlugin
   }
@@ -25,12 +28,15 @@ class TemplatesImporter {
 
     if (!licensee) return
 
-    if (!['dialog', 'ycloud', 'pabbly'].includes(licensee.whatsappDefault)) {
+    const inbox = await this.inboxRepository.findFirst({ licensee: String(this.licenseeId), kind: 'messenger' })
+    if (!inbox) return
+
+    if (!['dialog', 'ycloud', 'pabbly'].includes(inbox.whatsappDefault)) {
       return
     }
 
-    const messengerPlugin = this.createMessengerPlugin(licensee)
-    const templates = await messengerPlugin.searchTemplates(licensee.whatsappUrl, licensee.whatsappToken)
+    const messengerPlugin = this.createMessengerPlugin(licensee, { inbox })
+    const templates = await messengerPlugin.searchTemplates(inbox.whatsappUrl, inbox.whatsappToken)
 
     for (const template of templates) {
       await this.templateRepository.create(template)

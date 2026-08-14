@@ -14,13 +14,6 @@ export interface ILicensee {
   chatbotAuthorizationToken: string
   messageOnResetChatbot: string
   chatbotApiToken: string
-  whatsappDefault: string
-  whatsappToken: string
-  whatsappUrl: string
-  chatDefault: string
-  chatUrl: string
-  chatKey: string
-  chatIdentifier: string
   messageOnCloseChat: string
   useSenderName: boolean
   useFileIDYcloud: boolean
@@ -47,13 +40,6 @@ export interface ILicenseeFormValues {
   chatbotAuthorizationToken: string
   messageOnResetChatbot: string
   chatbotApiToken: string
-  whatsappDefault: string
-  whatsappToken: string
-  whatsappUrl: string
-  chatDefault: string
-  chatIdentifier: string
-  chatKey: string
-  chatUrl: string
   messageOnCloseChat: string
   document: string
   kind: string

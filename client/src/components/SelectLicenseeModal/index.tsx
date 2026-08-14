@@ -6,16 +6,12 @@ import type { SingleValue } from 'react-select'
 interface LicenseeOption {
   value: string
   label: string
-  chatDefault?: string
-  whatsappDefault?: string
 }
 
 interface SelectedLicensee {
   id: string
   _id: string
   name: string
-  chatDefault?: string
-  whatsappDefault?: string
 }
 
 interface SelectLicenseeModalProps {
@@ -28,7 +24,7 @@ export default function SelectLicenseeModal({ onSelect, required = true }: Selec
   const [selected, setSelected] = useState<SingleValue<LicenseeOption>>(null)
 
   function handleConfirm() {
-    onSelect(selected ? { id: selected.value, _id: selected.value, name: selected.label, chatDefault: selected.chatDefault, whatsappDefault: selected.whatsappDefault } : null)
+    onSelect(selected ? { id: selected.value, _id: selected.value, name: selected.label } : null)
   }
 
   return (

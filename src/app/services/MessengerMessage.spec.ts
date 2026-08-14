@@ -8,13 +8,16 @@ import { Dialog } from '../plugins/messengers/Dialog'
 import { installMemoryRepositories, resetMemoryRepositories } from '@repositories/testing'
 import { licensee as licenseeFactory } from '@factories/licensee'
 import { body as bodyFactory } from '@factories/body'
+import { inbox as inboxFactory } from '@factories/inbox'
 import { LicenseeRepositoryDatabase } from '@repositories/licensee'
+import { InboxRepositoryDatabase } from '@repositories/inbox'
 import { createRuntimeDependencies } from '../runtime/dependencies'
 
 let dependencies
 
 describe('transformMessengerBody', () => {
   let licensee
+  let inbox
 
   beforeEach(async () => {
     installMemoryRepositories()
@@ -24,11 +27,19 @@ describe('transformMessengerBody', () => {
     const licenseeRepository = new LicenseeRepositoryDatabase()
     licensee = await licenseeRepository.create(
       licenseeFactory.build({
+        chatbotUrl: 'https://whatsapp.url',
+        chatbotAuthorizationToken: 'ljsdf12g',
+      }),
+    )
+
+    const inboxRepository = new InboxRepositoryDatabase()
+    inbox = await inboxRepository.create(
+      inboxFactory.build({
+        licensee: licensee._id,
+        kind: 'messenger',
         whatsappDefault: 'dialog',
         whatsappUrl: 'https://waba.360dialog.io/',
         whatsappToken: 'bshg25f',
-        chatbotUrl: 'https://whatsapp.url',
-        chatbotAuthorizationToken: 'ljsdf12g',
         chatUrl: 'https://chat.url',
       }),
     )
@@ -73,6 +84,7 @@ describe('transformMessengerBody', () => {
           ],
         },
         licensee,
+        inbox: inbox._id,
         concluded: false,
       }),
     )
@@ -131,6 +143,7 @@ describe('transformMessengerBody', () => {
       bodyFactory.build({
         content: { message: { type: 'text' } },
         licensee,
+        inbox: inbox._id,
         concluded: false,
         department: departmentObjectId,
       }),
@@ -141,6 +154,25 @@ describe('transformMessengerBody', () => {
     expect(messengerPluginResponseToMessages).toHaveBeenCalledWith(body.content, {
       departmentId: departmentObjectId,
     })
+  })
+
+  it('returns empty actions when body has no linked inbox', async () => {
+    const messengerPluginResponseToMessages = jest
+      .spyOn(Dialog.prototype, 'responseToMessages')
+      .mockImplementation(() => [])
+
+    const body = await Body.create(
+      bodyFactory.build({
+        content: { message: { type: 'typein' } },
+        licensee,
+        concluded: false,
+      }),
+    )
+
+    const actions = await transformMessengerBody({ bodyId: body._id }, dependencies)
+
+    expect(messengerPluginResponseToMessages).not.toHaveBeenCalled()
+    expect(actions.length).toEqual(0)
   })
 
   it('responds with blank actions if body is invalid and update body', async () => {
@@ -158,6 +190,7 @@ describe('transformMessengerBody', () => {
           },
         },
         licensee,
+        inbox: inbox._id,
         concluded: false,
       }),
     )

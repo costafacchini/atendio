@@ -24,6 +24,7 @@ class LicenseesController {
 
   constructor({
     licenseeRepository,
+    inboxRepository,
     userRepository,
     createLicenseesQuery,
     createLicensee,
@@ -41,15 +42,22 @@ class LicenseesController {
     this.createLicensee = createLicensee!
     this.updateLicensee = updateLicensee!
     this.setDialogWebhookUseCase = setDialogWebhook!
-    this.getBaileysQrUseCase = new GetBaileysQr({ licenseeRepository, createMessengerPlugin, startBaileysSocket })
+    this.getBaileysQrUseCase = new GetBaileysQr({
+      licenseeRepository,
+      inboxRepository,
+      createMessengerPlugin,
+      startBaileysSocket,
+    })
     this.getBaileysStatusUseCase = new GetBaileysStatus({
       licenseeRepository,
+      inboxRepository,
       whatsappSessionRepository,
       startBaileysSocket,
       socketManager,
     })
     this.syncBaileysDirectoryUseCase = new SyncBaileysDirectory({
       licenseeRepository,
+      inboxRepository,
       contactRepository,
       createMessengerPlugin,
     })
@@ -135,16 +143,8 @@ class LicenseesController {
       licenseesQuery.page(page as number)
       licenseesQuery.limit(limit as number)
 
-      if (req.query.chatDefault) {
-        licenseesQuery.filterByChatDefault(req.query.chatDefault as string)
-      }
-
       if (req.query.chatbotDefault) {
         licenseesQuery.filterByChatbotDefault(req.query.chatbotDefault as string)
-      }
-
-      if (req.query.whatsappDefault) {
-        licenseesQuery.filterByWhatsappDefault(req.query.whatsappDefault as string)
       }
 
       if (req.query.expression) {

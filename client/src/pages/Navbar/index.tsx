@@ -1,14 +1,23 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { logout } from '../../services/auth'
+import { getInboxes } from '../../services/inbox'
 import { useApp } from '../../contexts/App'
 import type { IUser } from '../../types'
+import type { IInbox } from '../../types/inbox'
 
 export default function Navbar({ currentUser }: { currentUser?: IUser | null }) {
   const { t } = useTranslation()
   const { resetLicenseeModal, activeLicensee } = useApp()
+  const [inboxes, setInboxes] = useState<IInbox[]>([])
 
   const effectiveLicensee = activeLicensee ?? (typeof currentUser?.licensee === 'object' ? currentUser.licensee : null)
+  const licenseeId = effectiveLicensee?.id
+
+  useEffect(() => {
+    if (!licenseeId) { setInboxes([]); return }
+    getInboxes({ licensee: licenseeId }).then(res => setInboxes((res.data as IInbox[]) ?? []))
+  }, [licenseeId])
 
   function handleSwitchLicensee() {
     resetLicenseeModal()
@@ -76,7 +85,7 @@ export default function Navbar({ currentUser }: { currentUser?: IUser | null }) 
               <li className='nav-item'>
                 <a className='nav-link' href='/#/messages'>{t('navbar.messages')}</a>
               </li>
-              {effectiveLicensee?.chatDefault === 'local' && (
+              {inboxes.some(i => i.kind === 'chat') && (
                 <li className='nav-item'>
                   <a className='nav-link' href='/#/chat'>{t('navbar.chat')}</a>
                 </li>

@@ -1,9 +1,10 @@
 import { IRepository } from '@repositories/repository'
-import { ILicensee, IDepartment } from '../../../types'
+import { ILicensee, IInbox, IDepartment } from '../../../types'
 
 interface GetBaileysQrForDepartmentDeps {
   departmentRepository: IRepository<IDepartment>
   licenseeRepository: IRepository<ILicensee>
+  inboxRepository: IRepository<IInbox>
   createMessengerPlugin: (licensee: ILicensee, extras: Record<string, any>) => any
   startBaileysSocket?: (licensee: ILicensee, department: IDepartment) => Promise<void>
   getBaileysQrForInbox: { execute(inboxId: string): Promise<Record<string, any>> }
@@ -12,6 +13,7 @@ interface GetBaileysQrForDepartmentDeps {
 class GetBaileysQrForDepartment {
   departmentRepository: IRepository<IDepartment>
   licenseeRepository: IRepository<ILicensee>
+  inboxRepository: IRepository<IInbox>
   createMessengerPlugin: GetBaileysQrForDepartmentDeps['createMessengerPlugin']
   startBaileysSocket?: GetBaileysQrForDepartmentDeps['startBaileysSocket']
   getBaileysQrForInbox: GetBaileysQrForDepartmentDeps['getBaileysQrForInbox']
@@ -19,12 +21,14 @@ class GetBaileysQrForDepartment {
   constructor({
     departmentRepository,
     licenseeRepository,
+    inboxRepository,
     createMessengerPlugin,
     startBaileysSocket,
     getBaileysQrForInbox,
   }: GetBaileysQrForDepartmentDeps) {
     this.departmentRepository = departmentRepository
     this.licenseeRepository = licenseeRepository
+    this.inboxRepository = inboxRepository
     this.createMessengerPlugin = createMessengerPlugin
     this.startBaileysSocket = startBaileysSocket
     this.getBaileysQrForInbox = getBaileysQrForInbox
@@ -41,11 +45,16 @@ class GetBaileysQrForDepartment {
     }
 
     const licensee = await this.licenseeRepository.findFirst({ _id: department.licensee })
-    if (!licensee || licensee.whatsappDefault !== 'baileys') {
-      return { message: 'Licensee não usa Baileys' }
-    }
+    if (!licensee) return { message: 'Licensee não usa Baileys' }
 
-    const plugin = this.createMessengerPlugin(licensee, { department })
+    const inbox = await this.inboxRepository.findFirst({
+      licensee: String(department.licensee),
+      kind: 'messenger',
+      whatsappDefault: 'baileys',
+    })
+    if (!inbox) return { message: 'Licensee não usa Baileys' }
+
+    const plugin = this.createMessengerPlugin(licensee, { department, inbox })
     const qr = await plugin.getQrCode()
 
     if (!qr) {

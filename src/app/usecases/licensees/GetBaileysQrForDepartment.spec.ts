@@ -1,22 +1,33 @@
 import { GetBaileysQrForDepartment } from './GetBaileysQrForDepartment'
 import { LicenseeRepositoryMemory } from '@repositories/licensee'
+import { InboxRepositoryMemory } from '@repositories/inbox'
 import { DepartmentRepositoryMemory } from '@repositories/department'
 import { licenseeComplete as licenseeCompleteFactory } from '@factories/licensee'
+import { inbox as inboxFactory } from '@factories/inbox'
 
 function buildUseCase(overrides: Record<string, any> = {}) {
   const licenseeRepository = overrides.licenseeRepository ?? new LicenseeRepositoryMemory()
+  const inboxRepository = overrides.inboxRepository ?? new InboxRepositoryMemory()
   const departmentRepository = overrides.departmentRepository ?? new DepartmentRepositoryMemory()
   const createMessengerPlugin = overrides.createMessengerPlugin ?? jest.fn()
   const startBaileysSocket = overrides.startBaileysSocket
   const getBaileysQrForInbox = overrides.getBaileysQrForInbox ?? { execute: jest.fn() }
   const useCase = new GetBaileysQrForDepartment({
     licenseeRepository,
+    inboxRepository,
     departmentRepository,
     createMessengerPlugin,
     startBaileysSocket,
     getBaileysQrForInbox,
   })
-  return { licenseeRepository, departmentRepository, createMessengerPlugin, getBaileysQrForInbox, useCase }
+  return {
+    licenseeRepository,
+    inboxRepository,
+    departmentRepository,
+    createMessengerPlugin,
+    getBaileysQrForInbox,
+    useCase,
+  }
 }
 
 describe('GetBaileysQrForDepartment', () => {
@@ -39,9 +50,12 @@ describe('GetBaileysQrForDepartment', () => {
     expect(result).toEqual({ message: 'Departamento não encontrado' })
   })
 
-  it('returns { message: "Licensee não usa Baileys" } when licensee does not use baileys', async () => {
-    const { licenseeRepository, departmentRepository, createMessengerPlugin, useCase } = buildUseCase()
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'dialog' }))
+  it('returns { message: "Licensee não usa Baileys" } when licensee has no baileys inbox', async () => {
+    const { licenseeRepository, inboxRepository, departmentRepository, createMessengerPlugin, useCase } = buildUseCase()
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    await inboxRepository.create(
+      inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'dialog' }),
+    )
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
 
     const result = await useCase.execute(department._id)
@@ -51,21 +65,27 @@ describe('GetBaileysQrForDepartment', () => {
   })
 
   it('returns { qr } when plugin.getQrCode() returns a QR string', async () => {
-    const { licenseeRepository, departmentRepository, createMessengerPlugin, useCase } = buildUseCase()
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'baileys' }))
+    const { licenseeRepository, inboxRepository, departmentRepository, createMessengerPlugin, useCase } = buildUseCase()
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    const inbox = await inboxRepository.create(
+      inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }),
+    )
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
     const plugin = { getQrCode: jest.fn().mockResolvedValue('qr-string-data') }
     createMessengerPlugin.mockReturnValue(plugin)
 
     const result = await useCase.execute(department._id)
 
-    expect(createMessengerPlugin).toHaveBeenCalledWith(licensee, { department })
+    expect(createMessengerPlugin).toHaveBeenCalledWith(licensee, { department, inbox })
     expect(result).toEqual({ qr: 'qr-string-data' })
   })
 
   it('returns { connected: true, message: "Já conectado" } when plugin.getQrCode() returns null', async () => {
-    const { licenseeRepository, departmentRepository, createMessengerPlugin, useCase } = buildUseCase()
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'baileys' }))
+    const { licenseeRepository, inboxRepository, departmentRepository, createMessengerPlugin, useCase } = buildUseCase()
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    await inboxRepository.create(
+      inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }),
+    )
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
     const plugin = { getQrCode: jest.fn().mockResolvedValue(null) }
     createMessengerPlugin.mockReturnValue(plugin)
@@ -78,10 +98,13 @@ describe('GetBaileysQrForDepartment', () => {
   it('calls startBaileysSocket with licensee and department when ENABLE_BAILEYS_SOCKET is true and already connected', async () => {
     process.env.ENABLE_BAILEYS_SOCKET = 'true'
     const startBaileysSocket = jest.fn().mockResolvedValue(undefined)
-    const { licenseeRepository, departmentRepository, createMessengerPlugin, useCase } = buildUseCase({
+    const { licenseeRepository, inboxRepository, departmentRepository, createMessengerPlugin, useCase } = buildUseCase({
       startBaileysSocket,
     })
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'baileys' }))
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    await inboxRepository.create(
+      inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }),
+    )
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
     const plugin = { getQrCode: jest.fn().mockResolvedValue(null) }
     createMessengerPlugin.mockReturnValue(plugin)
@@ -93,10 +116,13 @@ describe('GetBaileysQrForDepartment', () => {
 
   it('does not call startBaileysSocket when ENABLE_BAILEYS_SOCKET is not set', async () => {
     const startBaileysSocket = jest.fn()
-    const { licenseeRepository, departmentRepository, createMessengerPlugin, useCase } = buildUseCase({
+    const { licenseeRepository, inboxRepository, departmentRepository, createMessengerPlugin, useCase } = buildUseCase({
       startBaileysSocket,
     })
-    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build({ whatsappDefault: 'baileys' }))
+    const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
+    await inboxRepository.create(
+      inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'baileys' }),
+    )
     const department = await departmentRepository.create({ name: 'Suporte', licensee: licensee._id })
     const plugin = { getQrCode: jest.fn().mockResolvedValue(null) }
     createMessengerPlugin.mockReturnValue(plugin)

@@ -277,14 +277,14 @@ class Chatwoot extends ChatsBase {
     const messageToSend = await this.messageRepository.findFirst({ _id: messageId }, ['contact'])
     if (!messageToSend) return
     const messageContact = messageToSend.contact as IContact
-    const headers = { api_access_token: this.licensee.chatKey, 'Content-Type': 'application/json' }
+    const headers = { api_access_token: this.inbox?.chatKey, 'Content-Type': 'application/json' }
 
     if (!messageContact.chatwootSourceId) {
       const { sourceId, id: chatwootId } = await searchContact(
         url,
         headers,
         messageContact,
-        this.licensee,
+        this.inbox,
         this.contactRepository,
       )
       if (!sourceId && !chatwootId) {
@@ -292,7 +292,7 @@ class Chatwoot extends ChatsBase {
           url,
           headers,
           messageContact,
-          this.licensee,
+          this.inbox,
           this.contactRepository,
         )
       } else {
@@ -312,7 +312,7 @@ class Chatwoot extends ChatsBase {
     let room = openRoom
 
     if (!room) {
-      room = await createConversation(url, headers, messageContact, this.licensee.chatIdentifier, this.roomRepository)
+      room = await createConversation(url, headers, messageContact, this.inbox?.chatIdentifier, this.roomRepository)
       if (!room) {
         messageToSend.error =
           'Chatwoot - erro: Não foi possível criar a conversa na Chatwoot! Você vai encontrar mais detalhes nos logs do servidor.'
@@ -330,17 +330,17 @@ class Chatwoot extends ChatsBase {
         url,
         headers,
         contact,
-        this.licensee,
+        this.inbox,
         this.contactRepository,
       )
       if (!sourceId && !chatwootId) {
-        contact.chatwootSourceId = await createContact(url, headers, contact, this.licensee, this.contactRepository)
+        contact.chatwootSourceId = await createContact(url, headers, contact, this.inbox, this.contactRepository)
       } else {
         contact.chatwootSourceId = sourceId ?? undefined
         contact.chatwootId = chatwootId ?? undefined
       }
 
-      room = await createConversation(url, headers, contact, this.licensee.chatIdentifier, this.roomRepository)
+      room = await createConversation(url, headers, contact, this.inbox?.chatIdentifier, this.roomRepository)
       if (!room) {
         messageToSend.error =
           'Chatwoot - erro 2: Não foi possível criar a conversa na Chatwoot! Você vai encontrar mais detalhes nos logs do servidor.'

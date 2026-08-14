@@ -11,14 +11,12 @@ describe('UpdateLicensee', () => {
     const updatedLicensee = await updateLicensee.execute(licensee._id, {
       _id: 'ignored',
       name: 'Name modified',
-      whatsappDefault: 'utalk',
     })
 
     expect(updatedLicensee).toEqual(
       expect.objectContaining({
         _id: licensee._id,
         name: 'Name modified',
-        whatsappDefault: 'utalk',
       }),
     )
   })

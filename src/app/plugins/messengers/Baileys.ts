@@ -221,7 +221,7 @@ class Baileys extends MessengersBase {
   async sendMessage(messageId: string): Promise<void> {
     const { initAuthCreds, BufferJSON } = await import('@whiskeysockets/baileys')
 
-    const messageToSend = await this.messageRepository.findFirst({ _id: messageId }, ['contact'])
+    const messageToSend = await this.messageRepository.findFirst({ _id: messageId })
 
     if (!messageToSend) {
       logger.error(`Baileys: mensagem ${messageId} não encontrada.`)
@@ -230,6 +230,13 @@ class Baileys extends MessengersBase {
 
     if (!['text', 'file'].includes(messageToSend.kind)) {
       logger.warn(`Baileys: tipo de mensagem '${messageToSend.kind}' não suportado. Mensagem ${messageId} ignorada.`)
+      return
+    }
+
+    const contactId = (messageToSend.contact as any)?._id ?? String(messageToSend.contact)
+    const messageContact = (await this.contactRepository.findFirst({ _id: contactId })) as IContact
+    if (!messageContact) {
+      logger.error(`Baileys: contato da mensagem ${messageId} não encontrado.`)
       return
     }
 
@@ -242,7 +249,6 @@ class Baileys extends MessengersBase {
 
       await this._waitForConnection(socket)
 
-      const messageContact = messageToSend.contact as IContact
       const rawId = messageContact.waId || messageContact.number
       let jid
 

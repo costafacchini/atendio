@@ -2,9 +2,11 @@ import { resetChats } from './ResetChats'
 import { installMemoryRepositories, resetMemoryRepositories } from '@repositories/testing'
 import { licenseeComplete as licenseeFactory } from '@factories/licensee'
 import { contact as contactFactory } from '@factories/contact'
+import { inbox as inboxFactory } from '@factories/inbox'
 import moment from 'moment'
 import { Rocketchat } from '../plugins/chats/Rocketchat'
 import { LicenseeRepositoryDatabase } from '@repositories/licensee'
+import { InboxRepositoryDatabase } from '@repositories/inbox'
 import { ContactRepositoryDatabase } from '@repositories/contact'
 import { MessageRepositoryDatabase } from '@repositories/message'
 
@@ -31,12 +33,18 @@ describe('resetChats', () => {
     describe('when the contact starts a whatsapp chat 23 hours and 50 minutes ago', () => {
       it('send the message to warn the chat that the conversation window is ending', async () => {
         const licenseeRepository = new LicenseeRepositoryDatabase()
-        const licensee = await licenseeRepository.create(
-          licenseeFactory.build({
-            whatsappDefault: 'dialog',
-            whatsappUrl: 'https://waba.360dialog.io/',
-            whatsappToken: 'ljsdf12g',
-            useWhatsappWindow: true,
+        const inboxRepository = new InboxRepositoryDatabase()
+
+        const licensee = await licenseeRepository.create(licenseeFactory.build({ useWhatsappWindow: true }))
+        await inboxRepository.create(
+          inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'dialog' }),
+        )
+        await inboxRepository.create(
+          inboxFactory.build({
+            licensee: licensee._id,
+            kind: 'chat',
+            chatDefault: 'rocketchat',
+            chatUrl: 'https://chat.url',
           }),
         )
 
@@ -70,12 +78,10 @@ describe('resetChats', () => {
         )
 
         const licenseeWhatsappWindowOff = await licenseeRepository.create(
-          licenseeFactory.build({
-            whatsappDefault: 'dialog',
-            whatsappUrl: 'https://waba.360dialog.io/',
-            whatsappToken: 'ljsdf12g',
-            useWhatsappWindow: false,
-          }),
+          licenseeFactory.build({ useWhatsappWindow: false }),
+        )
+        await inboxRepository.create(
+          inboxFactory.build({ licensee: licenseeWhatsappWindowOff._id, kind: 'messenger', whatsappDefault: 'dialog' }),
         )
 
         const contactLicenseeWindowOff = await contactRepository.create(
@@ -86,12 +92,10 @@ describe('resetChats', () => {
         )
 
         const licenseeThatNotUseDialog = await licenseeRepository.create(
-          licenseeFactory.build({
-            whatsappDefault: 'utalk',
-            whatsappUrl: 'https://utalk.com/',
-            whatsappToken: 'ljsdf12g',
-            useWhatsappWindow: true,
-          }),
+          licenseeFactory.build({ useWhatsappWindow: true }),
+        )
+        await inboxRepository.create(
+          inboxFactory.build({ licensee: licenseeThatNotUseDialog._id, kind: 'messenger', whatsappDefault: 'utalk' }),
         )
 
         const contactLicenseeThatNotUseDialog = await contactRepository.create(
@@ -131,12 +135,18 @@ describe('resetChats', () => {
 
       it('send the message to notify the chat that the conversation window has expired ans clear field on contact', async () => {
         const licenseeRepository = new LicenseeRepositoryDatabase()
-        const licensee = await licenseeRepository.create(
-          licenseeFactory.build({
-            whatsappDefault: 'dialog',
-            whatsappUrl: 'https://waba.360dialog.io/',
-            whatsappToken: 'ljsdf12g',
-            useWhatsappWindow: true,
+        const inboxRepository = new InboxRepositoryDatabase()
+
+        const licensee = await licenseeRepository.create(licenseeFactory.build({ useWhatsappWindow: true }))
+        await inboxRepository.create(
+          inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'dialog' }),
+        )
+        await inboxRepository.create(
+          inboxFactory.build({
+            licensee: licensee._id,
+            kind: 'chat',
+            chatDefault: 'rocketchat',
+            chatUrl: 'https://chat.url',
           }),
         )
 
@@ -156,12 +166,10 @@ describe('resetChats', () => {
         )
 
         const licenseeWhatsappWindowOff = await licenseeRepository.create(
-          licenseeFactory.build({
-            whatsappDefault: 'dialog',
-            whatsappUrl: 'https://waba.360dialog.io/',
-            whatsappToken: 'ljsdf12g',
-            useWhatsappWindow: false,
-          }),
+          licenseeFactory.build({ useWhatsappWindow: false }),
+        )
+        await inboxRepository.create(
+          inboxFactory.build({ licensee: licenseeWhatsappWindowOff._id, kind: 'messenger', whatsappDefault: 'dialog' }),
         )
 
         const contactLicenseeWindowOff = await contactRepository.create(
@@ -172,12 +180,10 @@ describe('resetChats', () => {
         )
 
         const licenseeThatNotUseDialog = await licenseeRepository.create(
-          licenseeFactory.build({
-            whatsappDefault: 'utalk',
-            whatsappUrl: 'https://utalk.com/',
-            whatsappToken: 'ljsdf12g',
-            useWhatsappWindow: true,
-          }),
+          licenseeFactory.build({ useWhatsappWindow: true }),
+        )
+        await inboxRepository.create(
+          inboxFactory.build({ licensee: licenseeThatNotUseDialog._id, kind: 'messenger', whatsappDefault: 'utalk' }),
         )
 
         const contactLicenseeThatNotUseDialog = await contactRepository.create(

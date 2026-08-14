@@ -2,9 +2,11 @@ import { transferToChat } from './TransferToChat'
 import { Rocketchat } from '../plugins/chats/Rocketchat'
 import { installMemoryRepositories, resetMemoryRepositories } from '@repositories/testing'
 import { licensee as licenseeFactory } from '@factories/licensee'
+import { inbox as inboxFactory } from '@factories/inbox'
 import { contact as contactFactory } from '@factories/contact'
 import { message as messageFactory } from '@factories/message'
 import { LicenseeRepositoryDatabase } from '@repositories/licensee'
+import { InboxRepositoryDatabase } from '@repositories/inbox'
 import { ContactRepositoryDatabase } from '@repositories/contact'
 import { MessageRepositoryDatabase } from '@repositories/message'
 import { createRuntimeDependencies } from '../runtime/dependencies'
@@ -26,8 +28,13 @@ describe('transferToChat', () => {
 
   it('asks the plugin to transfer to chat', async () => {
     const licenseeRepository = new LicenseeRepositoryDatabase()
-    const licensee = await licenseeRepository.create(
-      licenseeFactory.build({
+    const licensee = await licenseeRepository.create(licenseeFactory.build())
+
+    const inboxRepository = new InboxRepositoryDatabase()
+    await inboxRepository.create(
+      inboxFactory.build({
+        licensee,
+        kind: 'chat',
         chatDefault: 'rocketchat',
         chatUrl: 'https://chat.url',
       }),

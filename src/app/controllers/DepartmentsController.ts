@@ -15,6 +15,7 @@ class DepartmentsController {
   constructor({
     departmentRepository,
     licenseeRepository,
+    inboxRepository,
     whatsappSessionRepository,
     contactRepository,
     createMessengerPlugin,
@@ -28,6 +29,7 @@ class DepartmentsController {
     this.getBaileysQrUseCase = new GetBaileysQrForDepartment({
       departmentRepository,
       licenseeRepository,
+      inboxRepository,
       createMessengerPlugin,
       startBaileysSocket,
       getBaileysQrForInbox,
@@ -35,6 +37,7 @@ class DepartmentsController {
     this.getBaileysStatusUseCase = new GetBaileysStatusForDepartment({
       departmentRepository,
       licenseeRepository,
+      inboxRepository,
       whatsappSessionRepository,
       startBaileysSocket,
       socketManager,
@@ -43,6 +46,7 @@ class DepartmentsController {
     this.syncBaileysDirectoryUseCase = new SyncBaileysDirectoryForDepartment({
       departmentRepository,
       licenseeRepository,
+      inboxRepository,
       contactRepository,
       createMessengerPlugin,
       syncBaileysDirectoryForInbox,

@@ -16,8 +16,6 @@ describe('CreateLicensee', () => {
       expect.objectContaining({
         name: 'Alcateia Ltds',
         email: 'alcateia@alcateia.com',
-        whatsappDefault: 'dialog',
-        whatsappUrl: 'https://waba.360dialog.io/',
       }),
     )
     expect(licensee.ignoredField).toBeUndefined()

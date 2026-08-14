@@ -6,43 +6,43 @@ import { Chatwoot } from './Chatwoot'
 import { licensee as licenseeFactory } from '@factories/licensee'
 
 describe('createChatPlugin', () => {
-  it('returns the rocketchat plugin if it is configured on licensee', () => {
-    const licensee = licenseeFactory.build({ chatDefault: 'rocketchat' })
+  it('returns the rocketchat plugin if it is configured on inbox', () => {
+    const licensee = licenseeFactory.build()
 
-    const plugin = createChatPlugin(licensee)
+    const plugin = createChatPlugin(licensee, {}, { chatDefault: 'rocketchat' } as any)
 
     expect(plugin).toBeInstanceOf(Rocketchat)
   })
 
-  it('returns the crisp plugin if it is configured on licensee', () => {
-    const licensee = licenseeFactory.build({ chatDefault: 'crisp' })
+  it('returns the crisp plugin if it is configured on inbox', () => {
+    const licensee = licenseeFactory.build()
 
-    const plugin = createChatPlugin(licensee)
+    const plugin = createChatPlugin(licensee, {}, { chatDefault: 'crisp' } as any)
 
     expect(plugin).toBeInstanceOf(Crisp)
   })
 
-  it('returns the chatwooty plugin if it is configured on licensee', () => {
-    const licensee = licenseeFactory.build({ chatDefault: 'chatwoot' })
+  it('returns the chatwooty plugin if it is configured on inbox', () => {
+    const licensee = licenseeFactory.build()
 
-    const plugin = createChatPlugin(licensee)
+    const plugin = createChatPlugin(licensee, {}, { chatDefault: 'chatwoot' } as any)
 
     expect(plugin).toBeInstanceOf(Chatwoot)
   })
 
-  it('returns the cuboup plugin if it is configured on licensee', () => {
-    const licensee = licenseeFactory.build({ chatDefault: 'cuboup' })
+  it('returns the cuboup plugin if it is configured on inbox', () => {
+    const licensee = licenseeFactory.build()
 
-    const plugin = createChatPlugin(licensee)
+    const plugin = createChatPlugin(licensee, {}, { chatDefault: 'cuboup' } as any)
 
     expect(plugin).toBeInstanceOf(Cuboup)
   })
 
   it('throws if option plugin is unknow', () => {
-    const licensee = licenseeFactory.build({ chatDefault: 'something' })
+    const licensee = licenseeFactory.build()
 
     expect(() => {
-      createChatPlugin(licensee)
+      createChatPlugin(licensee, {}, { chatDefault: 'something' } as any)
     }).toThrow('Plugin de chat não configurado: something')
   })
 })

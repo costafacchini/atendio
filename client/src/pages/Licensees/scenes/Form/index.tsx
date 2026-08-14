@@ -4,9 +4,7 @@ import * as Yup from 'yup'
 import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import MainPanel from './panels/MainPanel'
-import ChatPanel from './panels/ChatPanel'
 import ChatbotPanel from './panels/ChatbotPanel'
-import WhatsAppPanel from './panels/WhatsAppPanel'
 import type { ILicensee, ILicenseeFormValues } from '../../../../types'
 import type { FormikProps } from 'formik'
 
@@ -37,13 +35,6 @@ const licenseeInitialValues: LicenseeEditFormValues = {
   chatbotAuthorizationToken: '',
   messageOnResetChatbot: '',
   chatbotApiToken: '',
-  whatsappDefault: '',
-  whatsappToken: '',
-  whatsappUrl: '',
-  chatDefault: '',
-  chatUrl: '',
-  chatKey: '',
-  chatIdentifier: '',
   messageOnCloseChat: '',
   document: '',
   kind: '',
@@ -94,24 +85,6 @@ function LicenseeForm(props: LicenseeFormProps) {
               <li className="nav-item">
                 <button
                   type="button"
-                  className={`nav-link ${activeTab === 'whatsapp' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('whatsapp')}
-                >
-                  {t('licensees.form.tabWhatsApp')}
-                </button>
-              </li>
-              <li className="nav-item">
-                <button
-                  type="button"
-                  className={`nav-link ${activeTab === 'chat' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('chat')}
-                >
-                  {t('licensees.form.tabChat')}
-                </button>
-              </li>
-              <li className="nav-item">
-                <button
-                  type="button"
                   className={`nav-link ${activeTab === 'chatbot' ? 'active' : ''}`}
                   onClick={() => setActiveTab('chatbot')}
                 >
@@ -131,15 +104,6 @@ function LicenseeForm(props: LicenseeFormProps) {
                   currentUser={currentUser}
                 />
               </div>
-              <div className={`tab-pane fade ${activeTab === 'chat' ? 'show active' : ''}`}>
-                <ChatPanel
-                  values={props.values}
-                  errors={props.errors}
-                  touched={props.touched}
-                  handleChange={props.handleChange}
-                  handleBlur={props.handleBlur}
-                />
-              </div>
               <div className={`tab-pane fade ${activeTab === 'chatbot' ? 'show active' : ''}`}>
                 <ChatbotPanel
                   values={props.values}
@@ -147,16 +111,6 @@ function LicenseeForm(props: LicenseeFormProps) {
                   touched={props.touched}
                   handleChange={props.handleChange}
                   handleBlur={props.handleBlur}
-                />
-              </div>
-              <div className={`tab-pane fade ${activeTab === 'whatsapp' ? 'show active' : ''}`}>
-                <WhatsAppPanel
-                  values={props.values}
-                  errors={props.errors}
-                  touched={props.touched}
-                  handleChange={props.handleChange}
-                  handleBlur={props.handleBlur}
-                  isActive={activeTab === 'whatsapp'}
                 />
               </div>
             </div>

@@ -5,7 +5,9 @@ import { installMemoryRepositories, resetMemoryRepositories } from '@repositorie
 import { licensee as licenseeFactory } from '@factories/licensee'
 import { body as bodyFactory } from '@factories/body'
 import { contact as contactFactory } from '@factories/contact'
+import { inbox as inboxFactory } from '@factories/inbox'
 import { LicenseeRepositoryDatabase } from '@repositories/licensee'
+import { InboxRepositoryDatabase } from '@repositories/inbox'
 import { ContactRepositoryDatabase } from '@repositories/contact'
 import { createRuntimeDependencies } from '../runtime/dependencies'
 
@@ -13,6 +15,7 @@ let dependencies
 
 describe('transformChatBody', () => {
   let licensee
+  let inbox
 
   beforeEach(async () => {
     installMemoryRepositories()
@@ -20,8 +23,13 @@ describe('transformChatBody', () => {
     jest.clearAllMocks()
 
     const licenseeRepository = new LicenseeRepositoryDatabase()
-    licensee = await licenseeRepository.create(
-      licenseeFactory.build({
+    licensee = await licenseeRepository.create(licenseeFactory.build())
+
+    const inboxRepository = new InboxRepositoryDatabase()
+    inbox = await inboxRepository.create(
+      inboxFactory.build({
+        licensee: licensee._id,
+        kind: 'chat',
         chatDefault: 'rocketchat',
         chatUrl: 'https://www.jivo.chat.com',
         whatsappDefault: 'dialog',
@@ -50,6 +58,7 @@ describe('transformChatBody', () => {
     const body = await Body.create(
       bodyFactory.build({
         licensee: licensee,
+        inbox: inbox._id,
         concluded: false,
       }),
     )
@@ -99,23 +108,28 @@ describe('transformChatBody', () => {
     jest.spyOn(ContactRepositoryDatabase.prototype, 'contactWithWhatsappWindowClosed').mockResolvedValue(true)
 
     const licenseeRepository = new LicenseeRepositoryDatabase()
-    const licensee = await licenseeRepository.create(
-      licenseeFactory.build({
+    const licensee2 = await licenseeRepository.create(licenseeFactory.build({ useWhatsappWindow: true }))
+
+    const inboxRepository = new InboxRepositoryDatabase()
+    const inbox2 = await inboxRepository.create(
+      inboxFactory.build({
+        licensee: licensee2._id,
+        kind: 'chat',
         chatDefault: 'rocketchat',
         chatUrl: 'https://www.jivo.chat.com',
         whatsappDefault: 'dialog',
         whatsappUrl: 'https://waba.360dialog.io/',
         whatsappToken: 'token',
-        useWhatsappWindow: true,
       }),
     )
 
     const contactRepository = new ContactRepositoryDatabase()
-    const contact = await contactRepository.create(contactFactory.build({ licensee: licensee }))
+    const contact = await contactRepository.create(contactFactory.build({ licensee: licensee2 }))
 
     const body = await Body.create(
       bodyFactory.build({
-        licensee: licensee,
+        licensee: licensee2,
+        inbox: inbox2._id,
         concluded: false,
       }),
     )
@@ -149,6 +163,7 @@ describe('transformChatBody', () => {
     const body = await Body.create(
       bodyFactory.build({
         licensee: licensee,
+        inbox: inbox._id,
         concluded: false,
       }),
     )
@@ -176,6 +191,24 @@ describe('transformChatBody', () => {
     expect(actions.length).toEqual(1)
   })
 
+  it('returns empty actions when no inbox is found for the licensee', async () => {
+    const licenseeWithoutInbox = await new LicenseeRepositoryDatabase().create(licenseeFactory.build())
+    // intentionally no inbox created for this licensee
+
+    const body = await Body.create(
+      bodyFactory.build({
+        licensee: licenseeWithoutInbox,
+        concluded: false,
+      }),
+    )
+
+    const data = { bodyId: body._id }
+
+    const actions = await transformChatBody(data, dependencies)
+
+    expect(actions.length).toEqual(0)
+  })
+
   it('responds with blank actions if body is invalid and update body', async () => {
     const chatPluginResponseToMessages = jest
       .spyOn(Rocketchat.prototype, 'responseToMessages')
@@ -191,6 +224,7 @@ describe('transformChatBody', () => {
           },
         },
         licensee: licensee,
+        inbox: inbox._id,
         concluded: false,
       }),
     )

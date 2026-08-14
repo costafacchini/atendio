@@ -20,6 +20,7 @@ let dependencies: any
 describe('LocalChat plugin', () => {
   let licensee: any
   let contact: any
+  let contactRepository: any
   let messageRepository: any
   let roomRepository: any
   let plugin: any
@@ -32,13 +33,14 @@ describe('LocalChat plugin', () => {
     const licenseeRepository = new LicenseeRepositoryDatabase()
     licensee = await licenseeRepository.create(licenseeFactory.build({ chatDefault: 'local' }))
 
-    const contactRepository = new ContactRepositoryDatabase()
+    contactRepository = new ContactRepositoryDatabase()
     contact = await contactRepository.create(contactFactory.build({ licensee }))
 
     messageRepository = new MessageRepositoryDatabase()
     roomRepository = new RoomRepositoryDatabase()
 
     plugin = new LocalChat(licensee, {
+      contactRepository,
       messageRepository,
       roomRepository,
     })
@@ -171,6 +173,7 @@ describe('LocalChat plugin', () => {
       const departmentId = generateObjectId()
       const room = await roomRepository.create({ contact: contact._id, status: 'open', department: departmentId })
       const fullPlugin = new LocalChat(licensee, {
+        contactRepository,
         messageRepository,
         roomRepository,
         triggerRepository: dependencies.triggerRepository,
@@ -186,6 +189,7 @@ describe('LocalChat plugin', () => {
     it('sets department null on message when room has no department', async () => {
       const room = await roomRepository.create({ contact: contact._id, status: 'open' })
       const fullPlugin = new LocalChat(licensee, {
+        contactRepository,
         messageRepository,
         roomRepository,
         triggerRepository: dependencies.triggerRepository,

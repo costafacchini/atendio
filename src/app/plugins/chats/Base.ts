@@ -3,7 +3,7 @@ import { IMessageRepository } from '../../repositories/message'
 import { replace } from '../../helpers/Emoji'
 import { v4 as uuidv4 } from 'uuid'
 import { requireDependency } from '../../helpers/RequireDependency'
-import { ILicensee, IContact, IMessage, ITrigger, MessageKind, MessageDestination } from '../../../types'
+import { ILicensee, IInbox, IContact, IMessage, ITrigger, MessageKind, MessageDestination } from '../../../types'
 
 interface ITriggerRepository {
   findFirst(params?: Record<string, unknown>): Promise<ITrigger | null>
@@ -17,6 +17,7 @@ interface IChatPlugin {
 
 class ChatsBase implements IChatPlugin {
   licensee: ILicensee
+  inbox: IInbox | null
   _contactRepository: IRepository<IContact>
   _messageRepository: IMessageRepository
   _triggerRepository: ITriggerRepository
@@ -35,16 +36,19 @@ class ChatsBase implements IChatPlugin {
   constructor(
     licensee: ILicensee,
     {
+      inbox,
       contactRepository,
       messageRepository,
       triggerRepository,
     }: {
+      inbox?: IInbox | null
       contactRepository?: IRepository<IContact>
       messageRepository?: IMessageRepository
       triggerRepository?: ITriggerRepository
     } = {},
   ) {
     this.licensee = licensee
+    this.inbox = inbox ?? null
     this._contactRepository = contactRepository!
     this._messageRepository = messageRepository!
     this._triggerRepository = triggerRepository!

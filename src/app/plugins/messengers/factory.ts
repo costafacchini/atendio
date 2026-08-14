@@ -11,18 +11,19 @@ function createMessengerPlugin(
   dependencies: Record<string, unknown> = {},
   inbox: IInbox | null = null,
 ): IMessengerPlugin {
-  const plugin = inbox?.whatsappDefault || licensee.whatsappDefault
+  const plugin = inbox?.whatsappDefault
+  const deps = { ...dependencies, inbox }
   switch (plugin) {
     case 'utalk':
-      return new Utalk(licensee, dependencies)
+      return new Utalk(licensee, deps)
     case 'dialog':
-      return new Dialog(licensee, dependencies)
+      return new Dialog(licensee, deps)
     case 'ycloud':
-      return new YCloud(licensee, dependencies)
+      return new YCloud(licensee, deps)
     case 'pabbly':
-      return new Pabbly(licensee, dependencies)
+      return new Pabbly(licensee, deps)
     case 'baileys':
-      return new Baileys(licensee, { ...dependencies, inbox })
+      return new Baileys(licensee, deps)
     default:
       throw `Plugin de messenger não configurado: ${plugin}`
   }

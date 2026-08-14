@@ -1,6 +1,6 @@
 # Plan: Remove Plugin Fields from Licensee — Migrate to Inbox
 
-**Status**: not-started
+**Status**: complete
 **Created**: 2026-08-13
 **Last Updated**: 2026-08-13
 **Assigned Dev**: Alan Costa Facchini
@@ -46,12 +46,12 @@ Remove the 7 plugin fields (`chatDefault`, `chatUrl`, `chatKey`, `chatIdentifier
 
 | Task Path | Title | Phase | Status | Depends On |
 |-----------|-------|-------|--------|------------|
-| phase-1/task-01-admin-layer | Remove plugin fields from admin CRUD layer | 1 | not-started | — |
-| phase-1/task-02-frontend-forms | Remove ChatPanel + WhatsAppPanel from Licensee forms | 1 | not-started | — |
-| phase-2/task-03-baileys-use-cases | Migrate Baileys use cases to check inbox | 2 | not-started | phase-1/task-01-admin-layer |
-| phase-2/task-04-services-factories | Migrate services + factories to read from inbox | 2 | not-started | phase-1/task-01-admin-layer |
-| phase-2/task-05-frontend-ui | Fix Navbar + Dashboard gates to use inbox | 2 | not-started | phase-1/task-02-frontend-forms |
-| phase-3/task-06-schema-types | Drop 7 fields from Prisma schema + TS types | 3 | not-started | phase-2/task-03-baileys-use-cases, phase-2/task-04-services-factories, phase-2/task-05-frontend-ui |
+| phase-1/task-01-admin-layer | Remove plugin fields from admin CRUD layer | 1 | complete | — |
+| phase-1/task-02-frontend-forms | Remove ChatPanel + WhatsAppPanel from Licensee forms | 1 | complete | — |
+| phase-2/task-03-baileys-use-cases | Migrate Baileys use cases to check inbox | 2 | complete | phase-1/task-01-admin-layer |
+| phase-2/task-04-services-factories | Migrate services + factories to read from inbox | 2 | complete | phase-1/task-01-admin-layer |
+| phase-2/task-05-frontend-ui | Fix Navbar + Dashboard gates to use inbox | 2 | complete | phase-1/task-02-frontend-forms |
+| phase-3/task-06-schema-types | Drop 7 fields from Prisma schema + TS types | 3 | complete | phase-2/task-03-baileys-use-cases, phase-2/task-04-services-factories, phase-2/task-05-frontend-ui |
 
 ## Branch Convention
 

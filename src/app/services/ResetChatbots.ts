@@ -23,6 +23,7 @@ function getTimeLimit() {
 
 async function sendMessageToMessegner(
   licensee: any,
+  messengerInbox: any,
   contactId: any,
   text: any,
   { messageRepository, createMessengerPlugin }: Record<string, any> = {},
@@ -36,13 +37,17 @@ async function sendMessageToMessegner(
     destination: 'to-messenger',
   })
 
-  const messegnerPlugin = createMessengerPlugin(licensee)
-
-  await messegnerPlugin.sendMessage(messageToSend._id.toString(), licensee.whatsappUrl, licensee.whatsappToken)
+  const messegnerPlugin = createMessengerPlugin(licensee, { inbox: messengerInbox })
+  await messegnerPlugin.sendMessage(
+    messageToSend._id.toString(),
+    messengerInbox.whatsappUrl,
+    messengerInbox.whatsappToken,
+  )
 }
 
 async function resetChatbots({
   licenseeRepository,
+  inboxRepository,
   contactRepository,
   messageRepository,
   createChatbotPlugin,
@@ -50,6 +55,9 @@ async function resetChatbots({
 }: Record<string, any> = {}) {
   const licensees = await licenseeRepository.find({ useChatbot: true, chatbotApiToken: { $ne: null } })
   for (const licensee of licensees) {
+    const messengerInbox = await inboxRepository.findFirst({ licensee: licensee._id, kind: 'messenger' })
+    if (!messengerInbox) continue
+
     const contacts = (
       await contactRepository.find({
         licensee: licensee._id,
@@ -71,7 +79,7 @@ async function resetChatbots({
         await contactRepository.save(contact)
 
         if (licensee.messageOnResetChatbot && licensee.messageOnResetChatbot !== '') {
-          await sendMessageToMessegner(licensee, contact._id, licensee.messageOnResetChatbot, {
+          await sendMessageToMessegner(licensee, messengerInbox, contact._id, licensee.messageOnResetChatbot, {
             messageRepository,
             createMessengerPlugin,
           })

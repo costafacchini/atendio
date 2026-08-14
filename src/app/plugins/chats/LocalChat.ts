@@ -19,9 +19,11 @@ class LocalChat extends ChatsBase {
   }
 
   async sendMessage(messageId: string): Promise<void> {
-    const message = await this.messageRepository.findFirst({ _id: messageId }, ['contact'])
+    const message = await this.messageRepository.findFirst({ _id: messageId })
     if (!message) return
-    const messageContact = message.contact as IContact
+    const contactId = (message.contact as any)?._id ?? String(message.contact)
+    const messageContact = (await this.contactRepository.findFirst({ _id: contactId })) as IContact
+    if (!messageContact) return
 
     const roomRepo = this._roomRepository as any
     let room = await roomRepo.findOpenForContact(messageContact._id)
@@ -56,14 +58,20 @@ class LocalChat extends ChatsBase {
       return
     }
 
-    const room = await this._roomRepository.findFirst({ _id: body.roomId }, ['contact'])
+    const room = await this._roomRepository.findFirst({ _id: body.roomId })
     if (!room || room.closed) {
       this.messageParsed = null
       return
     }
 
+    const contact = await this.contactRepository.findFirst({ _id: room.contact })
+    if (!contact) {
+      this.messageParsed = null
+      return
+    }
+
     this.messageParsed = {
-      contact: room.contact,
+      contact,
       room,
       action: this.action(),
       messages: [{ kind: 'text', text: { body: body.text }, senderName: body.agentName ?? null }],

@@ -11,7 +11,7 @@ export interface IUser {
   active: boolean
   role: UserRole
   language: Language
-  licensee: Pick<ILicensee, 'id' | 'name' | 'chatDefault' | 'useDepartments'> | string | null
+  licensee: Pick<ILicensee, 'id' | 'name' | 'useDepartments'> | string | null
 }
 
 export interface IUserFilters {

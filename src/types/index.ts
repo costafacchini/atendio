@@ -68,13 +68,6 @@ export interface ILicensee {
   messageOnResetChatbot?: string
   messageOnCloseChat?: string
   chatbotAuthorizationToken?: string
-  whatsappDefault?: WhatsappDefault
-  whatsappToken?: string
-  whatsappUrl?: string
-  chatDefault?: ChatDefault
-  chatUrl?: string
-  chatKey?: string
-  chatIdentifier?: string
   unidadeId?: string
   statusId?: string
   useWhatsappWindow: boolean
