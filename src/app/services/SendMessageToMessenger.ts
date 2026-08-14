@@ -1,6 +1,12 @@
 async function sendMessageToMessenger(
   data: any,
-  { messageRepository, inboxRepository, licenseeRepository, contactRepository, createMessengerPlugin }: Record<string, any> = {},
+  {
+    messageRepository,
+    inboxRepository,
+    licenseeRepository,
+    contactRepository,
+    createMessengerPlugin,
+  }: Record<string, any> = {},
 ) {
   const { messageId, url, token } = data
   const message = await messageRepository.findFirst({ _id: messageId })

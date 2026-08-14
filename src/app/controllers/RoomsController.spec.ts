@@ -38,6 +38,7 @@ function buildController({
   const defaultContactRepository = {
     findFirst: jest.fn().mockResolvedValue(null),
     findIds: jest.fn().mockResolvedValue([]),
+    findByIds: jest.fn().mockResolvedValue([]),
   }
 
   const controller = new RoomsController({
@@ -274,7 +275,7 @@ describe('RoomsController', () => {
       await controller.create(req, res)
 
       expect(res.status).toHaveBeenCalledWith(200)
-      expect(res.json).toHaveBeenCalledWith({ room: existingRoom })
+      expect(res.json).toHaveBeenCalledWith({ room: expect.objectContaining(existingRoom) })
       expect(roomRepository.create).not.toHaveBeenCalled()
     })
 

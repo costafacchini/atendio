@@ -45,9 +45,12 @@ const sampleMessages = [
   { id: 'm1', kind: 'text', destination: 'to-chat', text: 'Hello', url: '', fileName: '', latitude: 0, longitude: 0, sended: true, error: null, cart: null, createdAt: '2026-06-17T10:00:00.000Z', contact: null, trigger: null, department: null },
 ]
 
+const singleInbox = { _id: 'ci1', name: 'Chat Inbox 1', kind: 'chat', inboxToken: 'tok-1', webhookUrl: null, active: true }
+
 describe('<ChatPage>', () => {
   beforeEach(() => {
-    (getInboxes as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [] })
+    // One inbox so activeInbox is auto-selected and getRooms is triggered
+    ;(getInboxes as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [singleInbox] })
   })
 
   it('calls getRooms on mount', async () => {
@@ -114,7 +117,7 @@ describe('<ChatPage> — Story 5: Nova conversa inbox picker', () => {
 
   // Story 5 / Scenario 1
   it('shows InboxPickerModal when licensee has more than one active chat inbox', async () => {
-    (getInboxes as ReturnType<typeof vi.fn>).mockResolvedValue(chatInboxes)
+    (getInboxes as ReturnType<typeof vi.fn>).mockResolvedValue({ data: chatInboxes })
 
     mount()
 
@@ -144,7 +147,7 @@ describe('<ChatPage> — Story 5: Nova conversa inbox picker', () => {
 
   // Story 5 / Scenario 3
   it('dismisses InboxPickerModal and opens NewConversationModal after inbox selection', async () => {
-    (getInboxes as ReturnType<typeof vi.fn>).mockResolvedValue(chatInboxes)
+    (getInboxes as ReturnType<typeof vi.fn>).mockResolvedValue({ data: chatInboxes })
 
     mount()
 
@@ -158,7 +161,7 @@ describe('<ChatPage> — Story 5: Nova conversa inbox picker', () => {
     fireEvent.click(screen.getByRole('button', { name: 'common.confirm' }))
 
     await waitFor(() => {
-      expect(screen.queryByText('Chat Inbox 1')).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'common.confirm' })).not.toBeInTheDocument()
     })
   })
 })
