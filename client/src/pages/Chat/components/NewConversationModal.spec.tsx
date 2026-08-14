@@ -63,7 +63,7 @@ describe('<NewConversationModal>', () => {
     fireEvent.click(screen.getByTestId('mock-select-contact'))
 
     await waitFor(() => {
-      expect(createRoom).toHaveBeenCalledWith('contact-id-1')
+      expect(createRoom).toHaveBeenCalledWith('contact-id-1', undefined)
     })
   })
 
