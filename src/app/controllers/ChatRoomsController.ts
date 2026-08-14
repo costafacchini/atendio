@@ -43,8 +43,14 @@ class ChatRoomsController {
         return res.status(404).json({ message: 'Conversa não encontrada ou encerrada.' })
       }
 
-      const contact = await this.contactRepository.findFirst({ _id: String((room as any).contact) })
-      const licenseeId = (contact?.licensee as any)?._id ?? contact?.licensee
+      const contactRaw = (room as any).contact
+      let licenseeId: any
+      if (contactRaw && typeof contactRaw === 'object') {
+        licenseeId = (contactRaw.licensee as any)?._id ?? contactRaw.licensee
+      } else {
+        const contact = await this.contactRepository.findFirst({ _id: String(contactRaw) })
+        licenseeId = (contact?.licensee as any)?._id ?? contact?.licensee
+      }
 
       const inboxId = (room as any).inbox ? String((room as any).inbox) : null
       const body = { roomId, text, agentId, agentName: user?.name ?? null }

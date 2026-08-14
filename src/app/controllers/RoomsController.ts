@@ -178,8 +178,14 @@ class RoomsController {
 
       if (user.role !== 'super') {
         const userLicenseeId = this._resolveLicenseeId(user)?.toString()
-        const contact = await this.contactRepository.findFirst({ _id: (room as any).contact })
-        const roomLicenseeId = (contact?.licensee as any)?._id?.toString() ?? contact?.licensee?.toString() ?? null
+        const contactRaw = (room as any).contact
+        let roomLicenseeId: string | null
+        if (contactRaw && typeof contactRaw === 'object') {
+          roomLicenseeId = (contactRaw.licensee as any)?._id?.toString() ?? contactRaw.licensee?.toString() ?? null
+        } else {
+          const contact = await this.contactRepository.findFirst({ _id: String(contactRaw) })
+          roomLicenseeId = (contact?.licensee as any)?._id?.toString() ?? contact?.licensee?.toString() ?? null
+        }
 
         if (userLicenseeId !== roomLicenseeId) {
           return res.status(403).json({ errors: { message: 'Forbidden' } })
@@ -211,8 +217,14 @@ class RoomsController {
 
       if (user.role !== 'super') {
         const userLicenseeId = this._resolveLicenseeId(user)?.toString()
-        const contact = await this.contactRepository.findFirst({ _id: (room as any).contact })
-        const roomLicenseeId = (contact?.licensee as any)?._id?.toString() ?? contact?.licensee?.toString() ?? null
+        const contactRaw = (room as any).contact
+        let roomLicenseeId: string | null
+        if (contactRaw && typeof contactRaw === 'object') {
+          roomLicenseeId = (contactRaw.licensee as any)?._id?.toString() ?? contactRaw.licensee?.toString() ?? null
+        } else {
+          const contact = await this.contactRepository.findFirst({ _id: String(contactRaw) })
+          roomLicenseeId = (contact?.licensee as any)?._id?.toString() ?? contact?.licensee?.toString() ?? null
+        }
         if (userLicenseeId !== roomLicenseeId) {
           return res.status(403).json({ errors: { message: 'Forbidden' } })
         }
