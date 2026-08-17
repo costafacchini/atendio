@@ -133,7 +133,7 @@ describe('CreateMessage', () => {
         text: 'Hello',
       })
 
-      expect(jobQueue.addJob).toHaveBeenCalledWith('send-message-to-messenger', { messageId: message._id })
+      expect(jobQueue.addJob).toHaveBeenCalledWith('send-message-to-messenger', { messageId: message._id }, {})
     })
 
     it.each([['to-chat'], ['to-chatbot'], ['to-transfer']])(

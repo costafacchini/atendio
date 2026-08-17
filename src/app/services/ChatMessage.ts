@@ -63,6 +63,7 @@ async function transformChatBody(
       messageId: message._id,
       contactId,
       licenseeId: licensee._id,
+      kind: message.kind,
       url: inbox.whatsappUrl,
       token: inbox.whatsappToken,
     }

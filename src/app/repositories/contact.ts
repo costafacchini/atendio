@@ -221,6 +221,15 @@ class PrismaContactDatabaseRepository extends PrismaRepository<IContact> {
     })
   }
 
+  async getContactByNumber(number: any, licenseeId: any) {
+    const normalizedPhone = new NormalizePhone(number)
+    return await this.findFirst({
+      number: normalizedPhone.number,
+      licensee: licenseeId,
+      type: normalizedPhone.type,
+    })
+  }
+
   private normalizeNumber<F extends Partial<IContact>>(fields: F): F {
     const number = fields.number as string | undefined
     if (!number) return fields

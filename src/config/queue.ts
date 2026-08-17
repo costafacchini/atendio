@@ -3,8 +3,13 @@ import { redisConnection } from './redis'
 
 import jobs from '../app/jobs/index'
 
+export interface JobOptions {
+  attempts?: number
+  backoff?: { type: string; delay: number }
+}
+
 export interface IQueueServer {
-  addJob(name: string, data: Record<string, unknown>): Promise<unknown>
+  addJob(name: string, data: Record<string, unknown>, options?: JobOptions): Promise<unknown>
 }
 
 const queueOptions = {
@@ -36,12 +41,12 @@ class QueueServer implements IQueueServer {
     }))
   }
 
-  async addJob(name: string, body: Record<string, unknown>) {
+  async addJob(name: string, body: Record<string, unknown>, options: JobOptions = {}) {
     const queue = this.queues.find((queue) => queue.name === name)
 
     if (!queue) return null
 
-    return await queue.bull.add(name, { body }, { attempts: 1 })
+    return await queue.bull.add(name, { body }, { attempts: 1, ...options })
   }
 }
 

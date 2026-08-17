@@ -250,6 +250,10 @@ class PrismaMessageDatabaseRepository extends PrismaRepository<IMessage> {
     return ['licensee', 'contact', 'room', 'department', 'inbox', 'trigger']
   }
 
+  async create(fields: Partial<IMessage> = {}): Promise<IMessage> {
+    return await super.create({ number: uuidv4(), ...(fields ?? {}) })
+  }
+
   // Cart was removed by the remove-pdv plan; strip it from the payload if somehow still present.
   protected toData(fields: any = {}): Record<string, unknown> {
     const result = super.toData(fields)

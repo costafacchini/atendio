@@ -93,7 +93,7 @@ const messagesController = new MessagesController({
   userRepository,
   messageRepository,
   queueServer,
-  createMessage: new CreateMessage({ messageRepository, contactRepository, jobQueue: queueServer }),
+  createMessage: new CreateMessage({ messageRepository, contactRepository, roomRepository, jobQueue: queueServer }),
 })
 const departmentsController = new DepartmentsController({
   departmentRepository,
