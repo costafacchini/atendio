@@ -184,6 +184,7 @@ describe('transformChatBody', () => {
       messageId: 'KSDF656DSD91NSE',
       licenseeId: licensee._id,
       contactId: 'id-contact-1',
+      kind: 'template',
       url: 'https://waba.360dialog.io/',
       token: 'token',
     })

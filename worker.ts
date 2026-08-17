@@ -28,8 +28,12 @@ queuesWithWorkerEnabled.forEach((queue) => {
       if (handleResult) {
         for (const actionJob of handleResult) {
           const { action, body } = actionJob
+          const options =
+            action === 'send-message-to-messenger' && body.kind === 'file'
+              ? { attempts: 3, backoff: { type: 'exponential', delay: 3000 } }
+              : {}
 
-          await queueServer.addJob(action, body)
+          await queueServer.addJob(action, body, options)
         }
       }
     },

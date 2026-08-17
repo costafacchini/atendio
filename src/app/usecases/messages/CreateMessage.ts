@@ -24,10 +24,16 @@ interface ContactRepository extends IRepository<IContact> {
   getContactByNumber(phone: string, licenseeId: string): Promise<IContact | null>
 }
 
+interface RoomRepository {
+  findOpenForContact(contactId: any): Promise<{ _id: any } | null>
+  create(fields: Record<string, any>): Promise<{ _id: any }>
+}
+
 interface CreateMessageDeps {
   messageRepository: IRepository<IMessage>
   contactRepository: ContactRepository
   jobQueue: IQueueServer
+  roomRepository?: RoomRepository
 }
 
 function pickFields(fields: Record<string, any> = {}, keys: string[] = []) {
@@ -43,11 +49,13 @@ class CreateMessage {
   messageRepository: IRepository<IMessage>
   contactRepository: ContactRepository
   jobQueue: IQueueServer
+  roomRepository?: RoomRepository
 
-  constructor({ messageRepository, contactRepository, jobQueue }: CreateMessageDeps) {
+  constructor({ messageRepository, contactRepository, jobQueue, roomRepository }: CreateMessageDeps) {
     this.messageRepository = messageRepository
     this.contactRepository = contactRepository
     this.jobQueue = jobQueue
+    this.roomRepository = roomRepository
   }
 
   async execute(fields: Record<string, any> = {}): Promise<IMessage> {
@@ -67,10 +75,19 @@ class CreateMessage {
 
     delete payload.phone
 
+    if (payload.destination === 'to-messenger' && payload.contact && this.roomRepository) {
+      let room = await this.roomRepository.findOpenForContact(payload.contact)
+      if (!room) {
+        room = await this.roomRepository.create({ contact: payload.contact, status: 'pending' })
+      }
+      payload.room = room._id
+    }
+
     const message = await this.messageRepository.create(payload)
 
     if (message.destination === 'to-messenger') {
-      await this.jobQueue.addJob(SEND_MESSAGE_TO_MESSENGER_JOB, { messageId: message._id })
+      const options = message.kind === 'file' ? { attempts: 3, backoff: { type: 'exponential', delay: 3000 } } : {}
+      await this.jobQueue.addJob(SEND_MESSAGE_TO_MESSENGER_JOB, { messageId: message._id }, options)
     }
 
     return message
