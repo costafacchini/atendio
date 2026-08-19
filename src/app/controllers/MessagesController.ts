@@ -39,47 +39,51 @@ class MessagesController {
   }
 
   async index(req: Request, res: Response) {
-    const page = req.query.page || 1
-    const limit = req.query.limit || 30
+    try {
+      const page = parseInt(req.query.page as string, 10) || 1
+      const limit = parseInt(req.query.limit as string, 10) || 30
 
-    const user = await this.userRepository.findFirst({ _id: req.userId })
+      const user = await this.userRepository.findFirst({ _id: req.userId })
 
-    if (user && user.role !== 'super') {
-      req.query.licensee = user.licensee?.toString()
+      if (user && user.role !== 'super') {
+        req.query.licensee = user.licensee?.toString()
+      }
+
+      const messagesQuery = this.createMessagesQuery()
+
+      messagesQuery.page(page)
+      messagesQuery.limit(limit)
+
+      if (req.query.startDate && req.query.endDate) {
+        messagesQuery.filterByCreatedAt(new Date(req.query.startDate as string), new Date(req.query.endDate as string))
+      }
+
+      if (req.query.licensee) {
+        messagesQuery.filterByLicensee(req.query.licensee as string)
+      }
+
+      if (req.query.contact) {
+        messagesQuery.filterByContact(req.query.contact as string)
+      }
+
+      if (req.query.kind) {
+        messagesQuery.filterByKind(req.query.kind as string)
+      }
+
+      if (req.query.destination) {
+        messagesQuery.filterByDestination(req.query.destination as string)
+      }
+
+      if (req.query.sended) {
+        messagesQuery.filterBySended(req.query.sended === 'true')
+      }
+
+      const messages = await messagesQuery.all()
+
+      res.status(200).send(messages)
+    } catch (err: any) {
+      return res.status(500).send({ errors: { message: `Erro interno do servidor: ${err.message}` } })
     }
-
-    const messagesQuery = this.createMessagesQuery()
-
-    messagesQuery.page(page as number)
-    messagesQuery.limit(limit as number)
-
-    if (req.query.startDate && req.query.endDate) {
-      messagesQuery.filterByCreatedAt(new Date(req.query.startDate as string), new Date(req.query.endDate as string))
-    }
-
-    if (req.query.licensee) {
-      messagesQuery.filterByLicensee(req.query.licensee as string)
-    }
-
-    if (req.query.contact) {
-      messagesQuery.filterByContact(req.query.contact as string)
-    }
-
-    if (req.query.kind) {
-      messagesQuery.filterByKind(req.query.kind as string)
-    }
-
-    if (req.query.destination) {
-      messagesQuery.filterByDestination(req.query.destination as string)
-    }
-
-    if (req.query.sended) {
-      messagesQuery.filterBySended(req.query.sended === 'true')
-    }
-
-    const messages = await messagesQuery.all()
-
-    res.status(200).send(messages)
   }
 
   async create(req: Request, res: Response) {

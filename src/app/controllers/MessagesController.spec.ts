@@ -49,8 +49,8 @@ describe('MessagesController delegation', () => {
 
     await controller.index(req, res)
 
-    expect(messagesQueryInstance.page).toHaveBeenCalledWith('1')
-    expect(messagesQueryInstance.limit).toHaveBeenCalledWith('10')
+    expect(messagesQueryInstance.page).toHaveBeenCalledWith(1)
+    expect(messagesQueryInstance.limit).toHaveBeenCalledWith(10)
     expect(messagesQueryInstance.filterByDestination).toHaveBeenCalledWith('to-chat')
     expect(messagesQueryInstance.filterByKind).toHaveBeenCalledWith('text')
     expect(messagesQueryInstance.filterBySended).toHaveBeenCalledWith(true)
