@@ -1377,29 +1377,29 @@
   resolved "https://registry.yarnpkg.com/@borewit/text-codec/-/text-codec-0.2.2.tgz#75025f735c0983b3a871668804a57387e3649375"
   integrity sha512-DDaRehssg1aNrH4+2hnj1B7vnUGEjU6OIlyRdkMd0aUdIUvKXrJfXsy8LVtXAy7DRvYVluWbMspsRhz2lcW0mQ==
 
-"@bull-board/api@9.2.0", "@bull-board/api@^9.0.0":
-  version "9.2.0"
-  resolved "https://registry.yarnpkg.com/@bull-board/api/-/api-9.2.0.tgz#b1ff05706942bdae418caaffbe77066fb9950497"
-  integrity sha512-xrt/oUFP3lixjQW5MSAw1wY60ek9gYQu2LtLWminlNp/Crn8XrM6zCk9ibfHRV/SlJkxfqaEmOkjMAYeDKEB5g==
+"@bull-board/api@9.3.2", "@bull-board/api@^9.0.0":
+  version "9.3.2"
+  resolved "https://registry.yarnpkg.com/@bull-board/api/-/api-9.3.2.tgz#142a366458117c6b3a36602e30cc5070ea51311b"
+  integrity sha512-VVfSozBRTjuwFPbns8/t+0rIogiG6j6US9bACQPqJzSEbbbucRFyZIIszwPJHNEe2F+c2TJrMHpipS20YjhgXA==
   dependencies:
     redis-info "^3.1.0"
 
 "@bull-board/express@^9.0.0":
-  version "9.2.0"
-  resolved "https://registry.yarnpkg.com/@bull-board/express/-/express-9.2.0.tgz#e60bd73f9036108b8e12866705960a95fa9e0518"
-  integrity sha512-T37n9x7bdGXy4njeAeUdXPluMM5GJELH+JWx0TVcGFLKcwOgHV4EAmen669v2aeqvG79rOToU5RIGCrWfSCSNQ==
+  version "9.3.2"
+  resolved "https://registry.yarnpkg.com/@bull-board/express/-/express-9.3.2.tgz#4b1ab7a2510db856574689954dd925abcebf82be"
+  integrity sha512-vKAKyUzyq4DgpE7200sM0S2cCuYBy+Kt3aXCv8E7pu/lX1zftVps2CiKA6jtkXB1Eg+bFZorTGcAZvo87MAibg==
   dependencies:
-    "@bull-board/api" "9.2.0"
-    "@bull-board/ui" "9.2.0"
+    "@bull-board/api" "9.3.2"
+    "@bull-board/ui" "9.3.2"
     ejs "^6.0.1"
     express "^5.2.1"
 
-"@bull-board/ui@9.2.0", "@bull-board/ui@^9.0.0":
-  version "9.2.0"
-  resolved "https://registry.yarnpkg.com/@bull-board/ui/-/ui-9.2.0.tgz#1c9298f2ce5b75f45a8a3d9ef0bbeb6c2dbe2fe1"
-  integrity sha512-jhFYk1m0i4/GRjkFoZkZIF15lhBnvGCwtds7TD5YEdD6EojxAefAXVsTAzyDxrA/tghO7K1h5TG3QYxGAaAp8Q==
+"@bull-board/ui@9.3.2", "@bull-board/ui@^9.0.0":
+  version "9.3.2"
+  resolved "https://registry.yarnpkg.com/@bull-board/ui/-/ui-9.3.2.tgz#e5fffe0eb4197c077682f5d4c8a05dcbe7239268"
+  integrity sha512-NRU/Vv9N8IqxXSroFGulyH08euPCOv+b556F1S6T/aHEjXND822b0T4/agCZ12smMsIf6siGPlCa1+oWO36RKw==
   dependencies:
-    "@bull-board/api" "9.2.0"
+    "@bull-board/api" "9.3.2"
 
 "@cacheable/memory@^2.2.0":
   version "2.2.0"
@@ -4907,9 +4907,9 @@ content-type@^1.0.5:
   integrity sha512-nTjqfcBFEipKdXCv4YDQWCfmcLZKm81ldF0pAopTvyrFGVbcR6P/VAAd5G7N+0tTr8QqiU0tFadD6FK4NtJwOA==
 
 content-type@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/content-type/-/content-type-2.0.0.tgz#2fb3ede69dffa0af78ca7c4ce7589680638b56df"
-  integrity sha512-j/O/d7GcZCyNl7/hwZAb606rzqkyvaDctLmckbxLzHvFBzTJHuGEdodATcP3yIRoDrLHkIATJuvzbFlp/ki2cQ==
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/content-type/-/content-type-2.1.0.tgz#d9389c43c0a8cf6a355db464d21e07092a40493a"
+  integrity sha512-mj7UPXE0jaqaOsukNZRUEfEi2AcL7C/vwmwcHV0O97eO1E1pxBZuyjlZrx5seTaNBg1U6+o35wpa35Qfcc+7ag==
 
 convert-source-map@^2.0.0:
   version "2.0.0"
