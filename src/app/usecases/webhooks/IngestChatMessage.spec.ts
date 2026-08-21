@@ -64,6 +64,12 @@ describe('IngestChatMessage', () => {
     )
   })
 
+  // --- schedule-message plan: Scenario 6 ---
+  it.todo('forwards delay to addJob when delay is provided')
+
+  // --- schedule-message plan: additional ---
+  it.todo('calls addJob without delay option when delay is not provided')
+
   it('saves null inbox on Body record when inboxId is not provided', async () => {
     const chatRepository = new BodyRepositoryMemory()
     const jobQueue = {
