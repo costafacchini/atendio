@@ -107,6 +107,9 @@ describe('<ConversationPanel>', () => {
     expect(screen.queryByRole('button', { name: 'chat.concludeAriaLabel' })).not.toBeInTheDocument()
   })
 
+  // --- schedule-message plan: Scenario 3 (component level) ---
+  it.todo('delegates onSchedule to MessageInput when prop is provided')
+
   it('disables message input when room is closed', () => {
     const closedRoom = { ...room, status: 'closed' as const, closed: true }
     render(<ConversationPanel room={closedRoom} messages={[]} onSend={vi.fn()} onBack={vi.fn()} onClose={vi.fn()} />)

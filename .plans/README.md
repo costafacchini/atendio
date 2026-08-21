@@ -26,6 +26,7 @@ Git-native Markdown plans for multi-step work.
 | 3 | [Backend Type Narrowing](./type-backend/overview.md) | `type-backend/` | not-started | Replace `any` with interfaces across models, repositories, use cases, controllers, and plugins — 3 phases, 11 tasks |
 | 5 | [Ecomanda Fly.io Deploy](./ecomanda-flyio/overview.md) | `ecomanda-flyio/` | not-started | Deploy on Fly.io single 1 GB VM (server + worker), replacing Heroku — 3 phases, 4 tasks |
 | 6 | [Remove Plugin Fields from Licensee](./licensee-plugin-fields-to-inbox/overview.md) | `licensee-plugin-fields-to-inbox/` | not-started | Remove 7 plugin fields from Licensee model; migrate all consumers (services, use cases, UI gates, factories) to read from Inbox instead — 3 phases, 6 tasks |
+| 7 | [Schedule Message](./schedule-message/overview.md) | `schedule-message/` | not-started | Allow agents to schedule a Chat message for future delivery via BullMQ delay — 3 phases, 7 tasks |
 
 ---
 
