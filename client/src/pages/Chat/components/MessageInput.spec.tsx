@@ -39,19 +39,70 @@ describe('<MessageInput>', () => {
   })
 
   // --- schedule-message plan: Scenario 1 ---
-  it.todo('shows datetime picker when clock button is clicked')
+  it('shows datetime picker when clock button is clicked', () => {
+    render(<MessageInput onSend={vi.fn()} onSchedule={vi.fn()} />)
+
+    expect(screen.queryByLabelText('chat.scheduleDateAriaLabel')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'chat.scheduleToggleAriaLabel' }))
+
+    expect(screen.getByLabelText('chat.scheduleDateAriaLabel')).toBeInTheDocument()
+  })
 
   // --- schedule-message plan: Scenario 2 ---
-  it.todo('disables Agendar button when selected datetime is in the past')
+  it('disables Agendar button when selected datetime is in the past', () => {
+    render(<MessageInput onSend={vi.fn()} onSchedule={vi.fn()} />)
+
+    fireEvent.change(screen.getByPlaceholderText('chat.messagePlaceholder'), { target: { value: 'Olá' } })
+    fireEvent.click(screen.getByRole('button', { name: 'chat.scheduleToggleAriaLabel' }))
+
+    fireEvent.change(screen.getByLabelText('chat.scheduleDateAriaLabel'), {
+      target: { value: '2000-01-01T00:00' },
+    })
+
+    expect(screen.getByRole('button', { name: 'chat.scheduleSubmitLabel' })).toBeDisabled()
+  })
 
   // --- schedule-message plan: Scenario 3 ---
-  it.todo('calls onSchedule with ISO scheduledAt when datetime is valid and future')
+  it('calls onSchedule with ISO scheduledAt when datetime is valid and future', () => {
+    const handleSchedule = vi.fn()
+    render(<MessageInput onSend={vi.fn()} onSchedule={handleSchedule} />)
+
+    fireEvent.change(screen.getByPlaceholderText('chat.messagePlaceholder'), { target: { value: 'Agendada' } })
+    fireEvent.click(screen.getByRole('button', { name: 'chat.scheduleToggleAriaLabel' }))
+
+    const futureDate = new Date(Date.now() + 60 * 60 * 1000)
+    const localValue = futureDate.toISOString().slice(0, 16)
+    fireEvent.change(screen.getByLabelText('chat.scheduleDateAriaLabel'), { target: { value: localValue } })
+
+    fireEvent.click(screen.getByRole('button', { name: 'chat.scheduleSubmitLabel' }))
+
+    expect(handleSchedule).toHaveBeenCalledWith('Agendada', expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/))
+  })
 
   // --- schedule-message plan: Scenario 7 ---
-  it.todo('clears text and hides picker after onSchedule is called')
+  it('clears text and hides picker after onSchedule is called', () => {
+    render(<MessageInput onSend={vi.fn()} onSchedule={vi.fn()} />)
+
+    fireEvent.change(screen.getByPlaceholderText('chat.messagePlaceholder'), { target: { value: 'Msg' } })
+    fireEvent.click(screen.getByRole('button', { name: 'chat.scheduleToggleAriaLabel' }))
+
+    const futureDate = new Date(Date.now() + 60 * 60 * 1000)
+    const localValue = futureDate.toISOString().slice(0, 16)
+    fireEvent.change(screen.getByLabelText('chat.scheduleDateAriaLabel'), { target: { value: localValue } })
+
+    fireEvent.click(screen.getByRole('button', { name: 'chat.scheduleSubmitLabel' }))
+
+    expect(screen.getByPlaceholderText('chat.messagePlaceholder')).toHaveValue('')
+    expect(screen.queryByLabelText('chat.scheduleDateAriaLabel')).not.toBeInTheDocument()
+  })
 
   // --- schedule-message plan: additional ---
-  it.todo('does not render clock button when onSchedule prop is absent')
+  it('does not render clock button when onSchedule prop is absent', () => {
+    render(<MessageInput onSend={vi.fn()} />)
+
+    expect(screen.queryByRole('button', { name: 'chat.scheduleToggleAriaLabel' })).not.toBeInTheDocument()
+  })
 
   it('input and button are disabled when disabled=true', () => {
     render(<MessageInput onSend={vi.fn()} disabled />)
