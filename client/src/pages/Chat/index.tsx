@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../../contexts/App'
 import { getRooms, getRoomMessages, sendRoomMessage, closeRoom } from '../../services/rooms'
+import { scheduleMessage, ignoreMessage } from '../../services/message'
 import { getInboxes } from '../../services/inbox'
 import type { IRoom, IMessage } from '../../types'
 import type { IInbox } from '../../types/inbox'
@@ -115,6 +116,32 @@ export default function ChatPage() {
     }
   }
 
+  async function handleSchedule(text: string, scheduledAt: string) {
+    if (!selectedRoom || !effectiveLicenseeId) return
+    try {
+      await scheduleMessage({
+        licensee: effectiveLicenseeId,
+        contact: selectedRoom.contact._id,
+        destination: 'to-messenger',
+        kind: 'text',
+        text,
+        scheduledAt,
+      })
+      loadMessages(selectedRoom._id)
+    } catch {
+      // silent — MessageInput already cleared; a toast can be added later
+    }
+  }
+
+  async function handleCancelScheduled(messageId: string) {
+    try {
+      await ignoreMessage(messageId)
+      setMessages(prev => prev.filter(m => m.id !== messageId))
+    } catch {
+      // silent
+    }
+  }
+
   useChatSocket(effectiveLicenseeId, ({ roomId, messageId, text, kind, destination, createdAt, sended, contact }) => {
     const ts = createdAt ?? new Date().toISOString()
 
@@ -226,6 +253,8 @@ export default function ChatPage() {
             room={selectedRoom}
             messages={messages}
             onSend={handleSend}
+            onSchedule={handleSchedule}
+            onCancelScheduled={handleCancelScheduled}
             loading={messagesLoading}
             onBack={handleBack}
             onClose={handleClose}
