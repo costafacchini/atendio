@@ -11,6 +11,7 @@ async function sendMessageToMessenger(
   const { messageId, url, token } = data
   const message = await messageRepository.findFirst({ _id: messageId })
   if (!message) return
+  if (message.sended) return
   const [licensee, contact] = await Promise.all([
     licenseeRepository.findFirst({ _id: message.licensee }),
     message.contact ? contactRepository.findFirst({ _id: message.contact }) : null,

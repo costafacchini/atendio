@@ -54,6 +54,7 @@ describe('sendMessageToChat', () => {
         contact,
         licensee,
         destination: 'to-chat',
+        sended: false,
         _id: '609dcb059f560046cde64748',
       }),
     )
@@ -67,5 +68,24 @@ describe('sendMessageToChat', () => {
     await sendMessageToChat(data, dependencies)
 
     expect(rocketchatSendMessageSpy).toHaveBeenCalledWith('609dcb059f560046cde64748', 'https://messenger.url')
+  })
+
+  it('returns early without sending when message is already sended (approach C idempotency)', async () => {
+    const licenseeRepository = new LicenseeRepositoryDatabase()
+    const licensee = await licenseeRepository.create(licenseeFactory.build())
+
+    const messageRepository = new MessageRepositoryDatabase()
+    await messageRepository.create(
+      messageFactory.build({
+        licensee,
+        destination: 'to-chat',
+        sended: true,
+        _id: '609dcb059f560046cde64749',
+      }),
+    )
+
+    await sendMessageToChat({ messageId: '609dcb059f560046cde64749' }, dependencies)
+
+    expect(rocketchatSendMessageSpy).not.toHaveBeenCalled()
   })
 })
