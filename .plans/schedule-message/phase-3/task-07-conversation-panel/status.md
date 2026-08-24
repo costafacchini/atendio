@@ -1,4 +1,4 @@
-# Status: Add `delay` to JobOptions & QueueServer
+# Status: Clock Indicator + onSchedule in ConversationPanel
 
 **Current Status**: not-started
 **Last Updated**: 2026-08-24

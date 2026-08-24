@@ -1,7 +1,7 @@
-# Status: Thread delay through IngestChatMessage
+# Status: Prisma Migration + IMessage Type
 
 **Current Status**: not-started
-**Last Updated**: 2026-08-21
+**Last Updated**: 2026-08-24
 **Agent**: —
 **Branch**: —
 **PR**: —
@@ -10,16 +10,13 @@
 
 | Timestamp | Status | Agent | Notes |
 |-----------|--------|-------|-------|
-| 2026-08-21 | not-started | — | Task created |
+| 2026-08-24 | not-started | — | Task created (plan revised) |
 
 ## Blockers
-
 None
 
 ## Artifacts
-
 None
 
 ## Adaptations
-
 None

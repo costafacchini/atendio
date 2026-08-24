@@ -75,13 +75,7 @@ describe('ChatRoomsController', () => {
       expect(res.status).toHaveBeenCalledWith(200)
     })
 
-    // --- schedule-message plan: Scenario 4 ---
-    it.todo('calls ingestChatMessage.execute with delay when scheduledAt is valid and future')
-
-    // --- schedule-message plan: Scenario 5 ---
-    it.todo('returns 422 when scheduledAt is in the past')
-
-    // --- schedule-message plan: additional ---
-    it.todo('returns 422 when scheduledAt is an invalid date string')
+    // schedule-message plan moved scheduledAt handling to CreateMessage usecase (POST /resources/messages)
+    // No scheduled-message stubs needed here.
   })
 })
