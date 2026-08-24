@@ -1,6 +1,6 @@
 # Plan: Schedule Message for Future Delivery
 
-**Status**: not-started
+**Status**: complete
 **Created**: 2026-08-21
 **Last Updated**: 2026-08-24
 **Assigned Dev**: Alan Costa Facchini
