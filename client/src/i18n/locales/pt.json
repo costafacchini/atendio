@@ -665,6 +665,8 @@
     "scheduleToggleAriaLabel": "Agendar envio",
     "scheduleDateAriaLabel": "Data e hora do agendamento",
     "scheduleSubmitLabel": "Agendar",
+    "scheduledFor": "Agendado para {{time}}",
+    "cancelScheduledAriaLabel": "Cancelar agendamento",
     "newConversationModalTitle": "Nova conversa",
     "selectContactLabel": "Selecione um contato",
     "closeModalAriaLabel": "Fechar",

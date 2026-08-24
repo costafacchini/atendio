@@ -701,6 +701,40 @@ $t-slide:           300ms $ease-out-quart;
   }
 }
 
+.scheduledBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: $muted;
+  margin-top: 4px;
+  padding: 2px 8px;
+
+  i { font-size: 0.75rem; }
+}
+
+.cancelScheduledBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: $muted;
+  font-size: 0.875rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 2px;
+  transition: color $t-fast;
+
+  &:hover {
+    color: $primary;
+  }
+}
+
 .clockBtn {
   display: inline-flex;
   align-items: center;

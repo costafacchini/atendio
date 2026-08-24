@@ -665,6 +665,8 @@
     "scheduleToggleAriaLabel": "Schedule send",
     "scheduleDateAriaLabel": "Scheduled date and time",
     "scheduleSubmitLabel": "Schedule",
+    "scheduledFor": "Scheduled for {{time}}",
+    "cancelScheduledAriaLabel": "Cancel scheduled message",
     "newConversationModalTitle": "New conversation",
     "selectContactLabel": "Select a contact",
     "closeModalAriaLabel": "Close",
