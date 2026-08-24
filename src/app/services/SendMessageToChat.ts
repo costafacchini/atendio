@@ -5,6 +5,7 @@ async function sendMessageToChat(
   const { messageId, url } = data
   const message = await messageRepository.findFirst({ _id: messageId })
   if (!message) return
+  if (message.sended) return
   const licensee = await licenseeRepository.findFirst({ _id: message.licensee })
   if (!licensee) return
 
