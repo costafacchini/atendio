@@ -47,7 +47,7 @@ Allow agents to schedule a message via `POST /resources/messages` with a `schedu
 
 | Task Path | Title | Phase | Status | Depends On |
 |-----------|-------|-------|--------|------------|
-| phase-1/task-01-queue-delay | Add `delay` to JobOptions & QueueServer | 1 | not-started | — |
+| phase-1/task-01-queue-delay | Add `delay` to JobOptions & QueueServer | 1 | complete | — |
 | phase-1/task-02-schema | Prisma migration + IMessage type | 1 | complete | — |
 | phase-2/task-03-create-message | Extend CreateMessage with scheduledAt | 2 | not-started | phase-1/task-01-queue-delay, phase-1/task-02-schema |
 | phase-2/task-04-worker-recovery | Worker startup recovery | 2 | not-started | phase-1/task-02-schema |

@@ -6,6 +6,7 @@ import jobs from '../app/jobs/index'
 export interface JobOptions {
   attempts?: number
   backoff?: { type: string; delay: number }
+  delay?: number
 }
 
 export interface IQueueServer {
