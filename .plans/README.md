@@ -22,11 +22,8 @@ Git-native Markdown plans for multi-step work.
 
 | # | Plan | Folder | Status | Description |
 |---|------|--------|--------|-------------|
-| 2 | [MongoDB → PostgreSQL](./mongo-to-postgres/overview.md) | `mongo-to-postgres/` | not-started | Migrate all persistent data from MongoDB/Mongoose to PostgreSQL/Prisma using dual-write strategy; prerequisite: remove-pdv complete |
-| 3 | [Backend Type Narrowing](./type-backend/overview.md) | `type-backend/` | not-started | Replace `any` with interfaces across models, repositories, use cases, controllers, and plugins — 3 phases, 11 tasks |
 | 5 | [Ecomanda Fly.io Deploy](./ecomanda-flyio/overview.md) | `ecomanda-flyio/` | not-started | Deploy on Fly.io single 1 GB VM (server + worker), replacing Heroku — 3 phases, 4 tasks |
-| 6 | [Remove Plugin Fields from Licensee](./licensee-plugin-fields-to-inbox/overview.md) | `licensee-plugin-fields-to-inbox/` | not-started | Remove 7 plugin fields from Licensee model; migrate all consumers (services, use cases, UI gates, factories) to read from Inbox instead — 3 phases, 6 tasks |
-| 7 | [Schedule Message](./schedule-message/overview.md) | `schedule-message/` | not-started | Allow agents to schedule a Chat message for future delivery via BullMQ delay — 3 phases, 7 tasks |
+| 7 | [Schedule Message](./schedule-message/overview.md) | `schedule-message/` | not-started | Allow agents to schedule a Chat message for future delivery via BullMQ delay — 3 phases, 8 tasks |
 
 ---
 
@@ -57,6 +54,9 @@ Git-native Markdown plans for multi-step work.
 | 19 | [Inbox Concept](./inbox-concept/overview.md) | `inbox-concept/` | 2026-07-25 | Inbox entity so licensees can operate multiple WhatsApp numbers and chat instances independently; departments link to messenger inboxes — 4 phases, 7 tasks |
 | 20 | [Ecomanda Docker](./ecomanda-docker/overview.md) | `ecomanda-docker/` | 2026-07-25 | Dockerfile, local dev docker-compose, and LocalStorage provider as S3 alternative — 2 phases, 4 tasks |
 | 21 | [Prisma Dashboard & Rooms Migration](./prisma-dashboard-rooms/overview.md) | `prisma-dashboard-rooms/` | 2026-08-12 | Replace Mongoose .model() API in DashboardController and RoomsController with Prisma/PostgreSQL repository methods — 2 phases, 6 tasks |
+| 22 | [MongoDB → PostgreSQL](./mongo-to-postgres/overview.md) | `mongo-to-postgres/` | 2026-08-08 | Migrate all persistent data from MongoDB/Mongoose to PostgreSQL/Prisma using dual-write strategy |
+| 23 | [Backend Type Narrowing](./type-backend/overview.md) | `type-backend/` | 2026-08-07 | Replace `any` with interfaces across models, repositories, use cases, controllers, and plugins — 3 phases, 11 tasks |
+| 24 | [Remove Plugin Fields from Licensee](./licensee-plugin-fields-to-inbox/overview.md) | `licensee-plugin-fields-to-inbox/` | 2026-08-13 | Remove 7 plugin fields from Licensee model; migrate all consumers to read from Inbox instead — 3 phases, 6 tasks |
 
 ---
 
