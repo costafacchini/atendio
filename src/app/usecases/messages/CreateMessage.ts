@@ -1,6 +1,6 @@
 import { IRepository } from '@repositories/repository'
 import { IMessage, IContact } from '../../../types'
-import { IQueueServer } from '@config/queue'
+import { IQueueServer, JobOptions } from '@config/queue'
 
 const CREATE_MESSAGE_FIELDS = [
   'licensee',
@@ -16,6 +16,7 @@ const CREATE_MESSAGE_FIELDS = [
   'fromMe',
   'senderName',
   'departament',
+  'scheduledAt',
 ]
 
 const SEND_MESSAGE_TO_MESSENGER_JOB = 'send-message-to-messenger'
@@ -85,9 +86,29 @@ class CreateMessage {
 
     const message = await this.messageRepository.create(payload)
 
+    let delay: number | undefined
+    if (message.scheduledAt) {
+      const ms = new Date(message.scheduledAt).getTime() - Date.now()
+      if (ms <= 0) {
+        throw Object.assign(new Error('Validation failed'), {
+          errors: { scheduledAt: { message: 'must be a future datetime' } },
+        })
+      }
+      delay = ms
+    }
+
+    const messengerOptions: JobOptions = {}
+    if (message.kind === 'file') {
+      messengerOptions.attempts = 3
+      messengerOptions.backoff = { type: 'exponential', delay: 3000 }
+    }
+    if (delay) messengerOptions.delay = delay
+
     if (message.destination === 'to-messenger') {
-      const options = message.kind === 'file' ? { attempts: 3, backoff: { type: 'exponential', delay: 3000 } } : {}
-      await this.jobQueue.addJob(SEND_MESSAGE_TO_MESSENGER_JOB, { messageId: message._id }, options)
+      await this.jobQueue.addJob(SEND_MESSAGE_TO_MESSENGER_JOB, { messageId: message._id }, messengerOptions)
+    } else if (message.destination === 'to-chat') {
+      const chatOptions: JobOptions = delay ? { delay } : {}
+      await this.jobQueue.addJob('send-message-to-chat', { messageId: message._id }, chatOptions)
     }
 
     return message
