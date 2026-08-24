@@ -64,6 +64,9 @@ describe('IngestChatMessage', () => {
     )
   })
 
+  // schedule-message plan uses CreateMessage (POST /resources/messages), not IngestChatMessage.
+  // No scheduled-message stubs needed here.
+
   it('saves null inbox on Body record when inboxId is not provided', async () => {
     const chatRepository = new BodyRepositoryMemory()
     const jobQueue = {

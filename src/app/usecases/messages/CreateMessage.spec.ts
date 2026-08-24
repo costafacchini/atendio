@@ -154,4 +154,16 @@ describe('CreateMessage', () => {
       },
     )
   })
+
+  describe('scheduledAt', () => {
+    // --- schedule-message plan: Scenario 4 ---
+    it.todo('queues send-message-to-messenger with delay when scheduledAt is valid and future')
+
+    // --- schedule-message plan: Scenario 5 ---
+    it.todo('throws validation error when scheduledAt is in the past')
+
+    // --- schedule-message plan: additional ---
+    it.todo('queues send-message-to-chat with delay when destination is to-chat and scheduledAt is future')
+    it.todo('dispatches immediately (no delay) when scheduledAt is absent')
+  })
 })

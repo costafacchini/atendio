@@ -74,5 +74,8 @@ describe('ChatRoomsController', () => {
       )
       expect(res.status).toHaveBeenCalledWith(200)
     })
+
+    // schedule-message plan moved scheduledAt handling to CreateMessage usecase (POST /resources/messages)
+    // No scheduled-message stubs needed here.
   })
 })
