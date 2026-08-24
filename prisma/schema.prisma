@@ -229,6 +229,7 @@ model Message {
   messageWaId    String?
   attachmentWaId String?
   sendedAt       DateTime?
+  scheduledAt    DateTime?
   readAt         DateTime?
   deliveredAt    DateTime?
   messageChatId  String?

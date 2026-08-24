@@ -124,6 +124,7 @@ export interface IMessage {
   attachmentWaId?: string
   trigger?: string
   sendedAt?: Date | null
+  scheduledAt?: Date | null
   readAt?: Date
   deliveredAt?: Date
   error?: string | null
