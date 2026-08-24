@@ -151,23 +151,20 @@ describe('CreateMessage', () => {
       expect(jobQueue.addJob).toHaveBeenCalledWith('send-message-to-chat', { messageId: message._id }, {})
     })
 
-    it.each([['to-chatbot'], ['to-transfer']])(
-      'does not queue a job when destination is %s',
-      async (destination) => {
-        const jobQueue = { addJob: jest.fn() }
-        const { useCase } = buildRepositoryAndUseCase(jobQueue)
+    it.each([['to-chatbot'], ['to-transfer']])('does not queue a job when destination is %s', async (destination) => {
+      const jobQueue = { addJob: jest.fn() }
+      const { useCase } = buildRepositoryAndUseCase(jobQueue)
 
-        await useCase.execute({
-          licensee: LICENSEE_ID,
-          contact: contactFactory.build()._id,
-          kind: 'text',
-          destination,
-          text: 'Hello',
-        })
+      await useCase.execute({
+        licensee: LICENSEE_ID,
+        contact: contactFactory.build()._id,
+        kind: 'text',
+        destination,
+        text: 'Hello',
+      })
 
-        expect(jobQueue.addJob).not.toHaveBeenCalled()
-      },
-    )
+      expect(jobQueue.addJob).not.toHaveBeenCalled()
+    })
   })
 
   describe('scheduledAt', () => {

@@ -140,9 +140,7 @@ describe('sendMessageToMessenger', () => {
     const licensee = await licenseeRepository.create(licenseeFactory.build())
 
     const messageRepository = new MessageRepositoryDatabase()
-    const message = await messageRepository.create(
-      messageFactory.build({ licensee, sended: true }),
-    )
+    const message = await messageRepository.create(messageFactory.build({ licensee, sended: true }))
 
     await sendMessageToMessenger({ messageId: message._id }, dependencies)
 
