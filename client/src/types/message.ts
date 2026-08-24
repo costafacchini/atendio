@@ -20,6 +20,7 @@ export interface IMessage {
   latitude: number
   longitude: number
   sended: boolean
+  scheduledAt?: string | null
   error: string | null
   ignored?: boolean
   cart: unknown
