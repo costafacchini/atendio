@@ -136,7 +136,22 @@ describe('CreateMessage', () => {
       expect(jobQueue.addJob).toHaveBeenCalledWith('send-message-to-messenger', { messageId: message._id }, {})
     })
 
-    it.each([['to-chat'], ['to-chatbot'], ['to-transfer']])(
+    it('queues send-message-to-chat when destination is to-chat', async () => {
+      const jobQueue = { addJob: jest.fn().mockResolvedValue({}) }
+      const { useCase } = buildRepositoryAndUseCase(jobQueue)
+
+      const message = await useCase.execute({
+        licensee: LICENSEE_ID,
+        contact: contactFactory.build()._id,
+        kind: 'text',
+        destination: 'to-chat',
+        text: 'Hello',
+      })
+
+      expect(jobQueue.addJob).toHaveBeenCalledWith('send-message-to-chat', { messageId: message._id }, {})
+    })
+
+    it.each([['to-chatbot'], ['to-transfer']])(
       'does not queue a job when destination is %s',
       async (destination) => {
         const jobQueue = { addJob: jest.fn() }
@@ -156,14 +171,80 @@ describe('CreateMessage', () => {
   })
 
   describe('scheduledAt', () => {
-    // --- schedule-message plan: Scenario 4 ---
-    it.todo('queues send-message-to-messenger with delay when scheduledAt is valid and future')
+    it('queues send-message-to-messenger with delay when scheduledAt is valid and future', async () => {
+      const jobQueue = { addJob: jest.fn().mockResolvedValue({}) }
+      const { useCase } = buildRepositoryAndUseCase(jobQueue)
+      const future = new Date(Date.now() + 60_000).toISOString()
 
-    // --- schedule-message plan: Scenario 5 ---
-    it.todo('throws validation error when scheduledAt is in the past')
+      const message = await useCase.execute({
+        licensee: LICENSEE_ID,
+        contact: contactFactory.build()._id,
+        kind: 'text',
+        destination: 'to-messenger',
+        text: 'Hello',
+        scheduledAt: future,
+      })
 
-    // --- schedule-message plan: additional ---
-    it.todo('queues send-message-to-chat with delay when destination is to-chat and scheduledAt is future')
-    it.todo('dispatches immediately (no delay) when scheduledAt is absent')
+      expect(jobQueue.addJob).toHaveBeenCalledWith(
+        'send-message-to-messenger',
+        { messageId: message._id },
+        expect.objectContaining({ delay: expect.any(Number) }),
+      )
+      const [, , opts] = jobQueue.addJob.mock.calls[0]
+      expect(opts.delay).toBeGreaterThan(0)
+    })
+
+    it('throws validation error when scheduledAt is in the past', async () => {
+      const jobQueue = { addJob: jest.fn() }
+      const { useCase } = buildRepositoryAndUseCase(jobQueue)
+      const past = new Date(Date.now() - 60_000).toISOString()
+
+      await expect(
+        useCase.execute({
+          licensee: LICENSEE_ID,
+          contact: contactFactory.build()._id,
+          kind: 'text',
+          destination: 'to-messenger',
+          text: 'Hello',
+          scheduledAt: past,
+        }),
+      ).rejects.toMatchObject({ errors: { scheduledAt: { message: 'must be a future datetime' } } })
+    })
+
+    it('queues send-message-to-chat with delay when destination is to-chat and scheduledAt is future', async () => {
+      const jobQueue = { addJob: jest.fn().mockResolvedValue({}) }
+      const { useCase } = buildRepositoryAndUseCase(jobQueue)
+      const future = new Date(Date.now() + 60_000).toISOString()
+
+      const message = await useCase.execute({
+        licensee: LICENSEE_ID,
+        contact: contactFactory.build()._id,
+        kind: 'text',
+        destination: 'to-chat',
+        text: 'Hello',
+        scheduledAt: future,
+      })
+
+      expect(jobQueue.addJob).toHaveBeenCalledWith(
+        'send-message-to-chat',
+        { messageId: message._id },
+        expect.objectContaining({ delay: expect.any(Number) }),
+      )
+    })
+
+    it('dispatches immediately (no delay) when scheduledAt is absent', async () => {
+      const jobQueue = { addJob: jest.fn().mockResolvedValue({}) }
+      const { useCase } = buildRepositoryAndUseCase(jobQueue)
+
+      const message = await useCase.execute({
+        licensee: LICENSEE_ID,
+        contact: contactFactory.build()._id,
+        kind: 'text',
+        destination: 'to-messenger',
+        text: 'Hello',
+      })
+
+      expect(jobQueue.addJob).toHaveBeenCalledWith('send-message-to-messenger', { messageId: message._id }, {})
+    })
   })
 })
