@@ -497,8 +497,13 @@ $t-slide:           300ms $ease-out-quart;
   &.inbound  { justify-content: flex-start; }
 }
 
-.bubble {
+.bubbleWrapper {
+  display: flex;
+  flex-direction: column;
   max-width: 68%;
+}
+
+.bubble {
   padding: 8px 12px 6px;
   border-radius: 6px;
   word-break: break-word;
