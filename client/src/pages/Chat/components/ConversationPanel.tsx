@@ -8,6 +8,8 @@ interface ConversationPanelProps {
   room: IRoom | null
   messages: IMessage[]
   onSend: (text: string) => void
+  onSchedule?: (text: string, scheduledAt: string) => void
+  onCancelScheduled?: (messageId: string) => void
   loading: boolean
   onBack: () => void
   onClose: () => void
@@ -17,7 +19,11 @@ function formatMsgTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 }
 
-export default function ConversationPanel({ room, messages, onSend, loading, onBack, onClose }: ConversationPanelProps) {
+function formatScheduledAt(iso: string): string {
+  return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+}
+
+export default function ConversationPanel({ room, messages, onSend, onSchedule, onCancelScheduled, loading, onBack, onClose }: ConversationPanelProps) {
   const { t } = useTranslation()
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -90,18 +96,38 @@ export default function ConversationPanel({ room, messages, onSend, loading, onB
         <div className={styles.messageList} role='log' aria-label={t('chat.messagesAriaLabel')} aria-live='polite'>
           {messages.map((message) => {
             const fromMe = message.destination === 'to-messenger'
+            const isPendingScheduled =
+              !!message.scheduledAt && !message.sended && new Date(message.scheduledAt) > new Date()
             return (
               <div
                 key={message.id}
                 className={`${styles.messageGroup} ${fromMe ? styles.outbound : styles.inbound}`}
               >
-                <div className={`${styles.bubble} ${fromMe ? styles.bubbleSent : styles.bubbleReceived}`}>
-                  <span className={styles.bubbleText}>
-                    {message.text || (message.url ? '[arquivo]' : '[mensagem]')}
-                  </span>
-                  <span className={styles.bubbleTime} aria-hidden='true'>
-                    {formatMsgTime(message.createdAt)}
-                  </span>
+                <div className={styles.bubbleWrapper}>
+                  <div className={`${styles.bubble} ${fromMe ? styles.bubbleSent : styles.bubbleReceived}`}>
+                    <span className={styles.bubbleText}>
+                      {message.text || (message.url ? '[arquivo]' : '[mensagem]')}
+                    </span>
+                    <span className={styles.bubbleTime} aria-hidden='true'>
+                      {formatMsgTime(message.createdAt)}
+                    </span>
+                  </div>
+                  {isPendingScheduled && (
+                    <div className={styles.scheduledBadge}>
+                      <i className='bi bi-clock' aria-hidden='true' />
+                      <span>{t('chat.scheduledFor', { time: formatScheduledAt(message.scheduledAt!) })}</span>
+                      {onCancelScheduled && (
+                        <button
+                          type='button'
+                          className={styles.cancelScheduledBtn}
+                          onClick={() => onCancelScheduled(message.id)}
+                          aria-label={t('chat.cancelScheduledAriaLabel')}
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )
@@ -110,7 +136,7 @@ export default function ConversationPanel({ room, messages, onSend, loading, onB
         </div>
       )}
 
-      <MessageInput onSend={onSend} disabled={loading || room.closed} />
+      <MessageInput onSend={onSend} onSchedule={onSchedule} disabled={loading || room.closed} />
     </>
   )
 }

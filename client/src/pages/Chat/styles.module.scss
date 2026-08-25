@@ -497,8 +497,13 @@ $t-slide:           300ms $ease-out-quart;
   &.inbound  { justify-content: flex-start; }
 }
 
-.bubble {
+.bubbleWrapper {
+  display: flex;
+  flex-direction: column;
   max-width: 68%;
+}
+
+.bubble {
   padding: 8px 12px 6px;
   border-radius: 6px;
   word-break: break-word;
@@ -624,13 +629,145 @@ $t-slide:           300ms $ease-out-quart;
 // ================================================================
 .messageFooter {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 6px;
   padding: 10px 16px;
   padding-bottom: max(10px, env(safe-area-inset-bottom));
   border-top: 1px solid $border;
   background: $white;
   flex-shrink: 0;
+}
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.scheduleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.schedulePicker {
+  flex: 1;
+  border: 1.5px solid $border;
+  border-radius: 50rem;
+  padding: 6px 14px;
+  font-size: 0.875rem;
+  font-family: 'Jost', system-ui, sans-serif;
+  color: $fieldwork;
+  background: $surface;
+  outline: none;
+  transition: border-color $t-fast, box-shadow $t-fast;
+
+  &:focus {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba(250, 86, 25, 0.15);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.scheduleBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 50rem;
+  border: none;
+  background: $primary;
+  color: $white;
+  font-size: 0.875rem;
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background $t-fast, transform $t-fast;
+
+  &:hover:not(:disabled) {
+    background: $primary-dark;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.scheduledBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: $muted;
+  margin-top: 2px;
+  margin-bottom: 8px;
+  padding: 2px 8px;
+
+  i { font-size: 0.75rem; }
+}
+
+.cancelScheduledBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: $muted;
+  font-size: 0.875rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 2px;
+  transition: color $t-fast;
+
+  &:hover {
+    color: $primary;
+  }
+}
+
+.clockBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 50%;
+  border: 1.5px solid $border;
+  background: transparent;
+  color: $muted;
+  cursor: pointer;
+  transition: border-color $t-fast, color $t-fast, background $t-fast;
+  padding: 0;
+
+  i { font-size: 0.9rem; }
+
+  &:hover {
+    border-color: $primary;
+    color: $primary;
+    background: $signal-tint;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(250, 86, 25, 0.2);
+  }
 }
 
 .messageInput {

@@ -8,8 +8,12 @@ import { Worker } from 'bullmq'
 import { connect } from './src/config/database'
 import { withTrafficlight, resolveTrafficlightKey } from './src/app/services/Trafficlight'
 import { jobDependencies } from './src/app/jobs/dependencies'
+import { recoverScheduledMessages } from './src/app/services/ScheduledMessageRecovery'
 
 connect()
+recoverScheduledMessages(jobDependencies.messageRepository as any, queueServer).catch((err) =>
+  console.error('[recovery] Failed:', err),
+)
 
 const queuesWithWorkerEnabled = queueServer.queues.filter((queue) => queue.workerEnabled == true)
 

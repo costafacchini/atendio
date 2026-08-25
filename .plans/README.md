@@ -23,7 +23,6 @@ Git-native Markdown plans for multi-step work.
 | # | Plan | Folder | Status | Description |
 |---|------|--------|--------|-------------|
 | 5 | [Ecomanda Fly.io Deploy](./ecomanda-flyio/overview.md) | `ecomanda-flyio/` | not-started | Deploy on Fly.io single 1 GB VM (server + worker), replacing Heroku — 3 phases, 4 tasks |
-| 7 | [Schedule Message](./schedule-message/overview.md) | `schedule-message/` | not-started | Allow agents to schedule a Chat message for future delivery via BullMQ delay — 3 phases, 8 tasks |
 
 ---
 
@@ -57,6 +56,7 @@ Git-native Markdown plans for multi-step work.
 | 22 | [MongoDB → PostgreSQL](./mongo-to-postgres/overview.md) | `mongo-to-postgres/` | 2026-08-08 | Migrate all persistent data from MongoDB/Mongoose to PostgreSQL/Prisma using dual-write strategy |
 | 23 | [Backend Type Narrowing](./type-backend/overview.md) | `type-backend/` | 2026-08-07 | Replace `any` with interfaces across models, repositories, use cases, controllers, and plugins — 3 phases, 11 tasks |
 | 24 | [Remove Plugin Fields from Licensee](./licensee-plugin-fields-to-inbox/overview.md) | `licensee-plugin-fields-to-inbox/` | 2026-08-13 | Remove 7 plugin fields from Licensee model; migrate all consumers to read from Inbox instead — 3 phases, 6 tasks |
+| 25 | [Schedule Message](./schedule-message/overview.md) | `schedule-message/` | 2026-08-24 | Allow agents to schedule a Chat message for future delivery via BullMQ delay — 3 phases, 8 tasks |
 
 ---
 

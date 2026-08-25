@@ -481,6 +481,17 @@ class PrismaMessageDatabaseRepository extends PrismaRepository<IMessage> {
     return await getPrismaClient().message.count({ where })
   }
 
+  async findScheduledPending(now: Date): Promise<IMessage[]> {
+    const records = await getPrismaClient().message.findMany({
+      where: {
+        scheduledAt: { gt: now },
+        sended: false,
+        ignored: false,
+      },
+    })
+    return this.fromDBMany(records) as unknown as IMessage[]
+  }
+
   async groupByLicenseeAndDay(
     startDate: Date | string,
     endDate: Date | string,

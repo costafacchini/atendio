@@ -3,7 +3,8 @@ import ConversationPanel from './ConversationPanel'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (k: string) => k,
+    t: (k: string, opts?: Record<string, unknown>) =>
+      opts ? `${k}:${JSON.stringify(opts)}` : k,
     i18n: { language: 'pt', changeLanguage: vi.fn() },
   }),
 }))
@@ -108,12 +109,144 @@ describe('<ConversationPanel>', () => {
   })
 
   // --- schedule-message plan: Scenario 3 (component level) ---
-  it.todo('delegates onSchedule to MessageInput when prop is provided')
+  it('delegates onSchedule to MessageInput when prop is provided', () => {
+    const handleSchedule = vi.fn()
+    render(
+      <ConversationPanel
+        room={room}
+        messages={[]}
+        onSend={vi.fn()}
+        onSchedule={handleSchedule}
+        onBack={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    )
+
+    fireEvent.change(screen.getByPlaceholderText('chat.messagePlaceholder'), { target: { value: 'Msg' } })
+    fireEvent.click(screen.getByRole('button', { name: 'chat.scheduleToggleAriaLabel' }))
+
+    const futureDate = new Date(Date.now() + 60 * 60 * 1000)
+    fireEvent.change(screen.getByLabelText('chat.scheduleDateAriaLabel'), {
+      target: { value: futureDate.toISOString().slice(0, 16) },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'chat.scheduleSubmitLabel' }))
+
+    expect(handleSchedule).toHaveBeenCalledWith('Msg', expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/))
+  })
 
   it('disables message input when room is closed', () => {
     const closedRoom = { ...room, status: 'closed' as const, closed: true }
     render(<ConversationPanel room={closedRoom} messages={[]} onSend={vi.fn()} onBack={vi.fn()} onClose={vi.fn()} />)
 
     expect(screen.getByPlaceholderText('chat.messagePlaceholder')).toBeDisabled()
+  })
+
+  // --- schedule-message plan: Scenario 6 ---
+  it('shows clock icon on bubble for unsent scheduled message in the future', () => {
+    const futureScheduledAt = new Date(Date.now() + 60 * 60 * 1000).toISOString()
+    const scheduledMsg: IMessage = {
+      id: 'msg-sched',
+      kind: 'text',
+      destination: 'to-messenger',
+      text: 'Mensagem agendada',
+      url: '',
+      fileName: '',
+      latitude: 0,
+      longitude: 0,
+      sended: false,
+      scheduledAt: futureScheduledAt,
+      error: null,
+      cart: null,
+      createdAt: new Date().toISOString(),
+      contact: null,
+      trigger: null,
+      department: null,
+    }
+
+    render(
+      <ConversationPanel
+        room={room}
+        messages={[scheduledMsg]}
+        onSend={vi.fn()}
+        onCancelScheduled={vi.fn()}
+        onBack={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByLabelText('chat.cancelScheduledAriaLabel')).toBeInTheDocument()
+  })
+
+  // --- schedule-message plan: Scenario 9 ---
+  it('calls onCancelScheduled with message id when cancel button is clicked', () => {
+    const handleCancel = vi.fn()
+    const futureScheduledAt = new Date(Date.now() + 60 * 60 * 1000).toISOString()
+    const scheduledMsg: IMessage = {
+      id: 'msg-cancel',
+      kind: 'text',
+      destination: 'to-messenger',
+      text: 'Para cancelar',
+      url: '',
+      fileName: '',
+      latitude: 0,
+      longitude: 0,
+      sended: false,
+      scheduledAt: futureScheduledAt,
+      error: null,
+      cart: null,
+      createdAt: new Date().toISOString(),
+      contact: null,
+      trigger: null,
+      department: null,
+    }
+
+    render(
+      <ConversationPanel
+        room={room}
+        messages={[scheduledMsg]}
+        onSend={vi.fn()}
+        onCancelScheduled={handleCancel}
+        onBack={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'chat.cancelScheduledAriaLabel' }))
+
+    expect(handleCancel).toHaveBeenCalledWith('msg-cancel')
+  })
+
+  it('does not show clock icon for a message that is already sent', () => {
+    const sentScheduledMsg: IMessage = {
+      id: 'msg-sent',
+      kind: 'text',
+      destination: 'to-messenger',
+      text: 'Enviada',
+      url: '',
+      fileName: '',
+      latitude: 0,
+      longitude: 0,
+      sended: true,
+      scheduledAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+      error: null,
+      cart: null,
+      createdAt: new Date().toISOString(),
+      contact: null,
+      trigger: null,
+      department: null,
+    }
+
+    render(
+      <ConversationPanel
+        room={room}
+        messages={[sentScheduledMsg]}
+        onSend={vi.fn()}
+        onCancelScheduled={vi.fn()}
+        onBack={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    )
+
+    expect(screen.queryByLabelText('chat.cancelScheduledAriaLabel')).not.toBeInTheDocument()
   })
 })

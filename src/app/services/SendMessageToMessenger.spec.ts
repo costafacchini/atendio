@@ -53,6 +53,7 @@ describe('sendMessageToMessenger', () => {
       messageFactory.build({
         contact,
         licensee,
+        sended: false,
       }),
     )
 
@@ -86,7 +87,7 @@ describe('sendMessageToMessenger', () => {
     const contact = await contactRepository.create(contactFactory.build({ licensee }))
 
     const messageRepository = new MessageRepositoryDatabase()
-    const message = await messageRepository.create(messageFactory.build({ contact, licensee }))
+    const message = await messageRepository.create(messageFactory.build({ contact, licensee, sended: false }))
 
     await sendMessageToMessenger({ messageId: message._id }, dependencies)
 
@@ -132,5 +133,17 @@ describe('sendMessageToMessenger', () => {
 
     const savedMessage = await messageRepository.findFirst({ _id: message._id }, [])
     expect(savedMessage.sended).toBe(true)
+  })
+
+  it('returns early without sending when message is already sended (approach C idempotency)', async () => {
+    const licenseeRepository = new LicenseeRepositoryDatabase()
+    const licensee = await licenseeRepository.create(licenseeFactory.build())
+
+    const messageRepository = new MessageRepositoryDatabase()
+    const message = await messageRepository.create(messageFactory.build({ licensee, sended: true }))
+
+    await sendMessageToMessenger({ messageId: message._id }, dependencies)
+
+    expect(dialogSendMessageSpy).not.toHaveBeenCalled()
   })
 })
