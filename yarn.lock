@@ -1377,29 +1377,29 @@
   resolved "https://registry.yarnpkg.com/@borewit/text-codec/-/text-codec-0.2.2.tgz#75025f735c0983b3a871668804a57387e3649375"
   integrity sha512-DDaRehssg1aNrH4+2hnj1B7vnUGEjU6OIlyRdkMd0aUdIUvKXrJfXsy8LVtXAy7DRvYVluWbMspsRhz2lcW0mQ==
 
-"@bull-board/api@9.4.0", "@bull-board/api@^9.0.0":
-  version "9.4.0"
-  resolved "https://registry.yarnpkg.com/@bull-board/api/-/api-9.4.0.tgz#88f3fe966683952651c5cc9c6ad6062235708085"
-  integrity sha512-poPku55iQd/VS65BUD8yn/uIHUruDwOVOiPEbThzjCd1nHAzEUEj/D+LWW1t9vzRsvN6xBr5jXlbJDapBnz7aw==
+"@bull-board/api@9.5.0", "@bull-board/api@^9.0.0":
+  version "9.5.0"
+  resolved "https://registry.yarnpkg.com/@bull-board/api/-/api-9.5.0.tgz#5411f66e817bcceb403446363c4ae55ecf0b169d"
+  integrity sha512-fmOyOy1lZiLZFyDJjI2osZrpTMO+JSgmGNhDf3MrmOf3oF084o6w0wpGefs0OqEfyUT1F5/1arE5AwmEUuxZ+A==
   dependencies:
     redis-info "^3.1.0"
 
 "@bull-board/express@^9.0.0":
-  version "9.4.0"
-  resolved "https://registry.yarnpkg.com/@bull-board/express/-/express-9.4.0.tgz#819b41b37de015e99734c12b518b0e74d2cd72e4"
-  integrity sha512-VpK4kPqVJtF/Abc3Ajvc7E8jrRNSwRKjjIjkwrDXKF4on84hwoKUpKpnl8T394X5MiNOhchWIpvJ8xlFFNS4UQ==
+  version "9.5.0"
+  resolved "https://registry.yarnpkg.com/@bull-board/express/-/express-9.5.0.tgz#de69df2260fe1c048f1e3c7f816094f019f413b8"
+  integrity sha512-EKeXQzeb1zF9ra0hfYfPArU1JlWKl2vyL4Rb3gQW0XzU7SkEFgYm3727gDrQZdU8dvc5g/FLEqc0dr6UkDUHhg==
   dependencies:
-    "@bull-board/api" "9.4.0"
-    "@bull-board/ui" "9.4.0"
+    "@bull-board/api" "9.5.0"
+    "@bull-board/ui" "9.5.0"
     ejs "^6.0.1"
     express "^5.2.1"
 
-"@bull-board/ui@9.4.0", "@bull-board/ui@^9.0.0":
-  version "9.4.0"
-  resolved "https://registry.yarnpkg.com/@bull-board/ui/-/ui-9.4.0.tgz#6b6d018a3064d27e1a2a3ebf54dfd5fd90049ea8"
-  integrity sha512-oRuCjMawEdpwFpHWWT6tzZLVqaqP+sK7xs1C1AhvTGm4pViNyPKwV7chtSExFOdVZuXJnJOl74WTXsHRfKMF3A==
+"@bull-board/ui@9.5.0", "@bull-board/ui@^9.0.0":
+  version "9.5.0"
+  resolved "https://registry.yarnpkg.com/@bull-board/ui/-/ui-9.5.0.tgz#3e39ec13779329ce88d8601c784af1dcc4f6fe15"
+  integrity sha512-qrq0e906M8Ps/mV3bQXmj7EXJWLaFs5mNz+oBoLR/7EShBi5YooROzQ/SEFFedg/L9h6QWDWJ9Ph0AH7NrG9uw==
   dependencies:
-    "@bull-board/api" "9.4.0"
+    "@bull-board/api" "9.5.0"
 
 "@cacheable/memory@^2.2.0":
   version "2.2.0"
@@ -2966,11 +2966,6 @@
   version "7.2.0"
   resolved "https://registry.yarnpkg.com/@prisma/debug/-/debug-7.2.0.tgz#569b1cbc10eb3e8cae798b40075fd11d21f6b533"
   integrity sha512-YSGTiSlBAVJPzX4ONZmMotL+ozJwQjRmZweQNIq/ER0tQJKJynNkRB3kyvt37eOfsbMCXk3gnLF6J9OJ4QWftw==
-
-"@prisma/debug@7.9.1":
-  version "7.9.1"
-  resolved "https://registry.yarnpkg.com/@prisma/debug/-/debug-7.9.1.tgz#e972bb4f13fe53bf08c35c569202551385d37f6e"
-  integrity sha512-/cpVZ4itxtcgB8GHBvZtcmuEjq+lWsLrRJxFMbwZrT1RIdtuKmUm7PPGo/wzfbYpBrk+9WmmBE8CHJw2rybKDQ==
 
 "@prisma/dev@0.24.17":
   version "0.24.17"
