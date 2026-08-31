@@ -2269,10 +2269,10 @@
   resolved "https://registry.yarnpkg.com/@opentelemetry/context-async-hooks/-/context-async-hooks-2.7.1.tgz#1555a6fb269596416d8c626fd020c3f2c38e071f"
   integrity sha512-OPFBYuXEn1E4ja3Y6eeA7O+ZnLBNcXTV5Cgsn1VaqBZ6hC5FnpZPLBNme1LJY8ZtF4aOujPKFoeWN4ik487KuQ==
 
-"@opentelemetry/core@2.10.0", "@opentelemetry/core@2.6.0", "@opentelemetry/core@2.6.1", "@opentelemetry/core@2.7.1", "@opentelemetry/core@2.8.0", "@opentelemetry/core@>= 2.6.0 < 2.7.0", "@opentelemetry/core@^2.0.0":
-  version "2.10.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/core/-/core-2.10.0.tgz#aa77f7138e74ba5399d5f3bb0deade0c168f00b2"
-  integrity sha512-/wNZ8twnEQQA4HoHu22+vcsdru6pWPWxW+7w+FlxT6Id7PE/WIbZmVKkte+PF72e0F2dnImFeHD2syyE1Mw6MQ==
+"@opentelemetry/core@2.10.0", "@opentelemetry/core@2.11.0", "@opentelemetry/core@2.6.0", "@opentelemetry/core@2.6.1", "@opentelemetry/core@2.7.1", "@opentelemetry/core@2.8.0", "@opentelemetry/core@>= 2.6.0 < 2.7.0", "@opentelemetry/core@^2.0.0":
+  version "2.11.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/core/-/core-2.11.0.tgz#97849d3808bba652568b7d53e20c9fc38bcb7c49"
+  integrity sha512-7YP44XH0tV6+Mb54x2YGf84i7yi+31MBZlE8JwvozkxyTvXbSp10X7cI7YE49ChJ3shMJoBmCJF3+1QFBJctGA==
   dependencies:
     "@opentelemetry/semantic-conventions" "^1.29.0"
 
@@ -2704,12 +2704,12 @@
   dependencies:
     "@opentelemetry/core" "2.7.1"
 
-"@opentelemetry/propagator-jaeger@2.10.0", "@opentelemetry/propagator-jaeger@2.7.1":
-  version "2.10.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/propagator-jaeger/-/propagator-jaeger-2.10.0.tgz#d59175bdba29236060212f23f8fbca021cd1fe0c"
-  integrity sha512-yw/IX8DL470dSMZJoE82ScfYGp7JWZ/G8kFJo35ZILUVTB2jFPTOaioN+8s09pH0RHsWNhweVZb+ZnjJJpCChg==
+"@opentelemetry/propagator-jaeger@2.11.0", "@opentelemetry/propagator-jaeger@2.7.1":
+  version "2.11.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/propagator-jaeger/-/propagator-jaeger-2.11.0.tgz#e6d484222710243033729ccb170427abdded2118"
+  integrity sha512-RUOqgoIqXOPQTOhpBrs07Y8sBlxVoLY5Fka6ueZ0prW+k6fWQsba/nHDY4gm+gmfuwtRqbX5Y9YKhDvktjbIqQ==
   dependencies:
-    "@opentelemetry/core" "2.10.0"
+    "@opentelemetry/core" "2.11.0"
 
 "@opentelemetry/redis-common@^0.38.2":
   version "0.38.3"
