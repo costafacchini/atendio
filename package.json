@@ -123,6 +123,10 @@
     "@repositories": "./src/app/repositories"
   },
   "resolutions": {
+    "nanoid": "3.3.18",
+    "browserslist": "4.28.8",
+    "mysql2": "3.24.2",
+    "deepmerge-ts": "8.0.2",
     "lodash": "4.18.1",
     "@typescript-eslint/utils": "^8.58.0",
     "uuid": "14.0.2",
