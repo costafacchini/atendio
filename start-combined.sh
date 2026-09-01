@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+node_modules/.bin/prisma migrate deploy
+
 node --require source-map-support/register dist/worker.js &
 WORKER_PID=$!
 
