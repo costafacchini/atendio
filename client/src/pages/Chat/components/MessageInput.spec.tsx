@@ -110,4 +110,15 @@ describe('<MessageInput>', () => {
     expect(screen.getByPlaceholderText('chat.messagePlaceholder')).toBeDisabled()
     expect(screen.getByRole('button', { name: 'chat.sendAriaLabel' })).toBeDisabled()
   })
+
+  // --- local-chat-files plan stubs (task-06) ---
+
+  describe('file attachment', () => {
+    it.todo('renders an attachment button when onSendFile prop is provided (S1)')
+    it.todo('shows filename preview after a file is selected via the attachment button (S1)')
+    it.todo('calls onSendFile with the selected File when Send is clicked with a pending file (S2)')
+    it.todo('clears the pending file after onSendFile is called (S2)')
+    it.todo('does NOT render the attachment button when onSendFile is not provided')
+    it.todo('hides the attachment button when disabled=true')
+  })
 })
