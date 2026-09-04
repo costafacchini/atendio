@@ -133,7 +133,7 @@
     "socket.io-parser": "4.2.7",
     "tar": "7.5.22",
     "shell-quote": "1.10.0",
-    "postcss": "8.5.26",
+    "postcss": "8.5.28",
     "undici": "8.10.1",
     "ip-address": "10.7.0",
     "protobufjs": "8.8.0",
