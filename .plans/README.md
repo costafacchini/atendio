@@ -23,6 +23,7 @@ Git-native Markdown plans for multi-step work.
 | # | Plan | Folder | Status | Description |
 |---|------|--------|--------|-------------|
 | 5 | [Ecomanda Fly.io Deploy](./ecomanda-flyio/overview.md) | `ecomanda-flyio/` | not-started | Deploy on Fly.io single 1 GB VM (server + worker), replacing Heroku — 3 phases, 4 tasks |
+| 6 | [Local Chat — File Sending](./local-chat-files/overview.md) | `local-chat-files/` | not-started | Agent file upload in the admin Chat panel via LocalStorage/S3; image/video/audio/document rendering — 3 phases, 8 tasks |
 
 ---
 
