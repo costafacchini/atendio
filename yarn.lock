@@ -1386,29 +1386,29 @@
   resolved "https://registry.yarnpkg.com/@borewit/text-codec/-/text-codec-0.2.2.tgz#75025f735c0983b3a871668804a57387e3649375"
   integrity sha512-DDaRehssg1aNrH4+2hnj1B7vnUGEjU6OIlyRdkMd0aUdIUvKXrJfXsy8LVtXAy7DRvYVluWbMspsRhz2lcW0mQ==
 
-"@bull-board/api@9.6.1", "@bull-board/api@^9.0.0":
-  version "9.6.1"
-  resolved "https://registry.yarnpkg.com/@bull-board/api/-/api-9.6.1.tgz#4a1d8dce9f905b9cece014739b67462f44d05c07"
-  integrity sha512-hz+RWR4hVw5mt+7HPPfSL9Xhj7bTMuVSlK0ygSuOD1LyihxLUqf+sjQ+ueXyTLb9bLS61EZXP8OoJkIYInCz7Q==
+"@bull-board/api@9.8.0", "@bull-board/api@^9.0.0":
+  version "9.8.0"
+  resolved "https://registry.yarnpkg.com/@bull-board/api/-/api-9.8.0.tgz#8cc85165d82db096dc3a7ff5b8447e8e44744db7"
+  integrity sha512-+qmJ19pBrOSZCPLbN93IijoPEpx5DZBWkwqUBk/FgQObvSyHB2OJvuwvvi/TaujTCbRH1eiYPc4USp9dTlNEug==
   dependencies:
     redis-info "^3.1.0"
 
 "@bull-board/express@^9.0.0":
-  version "9.6.1"
-  resolved "https://registry.yarnpkg.com/@bull-board/express/-/express-9.6.1.tgz#3b94200ebc1a3cc45262ed66a0a3d00f4c80d320"
-  integrity sha512-J/PEkqvAh/nQsURtxTviGOdKlsD5v75xdnK7+iHinXK3WU5c8oLWjJrVxEOX5yofrKQN0CvdhT8SAyehztMVpQ==
+  version "9.8.0"
+  resolved "https://registry.yarnpkg.com/@bull-board/express/-/express-9.8.0.tgz#baca03378b07ab9e7cbb4cfdaa2a3fdea660e5a0"
+  integrity sha512-nYywx44PHHq7ybgQZySrDiM9B2Yc1NSywWm+zdjP8UyVGrvgooZ0UsT+F58ZF4wQ2QGqYRCTNb+YbPvBAWWjBg==
   dependencies:
-    "@bull-board/api" "9.6.1"
-    "@bull-board/ui" "9.6.1"
+    "@bull-board/api" "9.8.0"
+    "@bull-board/ui" "9.8.0"
     ejs "^6.0.1"
     express "^5.2.1"
 
-"@bull-board/ui@9.6.1", "@bull-board/ui@^9.0.0":
-  version "9.6.1"
-  resolved "https://registry.yarnpkg.com/@bull-board/ui/-/ui-9.6.1.tgz#960d68e6504c1a9e05bf629ec5f1c244e707c8e4"
-  integrity sha512-myakwEZLPA4sqUGyhQBDFW6xpZ8Ycrne0KmaTLSdnep/Js4dyessC/vdgoGez/0xL4TFf510hXdbkRhfejPe6w==
+"@bull-board/ui@9.8.0", "@bull-board/ui@^9.0.0":
+  version "9.8.0"
+  resolved "https://registry.yarnpkg.com/@bull-board/ui/-/ui-9.8.0.tgz#8cdb676210d344ff1aeed9e02824b09c7e487035"
+  integrity sha512-WE6imvISwGDI/E1i7H1M4mQ/NI99sj9u/XIUT5QgbQlWAbys1N4/YdfPktwK6eyKynPMPHJqcAqwRDJDzlceOA==
   dependencies:
-    "@bull-board/api" "9.6.1"
+    "@bull-board/api" "9.8.0"
 
 "@cacheable/memory@^2.2.0":
   version "2.2.0"
