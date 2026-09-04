@@ -52,12 +52,12 @@
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.7",
     "@vitejs/plugin-react": "^6.0.0",
-    "@vitest/coverage-v8": "^4.0.0",
+    "@vitest/coverage-v8": "^5.0.0",
     "jsdom": "^30.0.0",
     "postinstall-postinstall": "^2.1.0",
     "typescript": "6.0.3",
     "vite": "^8.0.0",
-    "vitest": "^4.0.0"
+    "vitest": "^5.0.0"
   },
   "resolutions": {
     "js-yaml": "^5.0.0",
