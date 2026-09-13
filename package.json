@@ -139,6 +139,6 @@
     "protobufjs": "8.8.0",
     "@opentelemetry/core": "2.11.0",
     "@opentelemetry/propagator-jaeger": "2.11.0",
-    "@eslint/eslintrc/js-yaml": "5.4.1"
+    "@eslint/eslintrc/js-yaml": "5.4.2"
   }
 }
