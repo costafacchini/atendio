@@ -3099,53 +3099,53 @@
   resolved "https://registry.yarnpkg.com/@sentry/conventions/-/conventions-0.16.0.tgz#3b58d15714cf44dca1518496c00749eec5525009"
   integrity sha512-fO9PLmHdVURcSPUpWCItWAtgKiMwGdJHbovoSEyLplX5sxs2ugvI4CBPTrkkgqhObnZOD0CnWBKDzSVQYBKEyQ==
 
-"@sentry/core@10.75.2":
-  version "10.75.2"
-  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-10.75.2.tgz#03ef1b0758a073d515714c27765dabb904d56bed"
-  integrity sha512-KXzNf2c430cJIOMv84+MKpkXgave1DBNMNNwn073olVD773NME5IhDv/9VQyiFM2wIU+6bm4FEBVEVSuzqgjJw==
+"@sentry/core@10.75.3":
+  version "10.75.3"
+  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-10.75.3.tgz#2a2e400d2ef4b01ac00423e8aa66ce8a2dd10d2c"
+  integrity sha512-QHgzobetM4UgEVbyqx9WPJzRq0YzyNg2CeeoM1Bf84ivYJXXiiVWxjzc0RHk3c0DHY5/6O6nJqos1xVL55dgZA==
   dependencies:
     "@sentry/conventions" "^0.16.0"
 
-"@sentry/node-core@10.75.2":
-  version "10.75.2"
-  resolved "https://registry.yarnpkg.com/@sentry/node-core/-/node-core-10.75.2.tgz#6d6e7f25ed869c3702f72b6cf614a2eb97e7d90e"
-  integrity sha512-6sFhrvWVLAPRTOYkwrOOLwgsWINe6Y75oX9xKj11zZcKd2e1K2Y3bcx3uzDU06+cxfVbUQUBulsCr/TD7yx/vw==
+"@sentry/node-core@10.75.3":
+  version "10.75.3"
+  resolved "https://registry.yarnpkg.com/@sentry/node-core/-/node-core-10.75.3.tgz#538d8238ce8bd4969c7c07f6e5c2c538e430d25a"
+  integrity sha512-nm3scqhE9Dx/ngE6q2hJW8Jvk+dVTjCm/KXC3CXH+0eBCzEuANH79qMwkmwMp5ixX+snlEOczA+ZCY+B4HfWQg==
   dependencies:
     "@sentry/conventions" "^0.16.0"
-    "@sentry/core" "10.75.2"
-    "@sentry/opentelemetry" "10.75.2"
+    "@sentry/core" "10.75.3"
+    "@sentry/opentelemetry" "10.75.3"
     import-in-the-middle "^3.0.0"
 
 "@sentry/node@^10.25.0":
-  version "10.75.2"
-  resolved "https://registry.yarnpkg.com/@sentry/node/-/node-10.75.2.tgz#1f52a4221b8bc5d84408cda983650ea16179116a"
-  integrity sha512-ffdx1i3Fx9Q3Ofdaone2I+HWOj9+Wcu268xgV+Bn8WJYABm8BZIBNvS+PORKBPesWILhQCThWOs+E/8vcV1HuQ==
+  version "10.75.3"
+  resolved "https://registry.yarnpkg.com/@sentry/node/-/node-10.75.3.tgz#c9257a858864db06013e0969a1ebae0b55abcd55"
+  integrity sha512-VK/uoDOwMll/Q+WRBvqhvQMI/3YFitcoMLExP41XH1azC0fqmm8sJdzWGXgvddt/A9cnCb01N/+U0B3ARLX1tg==
   dependencies:
     "@opentelemetry/api" "^1.9.1"
     "@opentelemetry/instrumentation" "^0.220.0"
     "@opentelemetry/sdk-trace-base" "^2.9.0"
     "@sentry/conventions" "^0.16.0"
-    "@sentry/core" "10.75.2"
-    "@sentry/node-core" "10.75.2"
-    "@sentry/opentelemetry" "10.75.2"
-    "@sentry/server-utils" "10.75.2"
+    "@sentry/core" "10.75.3"
+    "@sentry/node-core" "10.75.3"
+    "@sentry/opentelemetry" "10.75.3"
+    "@sentry/server-utils" "10.75.3"
     import-in-the-middle "^3.0.0"
 
-"@sentry/opentelemetry@10.75.2":
-  version "10.75.2"
-  resolved "https://registry.yarnpkg.com/@sentry/opentelemetry/-/opentelemetry-10.75.2.tgz#8bb372819408cb921d5ce01d2781e8a89274ab58"
-  integrity sha512-qoJIdrXiFPPYs7AmdkktB5O4vhHYKzk6EulpQlvROe+ZZeG4/S0yeJApAbg3ThDob/2zEAxYEPEvaHv2epipgA==
+"@sentry/opentelemetry@10.75.3":
+  version "10.75.3"
+  resolved "https://registry.yarnpkg.com/@sentry/opentelemetry/-/opentelemetry-10.75.3.tgz#8d9e2f6c00969aabdc33c0b4854e14aae7f98c07"
+  integrity sha512-Ux2eXgS4NkmT9nj1/guV+j4Dwx9WTZSBO+/WMRmfektEgt05u5nuHuKhSGN8maQ72m8HmEx360vcn8Hd/dh5WA==
   dependencies:
     "@sentry/conventions" "^0.16.0"
-    "@sentry/core" "10.75.2"
+    "@sentry/core" "10.75.3"
 
-"@sentry/server-utils@10.75.2":
-  version "10.75.2"
-  resolved "https://registry.yarnpkg.com/@sentry/server-utils/-/server-utils-10.75.2.tgz#3ac90a14edc98666b109abc1b2d4b87dd43e47f1"
-  integrity sha512-ep8Ntj/vsLHbql1jUMFiRYrleuQ3dENb8oD4Nkjv7hou2j0UKLct1eLbx+TckeVOhYdWmFeO7WJWjRio/a4TOg==
+"@sentry/server-utils@10.75.3":
+  version "10.75.3"
+  resolved "https://registry.yarnpkg.com/@sentry/server-utils/-/server-utils-10.75.3.tgz#a1eb4c88ff835bfc117e60948e3a95fa313f4386"
+  integrity sha512-PG3a+3GxurYYipLykRM3qezWjkIBYuqBjn8EuXzzlG6mpucMVtU8SRgr3EB0wdVaj1Pz+mhz+MLh8CGnLfKhCQ==
   dependencies:
     "@sentry/conventions" "^0.16.0"
-    "@sentry/core" "10.75.2"
+    "@sentry/core" "10.75.3"
 
 "@sinclair/typebox@^0.34.0":
   version "0.34.52"
