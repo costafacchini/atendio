@@ -79,10 +79,10 @@
     "@smithy/types" "^4.19.0"
     tslib "^2.6.2"
 
-"@aws-sdk/client-ecs@3.1139.0":
-  version "3.1139.0"
-  resolved "https://registry.yarnpkg.com/@aws-sdk/client-ecs/-/client-ecs-3.1139.0.tgz#6e3d4b23f0845693569be5bfa70745d338d2e014"
-  integrity sha512-Rp/I325Hur6v+TYjaI2vZgh8n8fiKf++W4HKW+cMGdV0SPDWAFhEG4Z/12/++SeSLA+1X4OGtN1gC6dHO/ChyA==
+"@aws-sdk/client-ecs@3.1140.0":
+  version "3.1140.0"
+  resolved "https://registry.yarnpkg.com/@aws-sdk/client-ecs/-/client-ecs-3.1140.0.tgz#23c273c586af3d32daacf5917e4dbbd86c3ca5ef"
+  integrity sha512-6Op5aYODHl7V+GtzLM0sTG36zOtCSlLIpLys7izHTEmlD/B/N+3yL4uxr0KZRpYfoLIV1GeReuZ/QdymUK+HJg==
   dependencies:
     "@aws-sdk/core" "^3.978.1"
     "@aws-sdk/credential-provider-node" "^3.972.84"
@@ -94,9 +94,9 @@
     tslib "^2.6.2"
 
 "@aws-sdk/client-s3@^3.32.0":
-  version "3.1139.0"
-  resolved "https://registry.yarnpkg.com/@aws-sdk/client-s3/-/client-s3-3.1139.0.tgz#b3345c78a5bac6e422744c62d44cbc6fa81546bd"
-  integrity sha512-HwMHlXgJSsQmZhpFLJaovAIBoC2eVBep4wjTaPCV+qySFd4giXCFuDZC/8Btz1KCr4JzEO5AhXPb5FMflqoQig==
+  version "3.1140.0"
+  resolved "https://registry.yarnpkg.com/@aws-sdk/client-s3/-/client-s3-3.1140.0.tgz#0cc37ab0b56dcd8f276aaa48a9fe07047a094190"
+  integrity sha512-7cf3xOyX6L5fyWZgPkVIrbsf/7cmKccKdRa3mkF467qchzgIiqAl/meG/SYdMdoY8JZYWGh0RobzoXiyKuGneA==
   dependencies:
     "@aws-sdk/checksums" "^3.1001.1"
     "@aws-sdk/core" "^3.978.1"
@@ -259,9 +259,9 @@
     tslib "^2.6.2"
 
 "@aws-sdk/s3-request-presigner@^3.32.0":
-  version "3.1139.0"
-  resolved "https://registry.yarnpkg.com/@aws-sdk/s3-request-presigner/-/s3-request-presigner-3.1139.0.tgz#e53833b8b74660a2e47035fe105a2e4e753513ee"
-  integrity sha512-crOQr6GrVZC6Ov6jzCAkeQZN7IiStG2yJ2QOse1rFsBgqGCWXllFnVLf7n97yuBJMbtoKeWMfrbFnWKKqhSwtw==
+  version "3.1140.0"
+  resolved "https://registry.yarnpkg.com/@aws-sdk/s3-request-presigner/-/s3-request-presigner-3.1140.0.tgz#da8c16154a8e6524b6ac6df956cd55af0b5e0990"
+  integrity sha512-pFYWYvW4vF6zCy/GtnjwqGq28JBU1b0ECDTELQukymfyj9fD5FEwMd54O3UX6oE9TC4y2ebhsMPUQ8GEiPhT9g==
   dependencies:
     "@aws-sdk/core" "^3.978.1"
     "@aws-sdk/signature-v4-multi-region" "^3.996.47"
