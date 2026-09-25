@@ -8000,10 +8000,10 @@ new-find-package-json@^2.0.0:
   dependencies:
     debug "^4.3.4"
 
-newrelic@14.5.0:
-  version "14.5.0"
-  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-14.5.0.tgz#fb239e1b102adb0a2d712ccbcc204aaa4d905e6d"
-  integrity sha512-+5mLaZwVKQxbr/GcXSdrpFke9jdsPvdN+31Tjzf1dgFppYYkeXpncIzQLxFzc+uFjnu0i73q4hXV+WOnhtBxlQ==
+newrelic@14.5.1:
+  version "14.5.1"
+  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-14.5.1.tgz#20bafd1078a2d9b97ae19773910b6f82af805ec4"
+  integrity sha512-HOb0dOvVCCgUkMAER9HmhmpGPditNOInrUwMWIQAESCwKgNnXSk9SqK5tau3Xfs7dByFpeW/OsmA+RDufA3zEg==
   dependencies:
     "@apm-js-collab/tracing-hooks" "^0.13.0"
     "@grpc/grpc-js" "^1.13.2"
@@ -8011,7 +8011,6 @@ newrelic@14.5.0:
     "@newrelic/security-agent" "^3.0.0"
     "@opentelemetry/api" "^1.9.0"
     "@opentelemetry/api-logs" "^0.221.0"
-    "@opentelemetry/core" "^2.0.0"
     "@opentelemetry/exporter-metrics-otlp-http" "^0.221.0"
     "@opentelemetry/otlp-exporter-base" "^0.221.0"
     "@opentelemetry/otlp-transformer" "^0.221.0"
