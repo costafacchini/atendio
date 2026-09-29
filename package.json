@@ -132,7 +132,7 @@
     "uuid": "14.0.2",
     "socket.io-parser": "4.2.7",
     "tar": "7.5.22",
-    "shell-quote": "1.10.0",
+    "shell-quote": "1.11.0",
     "postcss": "8.5.28",
     "undici": "8.11.2",
     "ip-address": "10.7.2",
