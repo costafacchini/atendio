@@ -1385,30 +1385,30 @@
   resolved "https://registry.yarnpkg.com/@borewit/text-codec/-/text-codec-0.2.2.tgz#75025f735c0983b3a871668804a57387e3649375"
   integrity sha512-DDaRehssg1aNrH4+2hnj1B7vnUGEjU6OIlyRdkMd0aUdIUvKXrJfXsy8LVtXAy7DRvYVluWbMspsRhz2lcW0mQ==
 
-"@bull-board/api@9.10.1", "@bull-board/api@^9.0.0":
-  version "9.10.1"
-  resolved "https://registry.yarnpkg.com/@bull-board/api/-/api-9.10.1.tgz#a99286e5dc7445f8bd638692d5717bc9ae40ebd8"
-  integrity sha512-yaFVInFvQAKHQwW7xxdoWQaC2xW1f8JOAZ5k6Zl8GQBTnlhm6UmeRQUr2Gb6wMgfl5v61p2eSupPow2CEvz0ng==
+"@bull-board/api@9.10.2", "@bull-board/api@^9.0.0":
+  version "9.10.2"
+  resolved "https://registry.yarnpkg.com/@bull-board/api/-/api-9.10.2.tgz#cfc70bc8dcae339d61ca0691e192971f63e38415"
+  integrity sha512-x/PLmpFI+RxpoFA9Z3kXZH/evVSqwmY59drNRFjFY+h+Ls60pwG2uhx0560qGAz8z6Orv/4kfT/5DcGBuFrF6g==
   dependencies:
     redis-info "^3.1.0"
     valibot "^1.5.0"
 
 "@bull-board/express@^9.0.0":
-  version "9.10.1"
-  resolved "https://registry.yarnpkg.com/@bull-board/express/-/express-9.10.1.tgz#b72f71f558a0cef2879e5fabb875236171cb9e3c"
-  integrity sha512-sUXrFAwbllDNGyieB51Xr7bFa+f7uPdWWPMcArROYlAXsZqrG0HyRPf81bpCX8ZnBGTUcbsEq9jSdRpEfbqm7g==
+  version "9.10.2"
+  resolved "https://registry.yarnpkg.com/@bull-board/express/-/express-9.10.2.tgz#1167f2f4049290bb2d6bd59d10376242f3f6df0b"
+  integrity sha512-/sWepkHLRTiyF8ITe7/wp5Dz9zKwEBpPISpddcG31Q+PC3QIAStVp6D7PGlPz/Laore7ySc+JZcXC2H5VHkwpw==
   dependencies:
-    "@bull-board/api" "9.10.1"
-    "@bull-board/ui" "9.10.1"
+    "@bull-board/api" "9.10.2"
+    "@bull-board/ui" "9.10.2"
     ejs "^6.0.1"
     express "^5.2.1"
 
-"@bull-board/ui@9.10.1", "@bull-board/ui@^9.0.0":
-  version "9.10.1"
-  resolved "https://registry.yarnpkg.com/@bull-board/ui/-/ui-9.10.1.tgz#7428499cc42248886c44d2ff3c3f38e20ed570d1"
-  integrity sha512-1E0zbLaljf+Zhx3nDUotzsG2Dz7/4i72nWCxKkFwxfz65MKXfObo2mXWMuIDoXAeWSa3sm7hlPj3h3scts4DaQ==
+"@bull-board/ui@9.10.2", "@bull-board/ui@^9.0.0":
+  version "9.10.2"
+  resolved "https://registry.yarnpkg.com/@bull-board/ui/-/ui-9.10.2.tgz#10a0d2faff8247c1912ef5efe434fc4b3bc4f81d"
+  integrity sha512-7VHpIe1XIdxlye0deOmMNbmHGVdkEy9nC/gZZitx9uZA3lLE21i92MPGHLFEvMm0Y33fAswPfvzTc3m4pQFg/Q==
   dependencies:
-    "@bull-board/api" "9.10.1"
+    "@bull-board/api" "9.10.2"
 
 "@cacheable/memory@^2.2.0":
   version "2.2.0"
@@ -8851,9 +8851,9 @@ protobufjs@8.8.0, protobufjs@^7.5.5, protobufjs@^7.5.6:
     long "^5.3.2"
 
 proxy-addr@^2.0.7:
-  version "2.0.7"
-  resolved "https://registry.yarnpkg.com/proxy-addr/-/proxy-addr-2.0.7.tgz#f19fe69ceab311eeb94b42e70e8c2070f9ba1025"
-  integrity sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/proxy-addr/-/proxy-addr-2.0.8.tgz#624e760fd8ab06b1b8320c2f8506d4422cf8e932"
+  integrity sha512-5nnx0yGyVUcY6t9RnWcARWtwT9F1D8O9rt08htPvnd49W1IgZtmLkhu9WfMzQj1cFxjHIO6connUNVW5k7AVyQ==
   dependencies:
     forwarded "0.2.0"
     ipaddr.js "1.9.1"
