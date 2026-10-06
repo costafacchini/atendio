@@ -123,7 +123,7 @@
     "@repositories": "./src/app/repositories"
   },
   "resolutions": {
-    "nanoid": "6.0.1",
+    "nanoid": "6.0.2",
     "browserslist": "4.29.3",
     "mysql2": "3.24.5",
     "deepmerge-ts": "8.0.2",
