@@ -253,10 +253,73 @@ describe('<ConversationPanel>', () => {
   // --- local-chat-files plan stubs (task-07) ---
 
   describe('file message rendering', () => {
-    it.todo('renders an <img> element for a file message with an image url (S5)')
-    it.todo('renders a <video> element with controls for a file message with a video url (S6)')
-    it.todo('renders an <audio> element with controls for a file message with an audio url (S7)')
-    it.todo('renders a download anchor with fileName label for a file message with a non-media url (S8)')
-    it.todo('text messages still render as plain text after file rendering is added (no regression)')
+    function buildFileMessage(overrides: Partial<IMessage> = {}): IMessage {
+      return {
+        id: 'msg-file',
+        kind: 'file',
+        destination: 'to-chat',
+        text: null,
+        url: null,
+        fileName: null,
+        latitude: 0,
+        longitude: 0,
+        sended: true,
+        error: null,
+        cart: null,
+        createdAt: '2026-06-17T10:00:00.000Z',
+        contact: null,
+        trigger: null,
+        department: null,
+        ...overrides,
+      }
+    }
+
+    it('renders an <img> element for a file message with an image url (S5)', () => {
+      const fileMessage = buildFileMessage({ url: 'http://localhost:5001/uploads/photo.jpg', fileName: 'photo.jpg' })
+      render(<ConversationPanel room={room} messages={[fileMessage]} onSend={vi.fn()} onBack={vi.fn()} onClose={vi.fn()} />)
+
+      const img = screen.getByRole('img')
+      expect(img).toHaveAttribute('src', 'http://localhost:5001/uploads/photo.jpg')
+    })
+
+    it('renders a <video> element with controls for a file message with a video url (S6)', () => {
+      const fileMessage = buildFileMessage({ url: 'http://localhost:5001/uploads/clip.mp4', fileName: 'clip.mp4' })
+      const { container } = render(
+        <ConversationPanel room={room} messages={[fileMessage]} onSend={vi.fn()} onBack={vi.fn()} onClose={vi.fn()} />,
+      )
+
+      const video = container.querySelector('video')
+      expect(video).not.toBeNull()
+      expect(video).toHaveAttribute('src', 'http://localhost:5001/uploads/clip.mp4')
+      expect(video).toHaveAttribute('controls')
+    })
+
+    it('renders an <audio> element with controls for a file message with an audio url (S7)', () => {
+      const fileMessage = buildFileMessage({ url: 'http://localhost:5001/uploads/voice.mp3', fileName: 'voice.mp3' })
+      const { container } = render(
+        <ConversationPanel room={room} messages={[fileMessage]} onSend={vi.fn()} onBack={vi.fn()} onClose={vi.fn()} />,
+      )
+
+      const audio = container.querySelector('audio')
+      expect(audio).not.toBeNull()
+      expect(audio).toHaveAttribute('src', 'http://localhost:5001/uploads/voice.mp3')
+      expect(audio).toHaveAttribute('controls')
+    })
+
+    it('renders a download anchor with fileName label for a file message with a non-media url (S8)', () => {
+      const fileMessage = buildFileMessage({ url: 'http://localhost:5001/uploads/report.pdf', fileName: 'report.pdf' })
+      render(<ConversationPanel room={room} messages={[fileMessage]} onSend={vi.fn()} onBack={vi.fn()} onClose={vi.fn()} />)
+
+      const link = screen.getByRole('link', { name: 'report.pdf' })
+      expect(link).toHaveAttribute('href', 'http://localhost:5001/uploads/report.pdf')
+      expect(link).toHaveAttribute('download')
+    })
+
+    it('text messages still render as plain text after file rendering is added (no regression)', () => {
+      render(<ConversationPanel room={room} messages={messages} onSend={vi.fn()} onBack={vi.fn()} onClose={vi.fn()} />)
+
+      expect(screen.getByText('Olá!')).toBeInTheDocument()
+      expect(screen.getByText('Tudo bem?')).toBeInTheDocument()
+    })
   })
 })
