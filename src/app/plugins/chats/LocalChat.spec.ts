@@ -214,4 +214,18 @@ describe('LocalChat plugin', () => {
       expect(updated.status).toEqual('closed')
     })
   })
+
+  // --- local-chat-files plan stubs (task-03) ---
+
+  describe('#parseMessage (file messages)', () => {
+    it.todo('parses a file message when body has url and fileName (S2)')
+    it.todo('sets messageParsed to null when body has neither text nor url+fileName')
+    it.todo('includes senderName in parsed file message')
+    it.todo('still parses text messages correctly after extension (no regression)')
+  })
+
+  describe('#sendMessage (file messages)', () => {
+    it.todo('emits url and fileName in new-room-message socket event for kind=file (S4)')
+    it.todo('emits null url and null fileName for text messages (no regression)')
+  })
 })

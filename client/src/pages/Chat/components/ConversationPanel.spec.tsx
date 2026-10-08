@@ -249,4 +249,14 @@ describe('<ConversationPanel>', () => {
 
     expect(screen.queryByLabelText('chat.cancelScheduledAriaLabel')).not.toBeInTheDocument()
   })
+
+  // --- local-chat-files plan stubs (task-07) ---
+
+  describe('file message rendering', () => {
+    it.todo('renders an <img> element for a file message with an image url (S5)')
+    it.todo('renders a <video> element with controls for a file message with a video url (S6)')
+    it.todo('renders an <audio> element with controls for a file message with an audio url (S7)')
+    it.todo('renders a download anchor with fileName label for a file message with a non-media url (S8)')
+    it.todo('text messages still render as plain text after file rendering is added (no regression)')
+  })
 })

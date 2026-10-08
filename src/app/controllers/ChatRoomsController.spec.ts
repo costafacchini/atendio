@@ -77,5 +77,9 @@ describe('ChatRoomsController', () => {
 
     // schedule-message plan moved scheduledAt handling to CreateMessage usecase (POST /resources/messages)
     // No scheduled-message stubs needed here.
+
+    // --- local-chat-files plan stubs (task-04) ---
+    it.todo('forwards url, fileName, and kind=file to IngestChatMessage when body is a file message (S2)')
+    it.todo('defaults kind to text and url/fileName to null when body has only text (no regression)')
   })
 })
