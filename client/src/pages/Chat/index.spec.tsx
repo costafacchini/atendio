@@ -1,9 +1,14 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import ChatPage from './index'
-import { getRooms, getRoomMessages, sendRoomMessage } from '../../services/rooms'
+import { getRooms, getRoomMessages, sendRoomMessage, uploadRoomFile, sendRoomFileMessage } from '../../services/rooms'
 import { scheduleMessage, ignoreMessage } from '../../services/message'
 import { getInboxes } from '../../services/inbox'
 import { AppContext } from '../../contexts/App'
+
+const mockSocketOn = vi.fn()
+vi.mock('socket.io-client', () => ({
+  io: vi.fn(() => ({ emit: vi.fn(), on: mockSocketOn, disconnect: vi.fn() })),
+}))
 
 vi.mock('../../services/rooms')
 vi.mock('../../services/inbox', () => ({
@@ -249,5 +254,74 @@ describe('<ChatPage> — Story 5: Nova conversa inbox picker', () => {
     await waitFor(() => {
       expect(screen.queryByRole('button', { name: 'common.confirm' })).not.toBeInTheDocument()
     })
+  })
+})
+
+describe('<ChatPage> — local-chat-files: file send flow', () => {
+  beforeEach(() => {
+    ;(getInboxes as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [singleInbox] })
+    ;(getRooms as ReturnType<typeof vi.fn>).mockResolvedValue({ data: { rooms: sampleRooms, hasMore: false } })
+    mockSocketOn.mockClear()
+  })
+
+  // --- Scenario S2 (end-to-end file send) ---
+  it('uploads the file and sends a file message when a file is selected (S2)', async () => {
+    ;(getRoomMessages as ReturnType<typeof vi.fn>).mockResolvedValue({ data: { messages: [], total: 0, page: 1, hasMore: false } })
+    ;(uploadRoomFile as ReturnType<typeof vi.fn>).mockResolvedValue({
+      status: 201,
+      data: { url: 'http://localhost:5001/uploads/photo.jpg', fileName: 'photo.jpg' },
+    })
+    ;(sendRoomFileMessage as ReturnType<typeof vi.fn>).mockResolvedValue({ data: {} })
+
+    mount()
+
+    fireEvent.click(await screen.findByText('Alice'))
+    await waitFor(() => expect(getRoomMessages).toHaveBeenCalled())
+
+    const file = new File(['conteudo'], 'photo.jpg', { type: 'image/jpeg' })
+    const fileInput = screen.getByLabelText('chat.attachFileAriaLabel', { selector: 'input' })
+    fireEvent.change(fileInput, { target: { files: [file] } })
+    fireEvent.click(screen.getByRole('button', { name: 'chat.sendAriaLabel' }))
+
+    await waitFor(() => {
+      expect(uploadRoomFile).toHaveBeenCalledWith('r1', file)
+    })
+    await waitFor(() => {
+      expect(sendRoomFileMessage).toHaveBeenCalledWith('r1', {
+        url: 'http://localhost:5001/uploads/photo.jpg',
+        fileName: 'photo.jpg',
+      })
+    })
+  })
+
+  // --- Scenario S4 (socket carries url/fileName) ---
+  it('populates url and fileName in state when a file message arrives via socket (S4)', async () => {
+    ;(getRoomMessages as ReturnType<typeof vi.fn>).mockResolvedValue({ data: { messages: [], total: 0, page: 1, hasMore: false } })
+
+    mount()
+
+    fireEvent.click(await screen.findByText('Alice'))
+    await waitFor(() => expect(getRoomMessages).toHaveBeenCalled())
+
+    const onCall = mockSocketOn.mock.calls.find(([event]) => event === 'new-room-message')
+    expect(onCall).toBeDefined()
+    const handler = onCall![1]
+
+    handler({
+      roomId: 'r1',
+      messageId: 'msg-incoming',
+      licenseeId: 'lic-1',
+      kind: 'file',
+      destination: 'to-chat',
+      url: 'http://localhost:5001/uploads/doc.pdf',
+      fileName: 'doc.pdf',
+      sended: true,
+      createdAt: new Date().toISOString(),
+    })
+
+    expect(await screen.findByRole('link', { name: 'doc.pdf' })).toHaveAttribute(
+      'href',
+      'http://localhost:5001/uploads/doc.pdf',
+    )
   })
 })

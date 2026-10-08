@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../../contexts/App'
-import { getRooms, getRoomMessages, sendRoomMessage, closeRoom } from '../../services/rooms'
+import { getRooms, getRoomMessages, sendRoomMessage, closeRoom, uploadRoomFile, sendRoomFileMessage } from '../../services/rooms'
 import { scheduleMessage, ignoreMessage } from '../../services/message'
 import { getInboxes } from '../../services/inbox'
 import type { IRoom, IMessage } from '../../types'
@@ -116,6 +116,37 @@ export default function ChatPage() {
     }
   }
 
+  async function handleSendFile(file: File) {
+    if (!selectedRoom) return
+    const optimisticId = `optimistic-file-${Date.now()}`
+    const optimistic: IMessage = {
+      id: optimisticId,
+      kind: 'file',
+      destination: 'to-messenger',
+      text: null,
+      url: URL.createObjectURL(file),
+      fileName: file.name,
+      latitude: 0,
+      longitude: 0,
+      sended: false,
+      error: null,
+      cart: null,
+      createdAt: new Date().toISOString(),
+      contact: null,
+      trigger: null,
+      department: null,
+    }
+    setMessages(prev => [...prev, optimistic])
+    try {
+      const uploadRes = await uploadRoomFile(selectedRoom._id, file)
+      await sendRoomFileMessage(selectedRoom._id, { url: uploadRes.data.url, fileName: uploadRes.data.fileName })
+      setMessages(prev => prev.filter(m => m.id !== optimisticId))
+      loadMessages(selectedRoom._id)
+    } catch {
+      setMessages(prev => prev.filter(m => m.id !== optimisticId))
+    }
+  }
+
   async function handleSchedule(text: string, scheduledAt: string) {
     if (!selectedRoom || !effectiveLicenseeId) return
     try {
@@ -142,7 +173,7 @@ export default function ChatPage() {
     }
   }
 
-  useChatSocket(effectiveLicenseeId, ({ roomId, messageId, text, kind, destination, createdAt, sended, contact }) => {
+  useChatSocket(effectiveLicenseeId, ({ roomId, messageId, text, url, fileName, kind, destination, createdAt, sended, contact }) => {
     const ts = createdAt ?? new Date().toISOString()
 
     if (selectedRoom && selectedRoom._id === roomId) {
@@ -151,8 +182,8 @@ export default function ChatPage() {
         kind: kind ?? 'text',
         destination: destination ?? 'to-chat',
         text: text ?? null,
-        url: null,
-        fileName: null,
+        url: url ?? null,
+        fileName: fileName ?? null,
         latitude: 0,
         longitude: 0,
         sended: sended ?? false,
@@ -254,6 +285,7 @@ export default function ChatPage() {
             messages={messages}
             onSend={handleSend}
             onSchedule={handleSchedule}
+            onSendFile={handleSendFile}
             onCancelScheduled={handleCancelScheduled}
             loading={messagesLoading}
             onBack={handleBack}
