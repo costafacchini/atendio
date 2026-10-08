@@ -47,6 +47,29 @@ describe('useChatSocket', () => {
     expect(onNewRoomMessage).toHaveBeenCalledWith(payload)
   })
 
+  it('passes url and fileName through for file messages (S4)', () => {
+    const licenseeId = '507f1f77bcf86cd799439011'
+    const onNewRoomMessage = vi.fn()
+    renderHook(() => useChatSocket(licenseeId, onNewRoomMessage))
+
+    const onCall = mockOn.mock.calls.find(([event]) => event === 'new-room-message')
+    const handler = onCall![1]
+
+    const payload = {
+      roomId: 'room-1',
+      messageId: 'msg-1',
+      licenseeId,
+      kind: 'file',
+      url: 'http://localhost:5001/uploads/photo.jpg',
+      fileName: 'photo.jpg',
+    }
+    handler(payload)
+
+    expect(onNewRoomMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ url: 'http://localhost:5001/uploads/photo.jpg', fileName: 'photo.jpg' }),
+    )
+  })
+
   it('disconnects on cleanup', () => {
     const licenseeId = '507f1f77bcf86cd799439011'
     const onNewRoomMessage = vi.fn()

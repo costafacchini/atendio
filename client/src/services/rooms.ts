@@ -1,4 +1,5 @@
 import api from './api'
+import type { IApiResponse } from './api'
 import { getToken } from './auth'
 import parseUrl from './objectToQueryParameter'
 import type { IRoom } from '../types'
@@ -29,4 +30,29 @@ export function sendRoomMessage(roomId: string, text: string) {
 
 export function closeRoom(roomId: string) {
   return api().post(`resources/rooms/${roomId}/close`, { headers: headers() })
+}
+
+// Uses fetch directly (not api()) — api() always JSON.stringifies the body and
+// forces Content-Type: application/json, which breaks multipart/form-data uploads.
+export async function uploadRoomFile(
+  roomId: string,
+  file: File,
+): Promise<IApiResponse<{ url: string; fileName: string }>> {
+  const form = new FormData()
+  form.append('file', file)
+
+  const response = await fetch(`resources/rooms/${roomId}/upload`, {
+    method: 'POST',
+    headers: headers() as Record<string, string>,
+    body: form,
+  })
+  const data = await response.json()
+  return { status: response.status, data }
+}
+
+export function sendRoomFileMessage(roomId: string, payload: { url: string; fileName: string }) {
+  return api().post(`resources/rooms/${roomId}/messages`, {
+    headers: headers(),
+    body: { kind: 'file', url: payload.url, fileName: payload.fileName },
+  })
 }
