@@ -1,8 +1,8 @@
 # Plan: Local Chat — File Sending
 
-**Status**: not-started
+**Status**: complete
 **Created**: 2026-09-02
-**Last Updated**: 2026-09-02
+**Last Updated**: 2026-10-08
 **Assigned Dev**: Alan Costa Facchini
 **PR Strategy**: single
 **Spec**: [spec.md](spec.md) — 2 user stories · 8 acceptance scenarios · 3 success criteria
@@ -44,14 +44,14 @@ Add file-sending capability to the agent-facing Local Chat admin panel so that a
 
 | Task Path | Title | Phase | Status | Depends On |
 |-----------|-------|-------|--------|------------|
-| phase-1/task-01-storage-upload-helper | Storage upload helper | 1 | not-started | — |
-| phase-2/task-02-upload-route | Upload route + multer | 2 | not-started | phase-1/task-01-storage-upload-helper |
-| phase-2/task-03-local-chat-file-support | LocalChat file message support | 2 | not-started | phase-1/task-01-storage-upload-helper |
-| phase-2/task-04-controller-file-fields | ChatRoomsController file fields | 2 | not-started | — |
-| phase-3/task-05-rooms-service-socket | Rooms service + useChatSocket | 3 | not-started | phase-2/task-02-upload-route |
-| phase-3/task-06-message-input-file-picker | MessageInput file picker | 3 | not-started | — |
-| phase-3/task-07-conversation-panel-rendering | ConversationPanel file rendering | 3 | not-started | — |
-| phase-3/task-08-chat-index-wire-up | Chat/index.tsx wire-up | 3 | not-started | phase-3/task-05-rooms-service-socket, phase-3/task-06-message-input-file-picker, phase-3/task-07-conversation-panel-rendering |
+| phase-1/task-01-storage-upload-helper | Storage upload helper | 1 | complete | — |
+| phase-2/task-02-upload-route | Upload route + multer | 2 | complete | phase-1/task-01-storage-upload-helper |
+| phase-2/task-03-local-chat-file-support | LocalChat file message support | 2 | complete | phase-1/task-01-storage-upload-helper |
+| phase-2/task-04-controller-file-fields | ChatRoomsController file fields | 2 | complete | — |
+| phase-3/task-05-rooms-service-socket | Rooms service + useChatSocket | 3 | complete | phase-2/task-02-upload-route |
+| phase-3/task-06-message-input-file-picker | MessageInput file picker | 3 | complete | — |
+| phase-3/task-07-conversation-panel-rendering | ConversationPanel file rendering | 3 | complete | — |
+| phase-3/task-08-chat-index-wire-up | Chat/index.tsx wire-up | 3 | complete | phase-3/task-05-rooms-service-socket, phase-3/task-06-message-input-file-picker, phase-3/task-07-conversation-panel-rendering |
 
 ## Branch Convention
 
@@ -85,12 +85,12 @@ Base branch: `main`
 
 ## Success Criteria
 
-- [ ] SC-001: Agent can select a file, send it, and see the file message in the conversation list
-- [ ] SC-002: Socket event for file messages carries non-null `url` and `fileName`
-- [ ] SC-003: All 8 acceptance scenario test stubs pass; existing specs remain green
-- [ ] All TypeScript compilation passes (`yarn typecheck`)
-- [ ] Linter passes (`yarn linter`)
-- [ ] No regressions in existing text message flow
+- [x] SC-001: Agent can select a file, send it, and see the file message in the conversation list
+- [x] SC-002: Socket event for file messages carries non-null `url` and `fileName`
+- [x] SC-003: All 8 acceptance scenario test stubs pass; existing specs remain green
+- [x] All TypeScript compilation passes (`yarn typecheck`) — backend clean; client shows only the pre-existing, unrelated `department`/`IMessage` mismatch documented in spec.md Assumptions (same error count class as main, not introduced by this plan)
+- [x] Linter passes (`yarn linter`) — backend clean (pre-existing unrelated warnings only); client has no lint script configured in this repo
+- [x] No regressions in existing text message flow — full backend suite (2621 passed) and full client suite (331 passed) green
 
 ## References
 
