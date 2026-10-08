@@ -3,16 +3,29 @@ import type { IRoom, IMessage } from '../../../types'
 import styles from '../styles.module.scss'
 import MessageInput from './MessageInput'
 import { useTranslation } from 'react-i18next'
+import { isPhoto, isVideo, isMidia, isVoice } from '../../../helpers/files'
 
 interface ConversationPanelProps {
   room: IRoom | null
   messages: IMessage[]
   onSend: (text: string) => void
   onSchedule?: (text: string, scheduledAt: string) => void
+  onSendFile?: (file: File) => void
   onCancelScheduled?: (messageId: string) => void
   loading: boolean
   onBack: () => void
   onClose: () => void
+}
+
+function renderFileMessage(url: string, fileName: string | null, mediaClassName: string) {
+  if (isPhoto(url)) return <img src={url} alt={fileName ?? 'arquivo'} className={mediaClassName} />
+  if (isVideo(url)) return <video src={url} controls className={mediaClassName} />
+  if (isMidia(url) || isVoice(url)) return <audio src={url} controls />
+  return (
+    <a href={url} download={fileName ?? true}>
+      {fileName ?? 'Baixar arquivo'}
+    </a>
+  )
 }
 
 function formatMsgTime(iso: string): string {
@@ -23,7 +36,7 @@ function formatScheduledAt(iso: string): string {
   return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
 
-export default function ConversationPanel({ room, messages, onSend, onSchedule, onCancelScheduled, loading, onBack, onClose }: ConversationPanelProps) {
+export default function ConversationPanel({ room, messages, onSend, onSchedule, onSendFile, onCancelScheduled, loading, onBack, onClose }: ConversationPanelProps) {
   const { t } = useTranslation()
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -106,7 +119,9 @@ export default function ConversationPanel({ room, messages, onSend, onSchedule, 
                 <div className={styles.bubbleWrapper}>
                   <div className={`${styles.bubble} ${fromMe ? styles.bubbleSent : styles.bubbleReceived}`}>
                     <span className={styles.bubbleText}>
-                      {message.text || (message.url ? '[arquivo]' : '[mensagem]')}
+                      {message.kind === 'file' && message.url
+                        ? renderFileMessage(message.url, message.fileName, styles.bubbleMedia)
+                        : message.text || '[mensagem]'}
                     </span>
                     <span className={styles.bubbleTime} aria-hidden='true'>
                       {formatMsgTime(message.createdAt)}
@@ -136,7 +151,7 @@ export default function ConversationPanel({ room, messages, onSend, onSchedule, 
         </div>
       )}
 
-      <MessageInput onSend={onSend} onSchedule={onSchedule} disabled={loading || room.closed} />
+      <MessageInput onSend={onSend} onSchedule={onSchedule} onSendFile={onSendFile} disabled={loading || room.closed} />
     </>
   )
 }

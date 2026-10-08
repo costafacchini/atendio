@@ -79,7 +79,56 @@ describe('ChatRoomsController', () => {
     // No scheduled-message stubs needed here.
 
     // --- local-chat-files plan stubs (task-04) ---
-    it.todo('forwards url, fileName, and kind=file to IngestChatMessage when body is a file message (S2)')
-    it.todo('defaults kind to text and url/fileName to null when body has only text (no regression)')
+    it('forwards url, fileName, and kind=file to IngestChatMessage when body is a file message (S2)', async () => {
+      const { controller, roomRepository, ingestChatMessage } = buildController()
+      roomRepository.findFirst.mockResolvedValue({
+        _id: 'room-1',
+        closed: false,
+        contact: { _id: 'contact-1', licensee: 'licensee-1' },
+      })
+      const res = buildResponse()
+
+      await controller.replyToRoom(
+        {
+          params: { roomId: 'room-1' },
+          body: { kind: 'file', url: 'http://localhost:5001/uploads/photo.jpg', fileName: 'photo.jpg' },
+          userId: 'agent-1',
+        },
+        res,
+      )
+
+      expect(ingestChatMessage.execute).toHaveBeenCalledWith(
+        expect.objectContaining({
+          body: expect.objectContaining({
+            roomId: 'room-1',
+            text: null,
+            kind: 'file',
+            url: 'http://localhost:5001/uploads/photo.jpg',
+            fileName: 'photo.jpg',
+          }),
+          licenseeId: 'licensee-1',
+        }),
+      )
+      expect(res.status).toHaveBeenCalledWith(200)
+    })
+
+    it('defaults kind to text and url/fileName to null when body has only text (no regression)', async () => {
+      const { controller, roomRepository, ingestChatMessage } = buildController()
+      roomRepository.findFirst.mockResolvedValue({
+        _id: 'room-1',
+        closed: false,
+        contact: { _id: 'contact-1', licensee: 'licensee-1' },
+      })
+      const res = buildResponse()
+
+      await controller.replyToRoom({ params: { roomId: 'room-1' }, body: { text: 'Hello' }, userId: 'agent-1' }, res)
+
+      expect(ingestChatMessage.execute).toHaveBeenCalledWith(
+        expect.objectContaining({
+          body: expect.objectContaining({ roomId: 'room-1', text: 'Hello', kind: 'text', url: null, fileName: null }),
+          licenseeId: 'licensee-1',
+        }),
+      )
+    })
   })
 })

@@ -1,25 +1,40 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import styles from '../styles.module.scss'
 import { useTranslation } from 'react-i18next'
 
 interface MessageInputProps {
   onSend: (text: string) => void
   onSchedule?: (text: string, scheduledAt: string) => void
+  onSendFile?: (file: File) => void
   disabled?: boolean
 }
 
-export default function MessageInput({ onSend, onSchedule, disabled }: MessageInputProps) {
+export default function MessageInput({ onSend, onSchedule, onSendFile, disabled }: MessageInputProps) {
   const { t } = useTranslation()
   const [text, setText] = useState('')
   const [showSchedule, setShowSchedule] = useState(false)
   const [scheduledAt, setScheduledAt] = useState('')
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   function isScheduleValid() {
     return !!scheduledAt && new Date(scheduledAt).getTime() > Date.now()
   }
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null
+    setPendingFile(file)
+    e.target.value = ''
+  }
+
   function handleSend() {
-    if (!text.trim() || disabled) return
+    if (disabled) return
+    if (pendingFile && onSendFile) {
+      onSendFile(pendingFile)
+      setPendingFile(null)
+      return
+    }
+    if (!text.trim()) return
     onSend(text.trim())
     setText('')
   }
@@ -53,6 +68,34 @@ export default function MessageInput({ onSend, onSchedule, disabled }: MessageIn
           aria-label={t('chat.messageInputAriaLabel')}
           autoComplete='off'
         />
+        {onSendFile && !disabled && (
+          <>
+            <input
+              type='file'
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              accept='image/*,video/*,audio/*,.pdf,.doc,.docx'
+              onChange={handleFileChange}
+              aria-label={t('chat.attachFileAriaLabel')}
+            />
+            <button
+              type='button'
+              className={styles.attachBtn}
+              onClick={() => fileInputRef.current?.click()}
+              aria-label={t('chat.attachFileAriaLabel')}
+            >
+              <i className='bi bi-paperclip' aria-hidden='true' />
+            </button>
+          </>
+        )}
+        {pendingFile && (
+          <span className={styles.filePreview} aria-live='polite'>
+            {pendingFile.name}
+            <button type='button' onClick={() => setPendingFile(null)} aria-label={t('chat.clearFileAriaLabel')}>
+              ×
+            </button>
+          </span>
+        )}
         {onSchedule && (
           <button
             type='button'
@@ -67,7 +110,7 @@ export default function MessageInput({ onSend, onSchedule, disabled }: MessageIn
           type='button'
           className={styles.sendBtn}
           onClick={handleSend}
-          disabled={disabled || !text.trim()}
+          disabled={disabled || (!pendingFile && !text.trim())}
           aria-label={t('chat.sendAriaLabel')}
         >
           {disabled

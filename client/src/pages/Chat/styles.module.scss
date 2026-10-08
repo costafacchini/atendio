@@ -343,6 +343,7 @@ $t-slide:           300ms $ease-out-quart;
   background: $white;
   transition: transform $t-slide;
   min-width: 0;
+  min-height: 0;
 
   @media (max-width: 767px) {
     position: absolute;
@@ -479,7 +480,10 @@ $t-slide:           300ms $ease-out-quart;
   padding: 20px 24px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  // NOT justify-content: flex-end — with overflow-y: auto, content that overflows
+  // past the flex-start edge becomes unreachable (no scrollbar) in Chromium. Bottom
+  // alignment for short conversations is instead achieved by margin-top: auto on the
+  // first message group below; actual scroll-to-bottom is handled by bottomRef.
   gap: 3px;
   background: $surface;
 
@@ -492,6 +496,10 @@ $t-slide:           300ms $ease-out-quart;
   display: flex;
   width: 100%;
   margin-bottom: 2px;
+
+  &:first-child {
+    margin-top: auto;
+  }
 
   &.outbound { justify-content: flex-end; }
   &.inbound  { justify-content: flex-start; }
@@ -531,6 +539,13 @@ $t-slide:           300ms $ease-out-quart;
   font-size: 0.9375rem;
   line-height: 1.45;
   font-weight: 400;
+}
+
+.bubbleMedia {
+  display: block;
+  max-width: 100%;
+  max-height: 320px;
+  border-radius: 4px;
 }
 
 .bubbleTime {
@@ -767,6 +782,65 @@ $t-slide:           300ms $ease-out-quart;
   &:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px rgba(250, 86, 25, 0.2);
+  }
+}
+
+.attachBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 50%;
+  border: 1.5px solid $border;
+  background: transparent;
+  color: $muted;
+  cursor: pointer;
+  transition: border-color $t-fast, color $t-fast, background $t-fast;
+  padding: 0;
+
+  i { font-size: 0.9rem; }
+
+  &:hover {
+    border-color: $teal;
+    color: $teal;
+    background: $signal-tint;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(24, 188, 156, 0.2);
+  }
+}
+
+.filePreview {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  color: $fieldwork;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 50rem;
+  padding: 4px 10px;
+  max-width: 180px;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: $muted;
+    cursor: pointer;
+    padding: 0;
+    font-size: 1rem;
+    line-height: 1;
+
+    &:hover {
+      color: $primary;
+    }
   }
 }
 

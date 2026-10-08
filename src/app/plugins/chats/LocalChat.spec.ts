@@ -218,14 +218,97 @@ describe('LocalChat plugin', () => {
   // --- local-chat-files plan stubs (task-03) ---
 
   describe('#parseMessage (file messages)', () => {
-    it.todo('parses a file message when body has url and fileName (S2)')
-    it.todo('sets messageParsed to null when body has neither text nor url+fileName')
-    it.todo('includes senderName in parsed file message')
-    it.todo('still parses text messages correctly after extension (no regression)')
+    it('parses a file message when body has url and fileName (S2)', async () => {
+      const room = await roomRepository.create({ contact: contact._id, status: 'open' })
+
+      await plugin.parseMessage({
+        roomId: room._id,
+        url: 'http://localhost:5001/uploads/photo.jpg',
+        fileName: 'photo.jpg',
+        agentName: 'Ana',
+      })
+
+      expect(plugin.messageParsed).toMatchObject({
+        action: 'send-message-to-messenger',
+        messages: [
+          {
+            kind: 'file',
+            file: { url: 'http://localhost:5001/uploads/photo.jpg', fileName: 'photo.jpg', text: null },
+            senderName: 'Ana',
+          },
+        ],
+      })
+    })
+
+    it('sets messageParsed to null when body has neither text nor url+fileName', async () => {
+      const room = await roomRepository.create({ contact: contact._id, status: 'open' })
+
+      await plugin.parseMessage({ roomId: room._id, url: 'http://localhost:5001/uploads/photo.jpg' })
+
+      expect(plugin.messageParsed).toBeNull()
+    })
+
+    it('includes senderName in parsed file message', async () => {
+      const room = await roomRepository.create({ contact: contact._id, status: 'open' })
+
+      await plugin.parseMessage({
+        roomId: room._id,
+        url: 'http://localhost:5001/uploads/doc.pdf',
+        fileName: 'doc.pdf',
+        agentName: 'Carlos',
+      })
+
+      expect(plugin.messageParsed.messages[0].senderName).toEqual('Carlos')
+    })
+
+    it('still parses text messages correctly after extension (no regression)', async () => {
+      const room = await roomRepository.create({ contact: contact._id, status: 'open' })
+
+      await plugin.parseMessage({ roomId: room._id, text: 'Hello agent', agentName: 'Ana' })
+
+      expect(plugin.messageParsed).toMatchObject({
+        action: 'send-message-to-messenger',
+        messages: [{ kind: 'text', text: { body: 'Hello agent' }, senderName: 'Ana' }],
+      })
+    })
   })
 
   describe('#sendMessage (file messages)', () => {
-    it.todo('emits url and fileName in new-room-message socket event for kind=file (S4)')
-    it.todo('emits null url and null fileName for text messages (no regression)')
+    it('emits url and fileName in new-room-message socket event for kind=file (S4)', async () => {
+      const message = await messageRepository.create(
+        messageFactory.build({
+          contact,
+          licensee,
+          sended: false,
+          kind: 'file',
+          url: 'http://localhost:5001/uploads/photo.jpg',
+          fileName: 'photo.jpg',
+          text: undefined,
+        }),
+      )
+
+      await plugin.sendMessage(message._id)
+
+      expect(socketEmitter.emitToLicensee).toHaveBeenCalledWith(
+        licensee._id,
+        'new-room-message',
+        expect.objectContaining({
+          url: 'http://localhost:5001/uploads/photo.jpg',
+          fileName: 'photo.jpg',
+        }),
+      )
+    })
+
+    it('emits null url and null fileName for text messages (no regression)', async () => {
+      const message = await messageRepository.create(messageFactory.build({ contact, licensee, sended: false }))
+
+      await plugin.sendMessage(message._id)
+
+      expect(socketEmitter.emitToLicensee).toHaveBeenCalledWith(
+        licensee._id,
+        'new-room-message',
+        expect.objectContaining({ url: null, fileName: null }),
+      )
+    })
   })
 })

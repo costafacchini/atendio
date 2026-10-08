@@ -7,6 +7,8 @@ export type NewRoomMessageData = {
   messageId: string
   licenseeId: string
   text?: string | null
+  url?: string | null
+  fileName?: string | null
   kind?: string
   destination?: string
   createdAt?: string

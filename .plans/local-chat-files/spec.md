@@ -66,9 +66,9 @@ As an agent viewing a conversation, I want file messages to be rendered accordin
 
 ## Success Criteria
 
-- **SC-001**: An agent can select a file, send it in an open room, and see the file message appear in the conversation list within one round-trip — upload + message create + socket emit.
-- **SC-002**: The `new-room-message` socket event for a file message always carries a non-null `url` and `fileName`.
-- **SC-003**: All 8 acceptance scenario test stubs are implemented and passing; existing `LocalChat`, `ChatRoomsController`, `MessageInput`, and `ConversationPanel` specs remain green.
+- [x] **SC-001**: An agent can select a file, send it in an open room, and see the file message appear in the conversation list within one round-trip — upload + message create + socket emit.
+- [x] **SC-002**: The `new-room-message` socket event for a file message always carries a non-null `url` and `fileName`.
+- [x] **SC-003**: All 8 acceptance scenario test stubs are implemented and passing; existing `LocalChat`, `ChatRoomsController`, `MessageInput`, and `ConversationPanel` specs remain green.
 
 ---
 
