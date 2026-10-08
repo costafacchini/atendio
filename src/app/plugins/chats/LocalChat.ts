@@ -44,6 +44,8 @@ class LocalChat extends ChatsBase {
       messageId: message._id.toString(),
       licenseeId: this.licensee._id.toString(),
       text: message.text ?? null,
+      url: message.url ?? null,
+      fileName: message.fileName ?? null,
       kind: message.kind,
       destination: message.destination,
       createdAt: message.createdAt instanceof Date ? message.createdAt.toISOString() : message.createdAt,
@@ -53,7 +55,10 @@ class LocalChat extends ChatsBase {
   }
 
   async parseMessage(body: any) {
-    if (!body?.roomId || !body?.text) {
+    const hasText = !!body?.text
+    const hasFile = !!(body?.url && body?.fileName)
+
+    if (!body?.roomId || (!hasText && !hasFile)) {
       this.messageParsed = null
       return
     }
@@ -67,6 +72,22 @@ class LocalChat extends ChatsBase {
     const contact = await this.contactRepository.findFirst({ _id: room.contact })
     if (!contact) {
       this.messageParsed = null
+      return
+    }
+
+    if (hasFile) {
+      this.messageParsed = {
+        contact,
+        room,
+        action: this.action(),
+        messages: [
+          {
+            kind: 'file',
+            file: { url: body.url, fileName: body.fileName, text: null },
+            senderName: body.agentName ?? null,
+          },
+        ],
+      }
       return
     }
 
