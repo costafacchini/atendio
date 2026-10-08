@@ -17,9 +17,9 @@ interface ConversationPanelProps {
   onClose: () => void
 }
 
-function renderFileMessage(url: string, fileName: string | null) {
-  if (isPhoto(url)) return <img src={url} alt={fileName ?? 'arquivo'} style={{ maxWidth: '100%' }} />
-  if (isVideo(url)) return <video src={url} controls style={{ maxWidth: '100%' }} />
+function renderFileMessage(url: string, fileName: string | null, mediaClassName: string) {
+  if (isPhoto(url)) return <img src={url} alt={fileName ?? 'arquivo'} className={mediaClassName} />
+  if (isVideo(url)) return <video src={url} controls className={mediaClassName} />
   if (isMidia(url) || isVoice(url)) return <audio src={url} controls />
   return (
     <a href={url} download={fileName ?? true}>
@@ -120,7 +120,7 @@ export default function ConversationPanel({ room, messages, onSend, onSchedule, 
                   <div className={`${styles.bubble} ${fromMe ? styles.bubbleSent : styles.bubbleReceived}`}>
                     <span className={styles.bubbleText}>
                       {message.kind === 'file' && message.url
-                        ? renderFileMessage(message.url, message.fileName)
+                        ? renderFileMessage(message.url, message.fileName, styles.bubbleMedia)
                         : message.text || '[mensagem]'}
                     </span>
                     <span className={styles.bubbleTime} aria-hidden='true'>
