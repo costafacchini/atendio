@@ -81,6 +81,25 @@ export async function uploadRoomFile(roomId: string, file: File) {
 
 ## Gotchas
 
+### S3/MinIO: the SDK endpoint and the public URL are not the same address
+
+In the docker-compose dev setup, `AWS_ENDPOINT_URL=http://host.docker.internal:9000`
+is only reachable from inside containers (the app/worker container, where Baileys
+fetches the file to upload it to WhatsApp). A browser rendering `<img src>` in the
+admin Chat panel runs on the host, not in a container, and can't resolve
+`host.docker.internal` — the image just shows as broken.
+
+`uploadFileS3()` now builds the *returned* URL from `AWS_PUBLIC_URL` (falling back
+to `AWS_ENDPOINT_URL` if unset), while the S3 `SDK client` itself still connects
+via `AWS_ENDPOINT_URL`. Set `AWS_PUBLIC_URL` to whatever address your own browser
+can reach MinIO at (typically `http://localhost:9000`, since MinIO's port is also
+published to the host). Real AWS S3 (no custom endpoint) is unaffected — that path
+already returns a universally-reachable `https://{bucket}.s3.amazonaws.com/...` URL.
+
+`uploadFile()`'s returned URL is also now built with each path segment
+(`encodeURIComponent`'d) — filenames with spaces or special characters (very
+common for screenshots) previously went straight into the URL unescaped.
+
 ### `api()` cannot send `FormData`
 
 `client/src/services/api.ts`'s `request()` unconditionally does

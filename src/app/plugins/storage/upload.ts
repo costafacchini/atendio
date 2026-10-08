@@ -13,13 +13,19 @@ function buildRelativePath(contactNumber: string, fileName: string): string {
   return path.join(folder, contactNumber, fileName)
 }
 
+// Encodes each path segment individually so filenames with spaces/special characters
+// (e.g. "Screenshot 2026-10-07 at 14.21.05.png") produce a valid, browser-safe URL.
+function encodeRelativePath(relativePath: string): string {
+  return relativePath.split(path.sep).map(encodeURIComponent).join('/')
+}
+
 // eslint-disable-next-line require-await
 async function uploadFileLocal(buffer: Buffer, relativePath: string): Promise<string> {
   const fullPath = path.join(LOCAL_STORAGE_PATH, relativePath)
   fs.mkdirSync(path.dirname(fullPath), { recursive: true })
   fs.writeFileSync(fullPath, buffer)
   logger.info(`LocalStorage: arquivo salvo em ${fullPath}`)
-  return `${APP_URL}/uploads/${relativePath}`
+  return `${APP_URL}/uploads/${encodeRelativePath(relativePath)}`
 }
 
 async function uploadFileS3(buffer: Buffer, relativePath: string): Promise<string> {
@@ -51,9 +57,14 @@ async function uploadFileS3(buffer: Buffer, relativePath: string): Promise<strin
     throw new Error('Erro ao enviar arquivo para S3', { cause: error })
   }
 
-  const endpoint = process.env.AWS_ENDPOINT_URL
-  if (endpoint) return `${endpoint}/${bucket}/${relativePath}`
-  return `https://${bucket}.s3.amazonaws.com/${relativePath}`
+  // AWS_ENDPOINT_URL may be a container-internal hostname (e.g. host.docker.internal) that the
+  // SDK needs to reach MinIO, but that browsers rendering the stored URL can't resolve.
+  // AWS_PUBLIC_URL lets that be overridden with a browser-reachable address; falls back to
+  // AWS_ENDPOINT_URL when unset (e.g. real AWS S3 with a custom endpoint already public).
+  const encodedPath = encodeRelativePath(relativePath)
+  const publicEndpoint = process.env.AWS_PUBLIC_URL || process.env.AWS_ENDPOINT_URL
+  if (publicEndpoint) return `${publicEndpoint}/${bucket}/${encodedPath}`
+  return `https://${bucket}.s3.amazonaws.com/${encodedPath}`
 }
 
 export function uploadFile(buffer: Buffer, fileName: string, contact: { number: string }): Promise<string> {
