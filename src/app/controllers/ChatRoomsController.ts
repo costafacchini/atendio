@@ -31,7 +31,7 @@ class ChatRoomsController {
   async replyToRoom(req: Request, res: Response) {
     try {
       const { roomId } = req.params
-      const { text } = req.body
+      const { text, kind, url, fileName } = req.body
       const agentId = req.userId
 
       const [user, room] = await Promise.all([
@@ -53,7 +53,15 @@ class ChatRoomsController {
       }
 
       const inboxId = (room as any).inbox ? String((room as any).inbox) : null
-      const body = { roomId, text, agentId, agentName: user?.name ?? null }
+      const body = {
+        roomId,
+        text: text ?? null,
+        kind: kind ?? 'text',
+        url: url ?? null,
+        fileName: fileName ?? null,
+        agentId,
+        agentName: user?.name ?? null,
+      }
       await this.ingestChatMessage.execute({ body, licenseeId, inboxId })
 
       return res.status(200).json({ message: 'Mensagem enviada.' })
