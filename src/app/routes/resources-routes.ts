@@ -1,5 +1,8 @@
 import express from 'express'
 import jwt from 'jsonwebtoken'
+import multer from 'multer'
+import { uploadFile } from '../plugins/storage/upload'
+import { isPhoto, isVideo, isMidia, isVoice } from '../helpers/Files'
 import { UsersController } from '../controllers/UsersController'
 import { LicenseesController } from '../controllers/LicenseesController'
 import { DepartmentsController } from '../controllers/DepartmentsController'
@@ -170,6 +173,12 @@ function authorize(...roles: string[]) {
   }
 }
 
+const upload = multer({ storage: multer.memoryStorage() })
+
+function isAcceptedFile(fileName: string): boolean {
+  return isPhoto(fileName) || isVideo(fileName) || isMidia(fileName) || isVoice(fileName)
+}
+
 router.use(authenticate)
 
 router.post('/users', authorize('super', 'admin'), usersController.validations(), usersController.create)
@@ -247,5 +256,30 @@ router.post('/rooms', (req, res) => roomsController.create(req, res))
 router.get('/rooms/:roomId/messages', (req, res) => roomsController.messages(req, res))
 router.post('/rooms/:roomId/messages', (req, res) => chatRoomsController.replyToRoom(req, res))
 router.post('/rooms/:roomId/close', (req, res) => roomsController.closeRoom(req, res))
+router.post('/rooms/:roomId/upload', upload.single('file'), async (req: any, res: any) => {
+  const { roomId } = req.params
+  if (!req.file) return res.status(422).json({ message: 'Nenhum arquivo enviado.' })
+
+  const { originalname, buffer } = req.file
+  if (!isAcceptedFile(originalname)) {
+    return res.status(422).json({ message: `Tipo de arquivo não aceito: ${originalname}` })
+  }
+
+  const room = await roomRepository.findFirst({ _id: roomId })
+  if (!room || room.closed) {
+    return res.status(404).json({ message: 'Conversa não encontrada ou encerrada.' })
+  }
+
+  const contactId = (room as any).contact?._id ?? String((room as any).contact)
+  const contact = await contactRepository.findFirst({ _id: contactId })
+  if (!contact) return res.status(404).json({ message: 'Contato não encontrado.' })
+
+  try {
+    const url = await uploadFile(buffer, originalname, contact as any)
+    return res.status(201).json({ url, fileName: originalname })
+  } catch (err: any) {
+    return res.status(500).json({ message: err.message })
+  }
+})
 
 export default router

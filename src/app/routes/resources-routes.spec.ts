@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 
 jest.mock('../../config/queue', () => ({ queueServer: {} }))
 jest.mock('../../config/redis', () => ({ redisConnection: {} }))
+jest.mock('../plugins/storage/upload', () => ({ uploadFile: jest.fn() }))
 
 // All stubs are defined inside the factory so they exist before the route module is imported.
 // The userRepository object is shared by reference — tests mutate findFirst/find per case.
@@ -30,12 +31,13 @@ jest.mock('../runtime/dependencies', () => {
 })
 
 import { createRuntimeDependencies } from '../runtime/dependencies'
+import { uploadFile } from '../plugins/storage/upload'
 import resourcesRouter from './resources-routes'
 
 // Extract the shared stubs object from the mock's first (and only) call result.
 // The route module called createRuntimeDependencies() at import time.
 const deps = createRuntimeDependencies.mock.results[0].value
-const { userRepository } = deps
+const { userRepository, roomRepository, contactRepository } = deps
 
 // Use the SECRET already loaded from .env by the test environment.
 // The route module captures process.env.SECRET at import time, so we must use the same value.
@@ -160,5 +162,75 @@ describe('POST /licensees/:id/baileys-sync', () => {
 
     expect(res.status).not.toBe(401)
     expect(res.status).not.toBe(403)
+  })
+})
+
+describe('POST /rooms/:roomId/upload', () => {
+  const token = signToken({ id: 'agent-1' })
+  const openRoom = { _id: 'room-1', closed: false, contact: { _id: 'contact-1' } }
+
+  beforeEach(() => {
+    userRepository.findFirst.mockResolvedValue({ _id: 'agent-1', role: 'agent' })
+    roomRepository.findFirst.mockResolvedValue(openRoom)
+    contactRepository.findFirst.mockResolvedValue({ _id: 'contact-1', number: '5511999990000' })
+    ;(uploadFile as jest.Mock).mockResolvedValue('http://localhost:5001/uploads/photo.jpg')
+  })
+
+  it('returns 401 when no token is provided', async () => {
+    const res = await request(app).post('/resources/rooms/room-1/upload').attach('file', Buffer.from('x'), 'photo.jpg')
+
+    expect(res.status).toBe(401)
+  })
+
+  it('returns 422 when no file is attached', async () => {
+    const res = await request(app).post('/resources/rooms/room-1/upload').set('x-access-token', token)
+
+    expect(res.status).toBe(422)
+  })
+
+  it('returns 422 when the file extension is not accepted (S3)', async () => {
+    const res = await request(app)
+      .post('/resources/rooms/room-1/upload')
+      .set('x-access-token', token)
+      .attach('file', Buffer.from('binary'), 'malware.exe')
+
+    expect(res.status).toBe(422)
+    expect(uploadFile).not.toHaveBeenCalled()
+  })
+
+  it('returns 404 when the room is not found', async () => {
+    roomRepository.findFirst.mockResolvedValue(null)
+
+    const res = await request(app)
+      .post('/resources/rooms/room-1/upload')
+      .set('x-access-token', token)
+      .attach('file', Buffer.from('x'), 'photo.jpg')
+
+    expect(res.status).toBe(404)
+  })
+
+  it('returns 404 when the room is closed', async () => {
+    roomRepository.findFirst.mockResolvedValue({ ...openRoom, closed: true })
+
+    const res = await request(app)
+      .post('/resources/rooms/room-1/upload')
+      .set('x-access-token', token)
+      .attach('file', Buffer.from('x'), 'photo.jpg')
+
+    expect(res.status).toBe(404)
+  })
+
+  it('uploads a valid file and returns { url, fileName } (S2)', async () => {
+    const res = await request(app)
+      .post('/resources/rooms/room-1/upload')
+      .set('x-access-token', token)
+      .attach('file', Buffer.from('fake-image-bytes'), 'photo.jpg')
+
+    expect(res.status).toBe(201)
+    expect(res.body).toMatchObject({ url: 'http://localhost:5001/uploads/photo.jpg', fileName: 'photo.jpg' })
+    expect(uploadFile).toHaveBeenCalledWith(expect.any(Buffer), 'photo.jpg', {
+      _id: 'contact-1',
+      number: '5511999990000',
+    })
   })
 })
