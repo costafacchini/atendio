@@ -674,7 +674,9 @@
     "selectInbox": "Selecione uma inbox",
     "selectInboxDescription": "Esta conversa pertence a qual inbox?",
     "switchInbox": "Trocar inbox",
-    "switchInboxAriaLabel": "Trocar inbox de chat"
+    "switchInboxAriaLabel": "Trocar inbox de chat",
+    "attachFileAriaLabel": "Anexar arquivo",
+    "clearFileAriaLabel": "Remover arquivo selecionado"
   },
   "reports": {
     "title": "Mensagens",

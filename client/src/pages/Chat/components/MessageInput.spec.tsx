@@ -114,11 +114,55 @@ describe('<MessageInput>', () => {
   // --- local-chat-files plan stubs (task-06) ---
 
   describe('file attachment', () => {
-    it.todo('renders an attachment button when onSendFile prop is provided (S1)')
-    it.todo('shows filename preview after a file is selected via the attachment button (S1)')
-    it.todo('calls onSendFile with the selected File when Send is clicked with a pending file (S2)')
-    it.todo('clears the pending file after onSendFile is called (S2)')
-    it.todo('does NOT render the attachment button when onSendFile is not provided')
-    it.todo('hides the attachment button when disabled=true')
+    it('renders an attachment button when onSendFile prop is provided (S1)', () => {
+      render(<MessageInput onSend={vi.fn()} onSendFile={vi.fn()} />)
+
+      expect(screen.getByRole('button', { name: 'chat.attachFileAriaLabel' })).toBeInTheDocument()
+    })
+
+    it('shows filename preview after a file is selected via the attachment button (S1)', () => {
+      render(<MessageInput onSend={vi.fn()} onSendFile={vi.fn()} />)
+
+      const file = new File(['conteudo'], 'photo.jpg', { type: 'image/jpeg' })
+      const input = screen.getByLabelText('chat.attachFileAriaLabel', { selector: 'input' })
+      fireEvent.change(input, { target: { files: [file] } })
+
+      expect(screen.getByText('photo.jpg')).toBeInTheDocument()
+    })
+
+    it('calls onSendFile with the selected File when Send is clicked with a pending file (S2)', () => {
+      const handleSendFile = vi.fn()
+      render(<MessageInput onSend={vi.fn()} onSendFile={handleSendFile} />)
+
+      const file = new File(['conteudo'], 'photo.jpg', { type: 'image/jpeg' })
+      const input = screen.getByLabelText('chat.attachFileAriaLabel', { selector: 'input' })
+      fireEvent.change(input, { target: { files: [file] } })
+      fireEvent.click(screen.getByRole('button', { name: 'chat.sendAriaLabel' }))
+
+      expect(handleSendFile).toHaveBeenCalledWith(file)
+    })
+
+    it('clears the pending file after onSendFile is called (S2)', () => {
+      render(<MessageInput onSend={vi.fn()} onSendFile={vi.fn()} />)
+
+      const file = new File(['conteudo'], 'photo.jpg', { type: 'image/jpeg' })
+      const input = screen.getByLabelText('chat.attachFileAriaLabel', { selector: 'input' })
+      fireEvent.change(input, { target: { files: [file] } })
+      fireEvent.click(screen.getByRole('button', { name: 'chat.sendAriaLabel' }))
+
+      expect(screen.queryByText('photo.jpg')).not.toBeInTheDocument()
+    })
+
+    it('does NOT render the attachment button when onSendFile is not provided', () => {
+      render(<MessageInput onSend={vi.fn()} />)
+
+      expect(screen.queryByRole('button', { name: 'chat.attachFileAriaLabel' })).not.toBeInTheDocument()
+    })
+
+    it('hides the attachment button when disabled=true', () => {
+      render(<MessageInput onSend={vi.fn()} onSendFile={vi.fn()} disabled />)
+
+      expect(screen.queryByRole('button', { name: 'chat.attachFileAriaLabel' })).not.toBeInTheDocument()
+    })
   })
 })
