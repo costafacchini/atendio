@@ -138,7 +138,7 @@
     "postcss": "8.5.29",
     "undici": "8.11.2",
     "ip-address": "10.7.4",
-    "protobufjs": "8.8.0",
+    "protobufjs": "8.8.1",
     "@opentelemetry/core": "2.12.0",
     "@opentelemetry/propagator-jaeger": "2.12.0",
     "@eslint/eslintrc/js-yaml": "5.4.3"
