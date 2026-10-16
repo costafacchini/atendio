@@ -104,7 +104,7 @@
     "node-notifier": "11.0.0",
     "nodemon": "3.1.14",
     "pg": "8.23.1",
-    "prisma": "7.10.0",
+    "prisma": "7.10.1",
     "rate-limit-redis": "6.0.1",
     "rollbar": "4.0.0",
     "socket.io": "4.8.4",
