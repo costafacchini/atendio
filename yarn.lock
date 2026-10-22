@@ -24,9 +24,9 @@
     module-details-from-path "^1.0.4"
 
 "@appsignal/nodejs@^3.8.0":
-  version "3.9.2"
-  resolved "https://registry.yarnpkg.com/@appsignal/nodejs/-/nodejs-3.9.2.tgz#2ee095f031559f11c08ecef7bbc32664a7da8c11"
-  integrity sha512-0z28w2fdJMAAa0+wZl/4tCKGCU9C0BrePM6a+D3fDqPlymt2uiyXC5rzAZrmO3PrzfXYZ+7IZcVscta3FCXUhQ==
+  version "3.9.3"
+  resolved "https://registry.yarnpkg.com/@appsignal/nodejs/-/nodejs-3.9.3.tgz#74bd432c292a05111b26da29e6e50448f236b319"
+  integrity sha512-eGvM8fAzZKOKkjdL9Z9CcydHspqZUMqshQGKSyriynnA3OCkx+3SEP8uzWgBlQjNgY5S6wArwJ9/KmDLigzh+Q==
   dependencies:
     "@appsignal/opentelemetry-instrumentation-bullmq" ">= 0.9.0 < 0.10.0"
     "@opentelemetry/api" "^1.9.0"
@@ -5315,11 +5315,11 @@ encodeurl@^2.0.0:
   integrity sha512-Q0n9HRi4m6JuGIV1eFlmvJB7ZEVxu93IrMyiMsGC0lrMJMWzRgx6WGquyfQgZVb31vhGgXnfmPNNXmxnOkRBrg==
 
 encoding@^0.1.13:
-  version "0.1.13"
-  resolved "https://registry.yarnpkg.com/encoding/-/encoding-0.1.13.tgz#56574afdd791f54a8e9b2785c0582a2d26210fa9"
-  integrity sha512-ETBauow1T35Y/WZMkio9jiM0Z5xjHHmJ4XmjZOq1l/dXz3lr2sRn87nJy20RupqSh1F2m3HHPSp8ShIPQJrJ3A==
+  version "0.1.14"
+  resolved "https://registry.yarnpkg.com/encoding/-/encoding-0.1.14.tgz#47d9de5315bdfd36258c9bde2146592acf061328"
+  integrity sha512-pqH+jIxIhwX5U4w+Tnu3jjowTo5QTACbqef2C5Cw2RhApr7COQqgnai53u8VbtqjWRcSoAcTf7uZ62dO5kC8Iw==
   dependencies:
-    iconv-lite "^0.6.2"
+    iconv-lite "0.7.3"
 
 end-of-stream@^1.1.0, end-of-stream@^1.4.1:
   version "1.4.5"
@@ -6498,14 +6498,7 @@ human-signals@^2.1.0:
   resolved "https://registry.yarnpkg.com/human-signals/-/human-signals-2.1.0.tgz#dc91fcba42e4d06e4abaed33b3e7a3c02f514ea0"
   integrity sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==
 
-iconv-lite@^0.6.2:
-  version "0.6.3"
-  resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.6.3.tgz#a52f80bf38da1952eb5c681790719871a1a72501"
-  integrity sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==
-  dependencies:
-    safer-buffer ">= 2.1.2 < 3.0.0"
-
-iconv-lite@^0.7.2, iconv-lite@^0.7.3, iconv-lite@~0.7.0:
+iconv-lite@0.7.3, iconv-lite@^0.7.2, iconv-lite@^0.7.3, iconv-lite@~0.7.0:
   version "0.7.3"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.7.3.tgz#84ee12f963e7de50bc01a13e160a078b3b0f415f"
   integrity sha512-IKXpvIzjnC9XTAUbVBcMfGS0EPaIXtW6v+zr+RRp+hqULEpo0owZax6wyRwPOJbWbzjYspQwusTsfVr0ifh4uQ==
