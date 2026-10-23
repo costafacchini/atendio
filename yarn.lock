@@ -24,9 +24,9 @@
     module-details-from-path "^1.0.4"
 
 "@appsignal/nodejs@^3.8.0":
-  version "3.9.3"
-  resolved "https://registry.yarnpkg.com/@appsignal/nodejs/-/nodejs-3.9.3.tgz#74bd432c292a05111b26da29e6e50448f236b319"
-  integrity sha512-eGvM8fAzZKOKkjdL9Z9CcydHspqZUMqshQGKSyriynnA3OCkx+3SEP8uzWgBlQjNgY5S6wArwJ9/KmDLigzh+Q==
+  version "3.9.4"
+  resolved "https://registry.yarnpkg.com/@appsignal/nodejs/-/nodejs-3.9.4.tgz#6d49770e54e51bcb5a2abd3ea06489d55d889c62"
+  integrity sha512-KUx+WBCMBMpxbSUU9iE9jItXrMY5MFtiNxwoIxZsBfVchU2Ljveky/UOFNPQk6cfo91PWPvajuDRYgJNOWkrgg==
   dependencies:
     "@appsignal/opentelemetry-instrumentation-bullmq" ">= 0.9.0 < 0.10.0"
     "@opentelemetry/api" "^1.9.0"
