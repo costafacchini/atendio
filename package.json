@@ -5,7 +5,7 @@
   "private": true,
   "author": "Alan Costa Facchini",
   "engines": {
-    "node": "24.x"
+    "node": "26.x"
   },
   "scripts": {
     "start": "node --require source-map-support/register --require './appsignal.cjs' dist/server.js",
@@ -40,7 +40,7 @@
     "@types/jsonwebtoken": "9.0.10",
     "@types/morgan": "1.9.10",
     "@types/multer": "2.3.0",
-    "@types/node": "24.19.2",
+    "@types/node": "26.6.5",
     "@types/pg": "8.23.1",
     "@typescript-eslint/eslint-plugin": "8.72.1",
     "@typescript-eslint/parser": "8.72.1",
