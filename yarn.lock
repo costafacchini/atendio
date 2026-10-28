@@ -9118,10 +9118,10 @@ robust-predicates@^3.0.2:
   resolved "https://registry.yarnpkg.com/robust-predicates/-/robust-predicates-3.0.3.tgz#1099061b3349e2c5abec6c2ab0acd440d24d4062"
   integrity sha512-NS3levdsRIUOmiJ8FZWCP7LG3QpJyrs/TE0Zpf1yvZu8cAJJ6QMW92H1c7kWpdIHo8RvmLxN/o2JXTKHp74lUA==
 
-rollbar@4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/rollbar/-/rollbar-4.1.0.tgz#31349e8b518cd2e3f2cb5c45c05a2fef0e867d58"
-  integrity sha512-VPGCFyl/kG2hszuHBzj6MBHoM4Blhvu3gEye3p7cIP64lSG9WnPzGxm10oTb5SoqpeGbkXUukFEA/qa6/E7nJQ==
+rollbar@4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/rollbar/-/rollbar-4.2.0.tgz#fe8d2a5970879db7543c0d82fca87656717b0551"
+  integrity sha512-SjUOzEyj4XJhkOYU9c3mcvQqDwEB9D2dXw9ox+uuT/pVVOoFbFmyGvCeLPktP+NsojtUQFgR3/eEutQAmOHLbg==
   dependencies:
     "@rrweb/record" "^2.0.0-alpha.18"
     async "~3.2.3"
