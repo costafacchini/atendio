@@ -4582,10 +4582,10 @@ buffer@^6.0.3:
     base64-js "^1.3.1"
     ieee754 "^1.2.1"
 
-bullmq@6.5.0:
-  version "6.5.0"
-  resolved "https://registry.yarnpkg.com/bullmq/-/bullmq-6.5.0.tgz#ca25b874fa24d678b02fbd3da369dead5391d9df"
-  integrity sha512-GDaUfEig2lWHS52aOI0h8f/W0m+5PPmHOJSahAKRMfi82BdL/2EqCuiDmJcNiwgpaZ0KHz7NxC8eNMI3bh8NQg==
+bullmq@6.5.1:
+  version "6.5.1"
+  resolved "https://registry.yarnpkg.com/bullmq/-/bullmq-6.5.1.tgz#36d50edf4b68257e897a1904f68110290a73b7ca"
+  integrity sha512-p0u+lUI2s253EI8r+kNGCXpK1SuwSDW8FpUvaF8vrn1bPv9ZbXmkkq/yFhpwjIJMtjzHUuZAtlpvdWmJlucooQ==
   dependencies:
     cron-parser "5.10.2"
     msgpackr "2.1.2"
