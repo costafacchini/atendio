@@ -3136,12 +3136,12 @@
   resolved "https://registry.yarnpkg.com/@rtsao/scc/-/scc-1.1.0.tgz#927dd2fae9bc3361403ac2c7a00c32ddce9ad7e8"
   integrity sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==
 
-"@sentry/bundler-plugins@11.9.0":
-  version "11.9.0"
-  resolved "https://registry.yarnpkg.com/@sentry/bundler-plugins/-/bundler-plugins-11.9.0.tgz#8d5795e808db2d8587f05cef418b176477ba5f0c"
-  integrity sha512-wpz/gcM/6rld/wb4Mhf8kbDN9ngG5myKQSZC+45gzqR1w+GcdfVnYkp3sHL9AV4mrwL8skhTItdUghMwMTknKg==
+"@sentry/bundler-plugins@11.10.0":
+  version "11.10.0"
+  resolved "https://registry.yarnpkg.com/@sentry/bundler-plugins/-/bundler-plugins-11.10.0.tgz#0f7c27c5fef4460a609b0643e052f874d662d8c3"
+  integrity sha512-+ngJ485rIYll5uOhWSvSO+Vx4S24MGe5KcLKlUZghr+BXK+ib32uBOZNG294wGyeauLTDvdjncLEYwiaBnP/5w==
   dependencies:
-    "@sentry/core" "11.9.0"
+    "@sentry/core" "11.10.0"
     dotenv "^17.4.2"
     glob "^13.0.6"
     magic-string "~0.30.8 || ^1.0.0"
@@ -3149,55 +3149,55 @@
     sentry "^0.45.0"
     supports-color "^8.1.1"
 
-"@sentry/conventions@^0.27.0":
-  version "0.27.0"
-  resolved "https://registry.yarnpkg.com/@sentry/conventions/-/conventions-0.27.0.tgz#10a6a112d58347dfcf70d85d7a01e86f45a0ba2c"
-  integrity sha512-Mrqd/o7n/z7qWSYfQQA7x4fFTA0IqOG6JNsbBpnC97khPwZk7n6DPtOO7YgaYplSl8R8QLRbBz9Xv2lVhToSAg==
+"@sentry/conventions@^0.29.0":
+  version "0.29.0"
+  resolved "https://registry.yarnpkg.com/@sentry/conventions/-/conventions-0.29.0.tgz#37599c2ca3fad40638e03e8245f7a5d5fef9b6ba"
+  integrity sha512-kYq9/HJ/l6MYP/srIc20dy1W4mWyJfCF0OWFF+RhBGZwyr/wCmtabRFKyw7kqM+DTwZXQOjSTSZUcJhDowcInQ==
 
-"@sentry/core@11.9.0":
-  version "11.9.0"
-  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-11.9.0.tgz#bb64f1063197eb1ebce2d957c3f2545767983894"
-  integrity sha512-t0dZyHILt2XVC4Fe9UmAty6YRfOuQv95cvWeNl+HlW4LphjF5/jkALV3cJCUMdhpblYELgIJC4U/S/GoYuI2bA==
+"@sentry/core@11.10.0":
+  version "11.10.0"
+  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-11.10.0.tgz#33473062514bfd54b8b5751760ac290d7add5641"
+  integrity sha512-l/OtTo1v+TQgZtHG2Q5N4IX+gFdAE1tZ27K/P21UCzJglWk54TPEm+d9T2lulPqMK06kZcLwDgRAhE2GO4YS5w==
   dependencies:
-    "@sentry/conventions" "^0.27.0"
+    "@sentry/conventions" "^0.29.0"
 
 "@sentry/node@^11.0.0":
-  version "11.9.0"
-  resolved "https://registry.yarnpkg.com/@sentry/node/-/node-11.9.0.tgz#336196197afcf8cfe0873448cc3264709f5bf3d2"
-  integrity sha512-cz219PzVaAPTlQ4bRBTRBCOvxbZkXK0KkqyqWPV6OmSn6vWn935CTfOs+MKUc1A+locvB8i9OfBIbO6v03BBuQ==
+  version "11.10.0"
+  resolved "https://registry.yarnpkg.com/@sentry/node/-/node-11.10.0.tgz#ae2a4354825ae181b32bf22b0338b23a0a084d42"
+  integrity sha512-ZsndrSn1NjL9AslpUdxz/kYPcv/i+plVZoyPe1ivlr5XPUpocB8pUL5noYbIUl96Wd/yGvPBw6zqO8d69rRKQQ==
   dependencies:
     "@opentelemetry/api" "^1.9.1"
-    "@sentry/bundler-plugins" "11.9.0"
-    "@sentry/conventions" "^0.27.0"
-    "@sentry/core" "11.9.0"
-    "@sentry/opentelemetry" "11.9.0"
-    "@sentry/server-runtime-injection" "11.9.0"
-    "@sentry/server-utils" "11.9.0"
+    "@sentry/bundler-plugins" "11.10.0"
+    "@sentry/conventions" "^0.29.0"
+    "@sentry/core" "11.10.0"
+    "@sentry/opentelemetry" "11.10.0"
+    "@sentry/server-runtime-injection" "11.10.0"
+    "@sentry/server-utils" "11.10.0"
 
-"@sentry/opentelemetry@11.9.0":
-  version "11.9.0"
-  resolved "https://registry.yarnpkg.com/@sentry/opentelemetry/-/opentelemetry-11.9.0.tgz#2b72814d19ed98df103c1c07ea1bc2e06ce30cec"
-  integrity sha512-FMCkAbEfBpFterrkR7k4P8LEabUAEHjZMbu+ycDjbnI1U4pT22tpwcFJOt06orFkacoWNsYT9+EdfmkvaCKtSA==
+"@sentry/opentelemetry@11.10.0":
+  version "11.10.0"
+  resolved "https://registry.yarnpkg.com/@sentry/opentelemetry/-/opentelemetry-11.10.0.tgz#3e46e44532bc5617cd3aa7c114ef67ce873b34f7"
+  integrity sha512-YMV4ZgaRlW7QPCcMScVpSBvYOdvDlY+alqRT3KOTcmPKFZtf8O2hXHWFhl/M33kKDEfqOk2XtEVeHs3mZFOCaw==
   dependencies:
-    "@sentry/conventions" "^0.27.0"
-    "@sentry/core" "11.9.0"
+    "@sentry/conventions" "^0.29.0"
+    "@sentry/core" "11.10.0"
 
-"@sentry/server-runtime-injection@11.9.0":
-  version "11.9.0"
-  resolved "https://registry.yarnpkg.com/@sentry/server-runtime-injection/-/server-runtime-injection-11.9.0.tgz#a776eaad4c5fb619cd0903d9c255479208d4341f"
-  integrity sha512-Q2G5xaeoiYwGheCZyeqZ/v//SZYjRLlITlanTsZM/fox1qk7cmbDX7+o4q+JkApVV9VuXQZVxppaVCsBglfDKA==
+"@sentry/server-runtime-injection@11.10.0":
+  version "11.10.0"
+  resolved "https://registry.yarnpkg.com/@sentry/server-runtime-injection/-/server-runtime-injection-11.10.0.tgz#2f28e2ce91699352b339de4c40454d8cb95c4720"
+  integrity sha512-1nc+HNPldrPEov16sL5m2cOLVgNJ+FsR7QtaWGOOv8qYFJkSp95lyc2qzLnaG2L72UzSMOv10peGRioAKrrZQQ==
   dependencies:
-    "@sentry/core" "11.9.0"
-    "@sentry/server-utils" "11.9.0"
+    "@sentry/core" "11.10.0"
+    "@sentry/server-utils" "11.10.0"
 
-"@sentry/server-utils@11.9.0":
-  version "11.9.0"
-  resolved "https://registry.yarnpkg.com/@sentry/server-utils/-/server-utils-11.9.0.tgz#45755191e7a93426e1ec47cd3b565e9fd17bbda3"
-  integrity sha512-xHETix5jAjs/4tY+b9RCejEU7O49pNBiGgCWX0KFRMSpWbw9moqQ8i8N62bS7L+/BJnBcZ5SZ1nweXh7w787Qg==
+"@sentry/server-utils@11.10.0":
+  version "11.10.0"
+  resolved "https://registry.yarnpkg.com/@sentry/server-utils/-/server-utils-11.10.0.tgz#4fcd734128ed067345a09e1ef2ae992d10151981"
+  integrity sha512-m/MVCvPzQJJZZCTFlVPCrTuoncT7SR80+QKg1K7ul25AsL0byABr5KsHCbXVpOYXLVz04Omk+pOOR5Cv2IAlrA==
   dependencies:
     "@opentelemetry/api" "^1.9.1"
-    "@sentry/conventions" "^0.27.0"
-    "@sentry/core" "11.9.0"
+    "@sentry/conventions" "^0.29.0"
+    "@sentry/core" "11.10.0"
 
 "@sinclair/typebox@^0.34.0":
   version "0.34.52"
@@ -7620,9 +7620,9 @@ luxon@^3.7.2:
   integrity sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew==
 
 "magic-string@~0.30.8 || ^1.0.0":
-  version "1.4.3"
-  resolved "https://registry.yarnpkg.com/magic-string/-/magic-string-1.4.3.tgz#a0887990507b2ffbcdbc367a8759ed97e0b1233b"
-  integrity sha512-z12OxmaPGE0F4xlpGdjuAUckipLpQlTAuAmyGhNoD7ODpYUzvDfvtxUbjM/jwznyP178oju/KDdyi220wNJ0RQ==
+  version "1.4.5"
+  resolved "https://registry.yarnpkg.com/magic-string/-/magic-string-1.4.5.tgz#201c852d51eb0664d6f66cf7ab93b20b416e48d9"
+  integrity sha512-oLLC2+YvQUfAa+vxoufE/yc1icb87M9iXIRqAoR/2EhE/8cb3SF/+Gi0c2By1B+5Vz2e2vQtUvHiu1+63Znh+w==
   dependencies:
     "@jridgewell/sourcemap-codec" "^1.6.0"
 
