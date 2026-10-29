@@ -1,9 +1,9 @@
 # Status: Investigate & decide Cloud API contact-validation strategy
 
-**Current Status**: not-started
+**Current Status**: in-progress
 **Last Updated**: 2026-10-29
-**Agent**: —
-**Branch**: —
+**Agent**: Alpha-VII (Servitor)
+**Branch**: plan/dialog-cloud-api-migration/phase-1/task-01-contact-validation-investigation
 **PR**: —
 
 ## Status History
