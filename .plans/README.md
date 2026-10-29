@@ -23,6 +23,7 @@ Git-native Markdown plans for multi-step work.
 | # | Plan | Folder | Status | Description |
 |---|------|--------|--------|-------------|
 | 5 | [Ecomanda Fly.io Deploy](./ecomanda-flyio/overview.md) | `ecomanda-flyio/` | not-started | Deploy on Fly.io single 1 GB VM (server + worker), replacing Heroku — 3 phases, 4 tasks |
+| 6 | [360dialog Cloud API Migration](./dialog-cloud-api-migration/overview.md) | `dialog-cloud-api-migration/` | not-started | Migrate Dialog messenger plugin from retired waba.360dialog.io On-Premise API to Cloud API (waba-v2.360dialog.io) — issue #3346 — 3 phases, 6 tasks |
 
 ---
 
