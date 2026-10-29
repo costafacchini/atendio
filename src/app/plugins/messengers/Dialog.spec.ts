@@ -1291,6 +1291,47 @@ describe('Dialog plugin', () => {
   })
 
   describe('#sendMessage', () => {
+    describe('endpoint', () => {
+      it('posts to the Cloud API /messages path with the D360-API-KEY header', async () => {
+        const contactRepository = dependencies.contactRepository
+        const contact = await contactRepository.create(
+          contactFactory.build({
+            name: 'John Doe',
+            talkingWithChatBot: true,
+            waId: '553165392832',
+            licensee,
+          }),
+        )
+
+        const messageRepository = dependencies.messageRepository
+        const message = await messageRepository.create(
+          messageFactory.build({
+            _id: '60958703f415ed4008748637',
+            text: 'Message to send',
+            contact,
+            licensee,
+            sended: false,
+          }),
+        )
+
+        request.post.mockResolvedValueOnce({
+          status: 201,
+          data: {
+            messages: [{ id: 'gBEGVUiZKQggAgkTPoDDlOljYHY' }],
+            meta: { api_status: 'stable', version: '2.35.4' },
+          },
+        })
+
+        const dialog = new Dialog(licensee, dependencies)
+        await dialog.sendMessage(message._id, 'https://waba-v2.360dialog.io/', 'token-dialog')
+
+        expect(request.post).toHaveBeenCalledWith(
+          'https://waba-v2.360dialog.io/messages',
+          expect.objectContaining({ headers: { 'D360-API-KEY': 'token-dialog' } }),
+        )
+      })
+    })
+
     describe('when the message was sent', () => {
       it('marks the message with was sent and logs the success message', async () => {
         const contactRepository = dependencies.contactRepository
@@ -1334,7 +1375,7 @@ describe('Dialog plugin', () => {
         expect(message.sended).toEqual(false)
 
         const dialog = new Dialog(licensee, dependencies)
-        await dialog.sendMessage(message._id, 'https://waba.360dialog.io/', 'token-dialog')
+        await dialog.sendMessage(message._id, 'https://waba-v2.360dialog.io/', 'token-dialog')
         const messageUpdated = await messageRepository.findFirst({ _id: message._id })
         expect(messageUpdated.sended).toEqual(true)
         expect(messageUpdated.messageWaId).toEqual('gBEGVUiZKQggAgkTPoDDlOljYHY')
@@ -1397,7 +1438,7 @@ describe('Dialog plugin', () => {
           expect(message.sended).toEqual(false)
 
           const dialog = new Dialog(licensee, dependencies)
-          await dialog.sendMessage(message._id, 'https://waba.360dialog.io/', 'token-dialog')
+          await dialog.sendMessage(message._id, 'https://waba-v2.360dialog.io/', 'token-dialog')
           const messageUpdated = await messageRepository.findFirst({ _id: message._id })
           expect(messageUpdated.sended).toEqual(true)
           expect(messageUpdated.messageWaId).toEqual('gBEGVUiZKQggAgkTPoDDlOljYHY')
@@ -1461,7 +1502,7 @@ describe('Dialog plugin', () => {
           expect(message.sended).toEqual(false)
 
           const dialog = new Dialog(licensee, dependencies)
-          await dialog.sendMessage(message._id, 'https://waba.360dialog.io/', 'token-dialog')
+          await dialog.sendMessage(message._id, 'https://waba-v2.360dialog.io/', 'token-dialog')
           const messageUpdated = await messageRepository.findFirst({ _id: message._id })
           expect(messageUpdated.sended).toEqual(true)
           expect(messageUpdated.messageWaId).toEqual('gBEGVUiZKQggAgkTPoDDlOljYHY')
@@ -1526,7 +1567,7 @@ describe('Dialog plugin', () => {
           expect(message.sended).toEqual(false)
 
           const dialog = new Dialog(licensee, dependencies)
-          await dialog.sendMessage(message._id, 'https://waba.360dialog.io/', 'token-dialog')
+          await dialog.sendMessage(message._id, 'https://waba-v2.360dialog.io/', 'token-dialog')
           const messageUpdated = await messageRepository.findFirst({ _id: message._id })
           expect(messageUpdated.sended).toEqual(true)
           expect(messageUpdated.messageWaId).toEqual('gBEGVUiZKQggAgkTPoDDlOljYHY')
@@ -1591,7 +1632,7 @@ describe('Dialog plugin', () => {
           expect(message.sended).toEqual(false)
 
           const dialog = new Dialog(licensee, dependencies)
-          await dialog.sendMessage(message._id, 'https://waba.360dialog.io/', 'token-dialog')
+          await dialog.sendMessage(message._id, 'https://waba-v2.360dialog.io/', 'token-dialog')
           const messageUpdated = await messageRepository.findFirst({ _id: message._id })
           expect(messageUpdated.sended).toEqual(true)
           expect(messageUpdated.messageWaId).toEqual('gBEGVUiZKQggAgkTPoDDlOljYHY')
@@ -1735,7 +1776,7 @@ describe('Dialog plugin', () => {
             expect(message.sended).toEqual(false)
 
             const dialog = new Dialog(licensee, dependencies)
-            await dialog.sendMessage(message._id, 'https://waba.360dialog.io/', 'token-dialog')
+            await dialog.sendMessage(message._id, 'https://waba-v2.360dialog.io/', 'token-dialog')
             const messageUpdated = await messageRepository.findFirst({ _id: message._id })
             expect(messageUpdated.sended).toEqual(true)
             expect(messageUpdated.messageWaId).toEqual('gBEGVUiZKQggAgkTPoDDlOljYHY')
@@ -1834,7 +1875,7 @@ describe('Dialog plugin', () => {
             expect(message.sended).toEqual(false)
 
             const dialog = new Dialog(licensee, dependencies)
-            await dialog.sendMessage(message._id, 'https://waba.360dialog.io/', 'token-dialog')
+            await dialog.sendMessage(message._id, 'https://waba-v2.360dialog.io/', 'token-dialog')
             const messageUpdated = await messageRepository.findFirst({ _id: message._id })
             expect(messageUpdated.sended).toEqual(true)
             expect(messageUpdated.messageWaId).toEqual('gBEGVUiZKQggAgkTPoDDlOljYHY')
@@ -1973,7 +2014,7 @@ describe('Dialog plugin', () => {
             expect(message.sended).toEqual(false)
 
             const dialog = new Dialog(licensee, dependencies)
-            await dialog.sendMessage(message._id, 'https://waba.360dialog.io/', 'token-dialog')
+            await dialog.sendMessage(message._id, 'https://waba-v2.360dialog.io/', 'token-dialog')
             const messageUpdated = await messageRepository.findFirst({ _id: message._id })
             expect(messageUpdated.sended).toEqual(true)
             expect(messageUpdated.messageWaId).toEqual('gBEGVUiZKQggAgkTPoDDlOljYHY')
@@ -2122,7 +2163,7 @@ describe('Dialog plugin', () => {
             expect(message.sended).toEqual(false)
 
             const dialog = new Dialog(licensee, dependencies)
-            await dialog.sendMessage(message._id, 'https://waba.360dialog.io/', 'token-dialog')
+            await dialog.sendMessage(message._id, 'https://waba-v2.360dialog.io/', 'token-dialog')
             const messageUpdated = await messageRepository.findFirst({ _id: message._id })
             expect(messageUpdated.sended).toEqual(true)
             expect(messageUpdated.messageWaId).toEqual('gBEGVUiZKQggAgkTPoDDlOljYHY')
@@ -2189,7 +2230,7 @@ describe('Dialog plugin', () => {
             expect(message.sended).toEqual(false)
 
             const dialog = new Dialog(licensee, dependencies)
-            await dialog.sendMessage(message._id, 'https://waba.360dialog.io/', 'token-dialog')
+            await dialog.sendMessage(message._id, 'https://waba-v2.360dialog.io/', 'token-dialog')
             const messageUpdated = await messageRepository.findFirst({ _id: message._id })
             expect(messageUpdated.sended).toEqual(true)
             expect(messageUpdated.messageWaId).toEqual('gBEGVUiZKQggAgkTPoDDlOljYHY')
@@ -2257,7 +2298,7 @@ describe('Dialog plugin', () => {
             expect(message.sended).toEqual(false)
 
             const dialog = new Dialog(licensee, dependencies)
-            await dialog.sendMessage(message._id, 'https://waba.360dialog.io/', 'token-dialog')
+            await dialog.sendMessage(message._id, 'https://waba-v2.360dialog.io/', 'token-dialog')
             const messageUpdated = await messageRepository.findFirst({ _id: message._id })
             expect(messageUpdated.sended).toEqual(true)
             expect(messageUpdated.messageWaId).toEqual('gBEGVUiZKQggAgkTPoDDlOljYHY')
@@ -2374,7 +2415,7 @@ describe('Dialog plugin', () => {
           expect(message.sended).toEqual(false)
 
           const dialog = new Dialog(licensee, dependencies)
-          await dialog.sendMessage(message._id, 'https://waba.360dialog.io/', 'token-dialog')
+          await dialog.sendMessage(message._id, 'https://waba-v2.360dialog.io/', 'token-dialog')
           const messageUpdated = await messageRepository.findFirst({ _id: message._id })
           expect(messageUpdated.sended).toEqual(true)
           expect(messageUpdated.messageWaId).toEqual('gBEGVUiZKQggAgkTPoDDlOljYHY')
@@ -2418,7 +2459,7 @@ describe('Dialog plugin', () => {
         expect(message.sended).toEqual(false)
 
         const dialog = new Dialog(licensee, dependencies)
-        await dialog.sendMessage(message._id, 'https://waba.360dialog.io/', 'token-dialog')
+        await dialog.sendMessage(message._id, 'https://waba-v2.360dialog.io/', 'token-dialog')
         expect(logger.error).toHaveBeenCalledWith(
           'A mensagem não foi enviada para a Dialog pois o contato não é válido {"contacts":[{"input":"+5511990283745","status":"invalid"}],"meta":{"api_status":"stable","version":"2.35.4"}}',
         )
@@ -2475,7 +2516,7 @@ describe('Dialog plugin', () => {
         expect(message.sended).toEqual(false)
 
         const dialog = new Dialog(licensee, dependencies)
-        await dialog.sendMessage(message._id, 'https://waba.360dialog.io/', 'token-dialog')
+        await dialog.sendMessage(message._id, 'https://waba-v2.360dialog.io/', 'token-dialog')
         const messageUpdated = await messageRepository.findFirst({ _id: message._id })
         expect(messageUpdated.sended).toEqual(false)
         expect(messageUpdated.error).toEqual(

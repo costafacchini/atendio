@@ -406,7 +406,7 @@ class Dialog extends MessengersBase {
       }
     }
 
-    const messageResponse = await request.post(`${url}v1/messages/`, { headers, body: messageBody })
+    const messageResponse = await request.post(`${url}messages`, { headers, body: messageBody })
     if (messageResponse.status === 201) {
       messageToSend.messageWaId = messageResponse.data.messages[0].id
       messageToSend.sended = true
