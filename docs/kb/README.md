@@ -61,6 +61,7 @@ Load ONLY documents relevant to your current task.
 
 | Document | When to Read |
 |----------|--------------|
+| [360dialog-cloud-api-contact-validation-2026](research/360dialog-cloud-api-contact-validation-2026.md) | Migrating Dialog messenger from On-Premise API to Cloud API: contact validation strategy decision and implementation spec |
 | [centralized-logger-2026](research/centralized-logger-2026.md) | Implementing or modifying the centralized logger using plain JS + Sentry Node SDK v10 |
 | [cookie-auth-express5-2026](research/cookie-auth-express5-2026.md) | httpOnly cookie auth for Express 5 or Bull Board authentication |
 | [express-validator-v1-2026](research/express-validator-v1-2026.md) | Adding express-validator v7 input validation to v1 API routes |
