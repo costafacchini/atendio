@@ -113,11 +113,32 @@ const parseComponentParam = (param: any, value: any) => {
   }
 }
 
-const downloadMedia = async (mediaId: any, whatsappToken: any) => {
+const LOOKASIDE_HOST = 'lookaside.fbsbx.com'
+const CLOUD_API_HOST = 'waba-v2.360dialog.io'
+
+const downloadMedia = async (mediaId: any, url: any, whatsappToken: any) => {
   const headers = { 'D360-API-KEY': whatsappToken }
-  const response = await request.download(`https://waba.360dialog.io/v1/media/${mediaId}`, {
-    headers,
-  })
+
+  const mediaResponse = await request.get(`${url}${mediaId}`, { headers })
+  const lookasideUrl = mediaResponse.data.url
+
+  let parsedLookasideUrl: URL
+  try {
+    parsedLookasideUrl = new URL(lookasideUrl)
+  } catch {
+    logger.error(`Dialog media download got a malformed URL for mediaId ${mediaId}: ${lookasideUrl}`)
+    throw new Error(`Malformed media URL returned by Dialog for mediaId ${mediaId}`)
+  }
+
+  if (parsedLookasideUrl.hostname !== LOOKASIDE_HOST) {
+    logger.error(
+      `Dialog media download expected host ${LOOKASIDE_HOST} but got ${parsedLookasideUrl.hostname} for mediaId ${mediaId}`,
+    )
+    throw new Error(`Unexpected media host returned by Dialog for mediaId ${mediaId}`)
+  }
+
+  const downloadUrl = `https://${CLOUD_API_HOST}${parsedLookasideUrl.pathname}${parsedLookasideUrl.search}`
+  const response = await request.download(downloadUrl, { headers })
 
   return response
 }
@@ -414,8 +435,8 @@ class Dialog extends MessengersBase {
     return templates
   }
 
-  async getMediaUrl(mediaId: any, _url: any, token: any, contact: any) {
-    const response = await downloadMedia(mediaId, token)
+  async getMediaUrl(mediaId: any, url: any, token: any, contact: any) {
+    const response = await downloadMedia(mediaId, url, token)
     const extension = mime.extension(response.headers?.get('content-type'))
     const fileName = `${mediaId}.${extension}`
     const fileBase64 = Buffer.from(response.data).toString('base64')

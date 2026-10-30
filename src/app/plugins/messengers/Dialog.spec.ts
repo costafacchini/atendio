@@ -191,6 +191,18 @@ describe('Dialog plugin', () => {
           ],
         }
 
+        request.get.mockResolvedValueOnce({
+          status: 200,
+          data: {
+            url: 'https://lookaside.fbsbx.com/whatsapp_business/attachments/?mid=test-media-id&ext=1757082791&hash=test-hash',
+            mime_type: 'application/octet-stream',
+            sha256: 'sha256',
+            file_size: 4,
+            id: 'test-media-id',
+            messaging_product: 'whatsapp',
+          },
+        })
+
         request.download.mockResolvedValueOnce({
           status: 200,
           headers: {
@@ -256,6 +268,18 @@ describe('Dialog plugin', () => {
             },
           ],
         }
+
+        request.get.mockResolvedValueOnce({
+          status: 200,
+          data: {
+            url: 'https://lookaside.fbsbx.com/whatsapp_business/attachments/?mid=test-media-id&ext=1757082791&hash=test-hash',
+            mime_type: 'application/octet-stream',
+            sha256: 'sha256',
+            file_size: 4,
+            id: 'test-media-id',
+            messaging_product: 'whatsapp',
+          },
+        })
 
         request.download.mockResolvedValueOnce({
           status: 200,
@@ -323,6 +347,18 @@ describe('Dialog plugin', () => {
           ],
         }
 
+        request.get.mockResolvedValueOnce({
+          status: 200,
+          data: {
+            url: 'https://lookaside.fbsbx.com/whatsapp_business/attachments/?mid=test-media-id&ext=1757082791&hash=test-hash',
+            mime_type: 'application/octet-stream',
+            sha256: 'sha256',
+            file_size: 4,
+            id: 'test-media-id',
+            messaging_product: 'whatsapp',
+          },
+        })
+
         request.download.mockResolvedValueOnce({
           status: 200,
           headers: {
@@ -389,6 +425,18 @@ describe('Dialog plugin', () => {
           ],
         }
 
+        request.get.mockResolvedValueOnce({
+          status: 200,
+          data: {
+            url: 'https://lookaside.fbsbx.com/whatsapp_business/attachments/?mid=test-media-id&ext=1757082791&hash=test-hash',
+            mime_type: 'application/octet-stream',
+            sha256: 'sha256',
+            file_size: 4,
+            id: 'test-media-id',
+            messaging_product: 'whatsapp',
+          },
+        })
+
         request.download.mockResolvedValueOnce({
           status: 200,
           headers: {
@@ -454,6 +502,18 @@ describe('Dialog plugin', () => {
             },
           ],
         }
+
+        request.get.mockResolvedValueOnce({
+          status: 200,
+          data: {
+            url: 'https://lookaside.fbsbx.com/whatsapp_business/attachments/?mid=test-media-id&ext=1757082791&hash=test-hash',
+            mime_type: 'application/octet-stream',
+            sha256: 'sha256',
+            file_size: 4,
+            id: 'test-media-id',
+            messaging_product: 'whatsapp',
+          },
+        })
 
         request.download.mockResolvedValueOnce({
           status: 200,
@@ -2484,6 +2544,82 @@ describe('Dialog plugin', () => {
         expect(logger.error).toHaveBeenCalledWith(
           'Mensagem 60958703f415ed4008748637 não enviada para Dialog360. {"meta":{"api_status":"stable","version":"2.35.4"},"errors":[{"code":1021,"title":"Bad user","details":"cannot send messages to myself"}]}',
         )
+      })
+    })
+  })
+
+  describe('#getMediaUrl', () => {
+    it('resolves the lookaside URL, downloads from the Cloud API host, and uploads to S3', async () => {
+      const contact = await dependencies.contactRepository.create(contactFactory.build({ name: 'John Doe', licensee }))
+
+      request.get.mockResolvedValueOnce({
+        status: 200,
+        data: {
+          url: 'https://lookaside.fbsbx.com/whatsapp_business/attachments/?mid=test-media-id&source=getMedia&ext=1757082791&hash=test-hash',
+          mime_type: 'image/jpeg',
+          sha256: 'sha256',
+          file_size: 4,
+          id: 'test-media-id',
+          messaging_product: 'whatsapp',
+        },
+      })
+
+      request.download.mockResolvedValueOnce({
+        status: 200,
+        headers: {
+          get: (name) => (name === 'content-type' ? 'image/jpeg' : null),
+        },
+        data: Buffer.from('test'),
+      })
+
+      const dialog = new Dialog(licensee, dependencies)
+      const presignedUrl = await dialog.getMediaUrl(
+        'test-media-id',
+        'https://waba-v2.360dialog.io/',
+        'token-dialog',
+        contact,
+      )
+
+      expect(request.get).toHaveBeenCalledWith('https://waba-v2.360dialog.io/test-media-id', {
+        headers: { 'D360-API-KEY': 'token-dialog' },
+      })
+      expect(request.download).toHaveBeenCalledWith(
+        'https://waba-v2.360dialog.io/whatsapp_business/attachments/?mid=test-media-id&source=getMedia&ext=1757082791&hash=test-hash',
+        { headers: { 'D360-API-KEY': 'token-dialog' } },
+      )
+      expect(uploadFileS3Spy).toHaveBeenCalledTimes(1)
+      expect(presignedUrlS3Spy).toHaveBeenCalledTimes(1)
+      expect(presignedUrl).toEqual('https://s3.url.com/1c18498a-f953-41c2-9c56-8a22b89510d3.jpeg')
+    })
+
+    describe('when the resolved media URL is not on the expected lookaside host', () => {
+      it('logs an error and does not attempt a download', async () => {
+        const contact = await dependencies.contactRepository.create(
+          contactFactory.build({ name: 'John Doe', licensee }),
+        )
+
+        request.get.mockResolvedValueOnce({
+          status: 200,
+          data: {
+            url: 'https://unexpected-host.example.com/media/test-media-id',
+            mime_type: 'image/jpeg',
+            sha256: 'sha256',
+            file_size: 4,
+            id: 'test-media-id',
+            messaging_product: 'whatsapp',
+          },
+        })
+
+        const dialog = new Dialog(licensee, dependencies)
+
+        await expect(
+          dialog.getMediaUrl('test-media-id', 'https://waba-v2.360dialog.io/', 'token-dialog', contact),
+        ).rejects.toThrow('Unexpected media host returned by Dialog for mediaId test-media-id')
+
+        expect(logger.error).toHaveBeenCalledWith(
+          'Dialog media download expected host lookaside.fbsbx.com but got unexpected-host.example.com for mediaId test-media-id',
+        )
+        expect(request.download).not.toHaveBeenCalled()
       })
     })
   })
