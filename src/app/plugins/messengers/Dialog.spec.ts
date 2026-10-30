@@ -1410,14 +1410,6 @@ describe('Dialog plugin', () => {
             }),
           )
 
-          request.post.mockResolvedValueOnce({
-            status: 200,
-            data: {
-              contacts: [{ input: '+5511990283745', status: 'valid', wa_id: '553165392832' }],
-              meta: { api_status: 'stable', version: '2.35.4' },
-            },
-          })
-
           const expectedBodySendMessage = {
             recipient_type: 'individual',
             to: '553165392832',
@@ -1473,14 +1465,6 @@ describe('Dialog plugin', () => {
               messageWaId: 'ABEGVUiZKQggAhB1b33BM5Tk-yMHllM09TlC44',
             }),
           )
-
-          request.post.mockResolvedValueOnce({
-            status: 200,
-            data: {
-              contacts: [{ input: '+5511990283745', status: 'valid', wa_id: '553165392832' }],
-              meta: { api_status: 'stable', version: '2.35.4' },
-            },
-          })
 
           const expectedBodySendMessage = {
             recipient_type: 'individual',
@@ -1539,14 +1523,6 @@ describe('Dialog plugin', () => {
             }),
           )
 
-          request.post.mockResolvedValueOnce({
-            status: 200,
-            data: {
-              contacts: [{ input: '+5511990283745', status: 'valid', wa_id: '553165392832' }],
-              meta: { api_status: 'stable', version: '2.35.4' },
-            },
-          })
-
           const expectedBodySendMessage = {
             recipient_type: 'individual',
             to: '553165392832',
@@ -1602,14 +1578,6 @@ describe('Dialog plugin', () => {
               fileName: 'document.pdf',
             }),
           )
-
-          request.post.mockResolvedValueOnce({
-            status: 200,
-            data: {
-              contacts: [{ input: '+5511990283745', status: 'valid', wa_id: '553165392832' }],
-              meta: { api_status: 'stable', version: '2.35.4' },
-            },
-          })
 
           const expectedBodySendMessage = {
             recipient_type: 'individual',
@@ -1710,14 +1678,6 @@ describe('Dialog plugin', () => {
                 trigger: trigger._id,
               }),
             )
-
-            request.post.mockResolvedValueOnce({
-              status: 200,
-              data: {
-                contacts: [{ input: '+5511990283745', status: 'valid', wa_id: '553165392832' }],
-                meta: { api_status: 'stable', version: '2.35.4' },
-              },
-            })
 
             const expectedBodySendMessage = {
               recipient_type: 'individual',
@@ -1832,14 +1792,6 @@ describe('Dialog plugin', () => {
               }),
             )
 
-            request.post.mockResolvedValueOnce({
-              status: 200,
-              data: {
-                contacts: [{ input: '+5511990283745', status: 'valid', wa_id: '553165392832' }],
-                meta: { api_status: 'stable', version: '2.35.4' },
-              },
-            })
-
             const expectedBodySendMessage = {
               recipient_type: 'individual',
               to: '553165392832',
@@ -1950,14 +1902,6 @@ describe('Dialog plugin', () => {
                 trigger: trigger._id,
               }),
             )
-
-            request.post.mockResolvedValueOnce({
-              status: 200,
-              data: {
-                contacts: [{ input: '+5511990283745', status: 'valid', wa_id: '553165392832' }],
-                meta: { api_status: 'stable', version: '2.35.4' },
-              },
-            })
 
             const expectedBodySendMessage = {
               recipient_type: 'individual',
@@ -2095,14 +2039,6 @@ describe('Dialog plugin', () => {
               }),
             )
 
-            request.post.mockResolvedValueOnce({
-              status: 200,
-              data: {
-                contacts: [{ input: '+5511990283745', status: 'valid', wa_id: '553165392832' }],
-                meta: { api_status: 'stable', version: '2.35.4' },
-              },
-            })
-
             const expectedBodySendMessage = {
               recipient_type: 'individual',
               to: '553165392832',
@@ -2202,14 +2138,6 @@ describe('Dialog plugin', () => {
               }),
             )
 
-            request.post.mockResolvedValueOnce({
-              status: 200,
-              data: {
-                contacts: [{ input: '+5511990283745', status: 'valid', wa_id: '553165392832' }],
-                meta: { api_status: 'stable', version: '2.35.4' },
-              },
-            })
-
             const expectedBodySendMessage = {
               recipient_type: 'individual',
               to: '553165392832',
@@ -2269,14 +2197,6 @@ describe('Dialog plugin', () => {
               contacts: ['+5511990283745'],
               force_check: true,
             }
-
-            request.post.mockResolvedValueOnce({
-              status: 200,
-              data: {
-                contacts: [{ input: '+5511990283745', status: 'valid', wa_id: '553165392832' }],
-                meta: { api_status: 'stable', version: '2.35.4' },
-              },
-            })
 
             const expectedBodySendMessage = {
               recipient_type: 'individual',
@@ -2346,14 +2266,6 @@ describe('Dialog plugin', () => {
               sended: false,
             }),
           )
-
-          request.post.mockResolvedValueOnce({
-            status: 200,
-            data: {
-              contacts: [{ input: '+5511990283745', status: 'valid', wa_id: '553165392832' }],
-              meta: { api_status: 'stable', version: '2.35.4' },
-            },
-          })
 
           const expectedBodySendMessage = {
             recipient_type: 'individual',
@@ -2426,13 +2338,14 @@ describe('Dialog plugin', () => {
       })
     })
 
-    describe('when contact is invalid', () => {
-      it('logs the error message', async () => {
+    describe('when the contact does not have a waId yet', () => {
+      it('sends directly to the contact number, with no pre-send validation call', async () => {
         const contactRepository = dependencies.contactRepository
         const contact = await contactRepository.create(
           contactFactory.build({
             name: 'John Doe',
             talkingWithChatBot: true,
+            number: '5511990283745',
             licensee,
           }),
         )
@@ -2449,9 +2362,10 @@ describe('Dialog plugin', () => {
         )
 
         request.post.mockResolvedValueOnce({
-          status: 200,
+          status: 201,
           data: {
-            contacts: [{ input: '+5511990283745', status: 'invalid' }],
+            messages: [{ id: 'gBEGVUiZKQggAgkTPoDDlOljYHY' }],
+            contacts: [{ input: '5511990283745', wa_id: '5511990283745' }],
             meta: { api_status: 'stable', version: '2.35.4' },
           },
         })
@@ -2460,8 +2374,59 @@ describe('Dialog plugin', () => {
 
         const dialog = new Dialog(licensee, dependencies)
         await dialog.sendMessage(message._id, 'https://waba-v2.360dialog.io/', 'token-dialog')
+
+        expect(request.post).toHaveBeenCalledTimes(1)
+        expect(request.post).toHaveBeenCalledWith(
+          'https://waba-v2.360dialog.io/messages',
+          expect.objectContaining({ body: expect.objectContaining({ to: '5511990283745' }) }),
+        )
+        const messageUpdated = await messageRepository.findFirst({ _id: message._id })
+        expect(messageUpdated.sended).toEqual(true)
+      })
+    })
+
+    describe('when the Cloud API reports an invalid or unknown contact', () => {
+      it('logs the error message using the /messages error response', async () => {
+        const contactRepository = dependencies.contactRepository
+        const contact = await contactRepository.create(
+          contactFactory.build({
+            name: 'John Doe',
+            talkingWithChatBot: true,
+            number: '5511990283745',
+            licensee,
+          }),
+        )
+
+        const messageRepository = dependencies.messageRepository
+        const message = await messageRepository.create(
+          messageFactory.build({
+            _id: '60958703f415ed4008748637',
+            text: 'Message to send',
+            contact,
+            licensee,
+            sended: false,
+          }),
+        )
+
+        request.post.mockResolvedValueOnce({
+          status: 400,
+          data: {
+            meta: { api_status: 'stable', version: '2.35.4' },
+            errors: [{ code: 1006, title: 'Resource not found', details: 'unknown contact' }],
+          },
+        })
+
+        expect(message.sended).toEqual(false)
+
+        const dialog = new Dialog(licensee, dependencies)
+        await dialog.sendMessage(message._id, 'https://waba-v2.360dialog.io/', 'token-dialog')
+        const messageUpdated = await messageRepository.findFirst({ _id: message._id })
+        expect(messageUpdated.sended).toEqual(false)
+        expect(messageUpdated.error).toEqual(
+          '{"meta":{"api_status":"stable","version":"2.35.4"},"errors":[{"code":1006,"title":"Resource not found","details":"unknown contact"}]}',
+        )
         expect(logger.error).toHaveBeenCalledWith(
-          'A mensagem não foi enviada para a Dialog pois o contato não é válido {"contacts":[{"input":"+5511990283745","status":"invalid"}],"meta":{"api_status":"stable","version":"2.35.4"}}',
+          'Mensagem 60958703f415ed4008748637 não enviada para Dialog360. {"meta":{"api_status":"stable","version":"2.35.4"},"errors":[{"code":1006,"title":"Resource not found","details":"unknown contact"}]}',
         )
       })
     })
@@ -2473,6 +2438,7 @@ describe('Dialog plugin', () => {
           contactFactory.build({
             name: 'John Doe',
             talkingWithChatBot: true,
+            waId: '553165392832',
             licensee,
           }),
         )
@@ -2487,14 +2453,6 @@ describe('Dialog plugin', () => {
             sended: false,
           }),
         )
-
-        request.post.mockResolvedValueOnce({
-          status: 200,
-          data: {
-            contacts: [{ input: '+5511990283745', status: 'valid', wa_id: '553165392832' }],
-            meta: { api_status: 'stable', version: '2.35.4' },
-          },
-        })
 
         const expectedBodySendMessage = {
           recipient_type: 'individual',

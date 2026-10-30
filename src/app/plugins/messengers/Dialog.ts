@@ -9,24 +9,6 @@ import { requireDependency } from '../../helpers/RequireDependency'
 import { ILicensee, IContact, ITemplate } from '../../../types'
 import { IRepository } from '../../repositories/repository'
 
-const getWaIdContact = async (number: any, url: any, token: any) => {
-  const headers = { 'D360-API-KEY': token }
-
-  const body = {
-    blocking: 'wait',
-    contacts: [`+${number}`],
-    force_check: true,
-  }
-
-  const response = await request.post(`${url}v1/contacts/`, { headers, body })
-
-  return {
-    valid: response.status === 200 && response.data.contacts[0].status === 'valid',
-    waId: response.data.contacts[0].wa_id,
-    data: response.data,
-  }
-}
-
 const getTemplates = async (url: any, token: any) => {
   const headers = { 'D360-API-KEY': token }
 
@@ -293,18 +275,12 @@ class Dialog extends MessengersBase {
     if (!messageToSend) return
     const messageContact = messageToSend.contact as IContact
 
-    let waId = messageContact.waId
-    if (!waId) {
-      const waContact = await getWaIdContact(messageContact.number, url, token)
-      if (waContact.valid) {
-        waId = waContact.waId
-      } else {
-        logger.error(
-          `A mensagem não foi enviada para a Dialog pois o contato não é válido ${JSON.stringify(waContact.data)}`,
-        )
-        return
-      }
-    }
+    // Cloud API has no pre-send contact-validation endpoint (On-Premise's v1/contacts
+    // was dropped). wa_id for a never-contacted number is the E.164-digits number itself,
+    // which is exactly what messageContact.number already is (see NormalizePhone) — so a
+    // missing waId falls back to the number, and any invalid/unknown recipient is reported
+    // by the /messages response itself via the existing error branch below.
+    const waId = messageContact.waId || messageContact.number
 
     const headers = { 'D360-API-KEY': token }
 
