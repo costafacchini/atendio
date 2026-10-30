@@ -32,6 +32,7 @@ Load ONLY documents relevant to your current task.
 | [deploy-heroku](features/deploy-heroku.md) | Deploying to Heroku: process types, env vars, scaler setup, Formation API |
 | [deploy-fly](features/deploy-fly.md) | Deploying to Fly.io: machines, fly.toml, scaler wiring via Machines API |
 | [deploy-ecs](features/deploy-ecs.md) | Deploying to AWS ECS Fargate: task definitions, IAM policy, scaler via UpdateService |
+| [dialog-360dialog-cloud-api-migration](features/dialog-360dialog-cloud-api-migration.md) | Debugging a licensee's 360dialog integration, onboarding a new 360dialog licensee, or touching `Dialog.ts` (sendMessage, media download, contact validation, webhook/templates) |
 | [local-smoke-workflow](features/local-smoke-workflow.md) | Running the hybrid local smoke stack, seeded demo data, or the scripted pre-deploy smoke verification flow |
 | [local-chat-file-upload](features/local-chat-file-upload.md) | Extending the Local Chat file-sending flow (upload route, LocalChat plugin, file picker/rendering), or adding another multipart/form-data upload endpoint |
 

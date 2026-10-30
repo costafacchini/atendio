@@ -1,8 +1,8 @@
 # Plan: 360dialog Cloud API Migration
 
-**Status**: not-started
+**Status**: complete
 **Created**: 2026-10-29
-**Last Updated**: 2026-10-29
+**Last Updated**: 2026-10-30
 **Assigned Dev**: Alan Costa Facchini
 **PR Strategy**: single
 **Spec**: [spec.md](spec.md) — 4 user stories · 10 acceptance scenarios · 5 success criteria
@@ -43,12 +43,12 @@ Migrate the `Dialog` messenger plugin (`src/app/plugins/messengers/Dialog.ts`) f
 
 | Task Path | Title | Phase | Status | Depends On |
 |-----------|-------|-------|--------|------------|
-| phase-1/task-01-contact-validation-investigation | Investigate & decide Cloud API contact-validation strategy | 1 | not-started | — |
-| phase-2/task-02-sendmessage-endpoint-path | Fix sendMessage endpoint path | 2 | not-started | — |
-| phase-2/task-03-contact-validation-implementation | Implement decided contact-validation strategy | 2 | not-started | phase-1/task-01-contact-validation-investigation, phase-2/task-02-sendmessage-endpoint-path |
-| phase-2/task-04-media-download-migration | Migrate downloadMedia/getMediaUrl to two-step flow | 2 | not-started | phase-2/task-03-contact-validation-implementation |
-| phase-3/task-05-webhook-templates-regression | Add regression tests for setWebhook/searchTemplates | 3 | not-started | phase-2/task-04-media-download-migration |
-| phase-3/task-06-rollout-checklist-and-kb | Write manual rollout checklist + KB index update | 3 | not-started | phase-3/task-05-webhook-templates-regression |
+| phase-1/task-01-contact-validation-investigation | Investigate & decide Cloud API contact-validation strategy | 1 | complete | — |
+| phase-2/task-02-sendmessage-endpoint-path | Fix sendMessage endpoint path | 2 | complete | — |
+| phase-2/task-03-contact-validation-implementation | Implement decided contact-validation strategy | 2 | complete | phase-1/task-01-contact-validation-investigation, phase-2/task-02-sendmessage-endpoint-path |
+| phase-2/task-04-media-download-migration | Migrate downloadMedia/getMediaUrl to two-step flow | 2 | complete | phase-2/task-03-contact-validation-implementation |
+| phase-3/task-05-webhook-templates-regression | Add regression tests for setWebhook/searchTemplates | 3 | complete | phase-2/task-04-media-download-migration |
+| phase-3/task-06-rollout-checklist-and-kb | Write manual rollout checklist + KB index update | 3 | complete | phase-3/task-05-webhook-templates-regression |
 
 **Note on sequencing**: task-02, task-03, and task-04 are logically about different functions, but all three modify `Dialog.ts` and `Dialog.spec.ts`. Per PR Strategy `single` and to avoid merge conflicts, they are chained sequentially rather than run in parallel, even though task-02 and task-04 have no *logical* dependency on each other.
 
@@ -82,14 +82,14 @@ Base branch: `main`
 
 ## Success Criteria
 
-- [ ] `sendMessage` posts to `{whatsappUrl}messages`, with a test asserting the exact URL
-- [ ] `getMediaUrl`/`downloadMedia` implements the two-step Cloud API flow with test coverage, including an unexpected-host error path
-- [ ] `setWebhook`/`searchTemplates` verified unchanged via new URL-asserting regression tests
-- [ ] Contact-validation decision documented in `docs/kb/research/` and implemented in `sendMessage`/`getWaIdContact`
-- [ ] `npx jest` and `npx eslint .` pass clean
-- [ ] `docs/kb/README.md` index updated for any new research docs
-- [ ] Manual rollout checklist delivered to the user (whatsappUrl/token data update, D360-API-KEY regeneration) — not executed by this plan
-- [ ] No regressions in existing message-kind payload tests
+- [x] `sendMessage` posts to `{whatsappUrl}messages`, with a test asserting the exact URL
+- [x] `getMediaUrl`/`downloadMedia` implements the two-step Cloud API flow with test coverage, including an unexpected-host error path
+- [x] `setWebhook`/`searchTemplates` verified unchanged via new URL-asserting regression tests
+- [x] Contact-validation decision documented in `docs/kb/research/` and implemented in `sendMessage`/`getWaIdContact`
+- [x] `npx jest` (full repo: 2625 passed, 0 failed) and `npx eslint src/ server.ts worker.ts` pass clean (2 pre-existing, unrelated errors found in `src/scripts/*.mjs` — not touched by this plan, not regressions; see task-06 status.md). Note: bare `npx eslint .` is currently broken repo-wide due to a pre-existing gap — no `ignores` for `.claude/skills/`, `.cursor/skills/`, etc., which contain a vendored minified JS bundle (`modern-screenshot.umd.js`); flagged to the user, out of this plan's scope to fix.
+- [x] `docs/kb/README.md` index updated for any new research docs
+- [x] Manual rollout checklist delivered to the user (whatsappUrl/token data update, D360-API-KEY regeneration) — not executed by this plan; see `docs/kb/features/dialog-360dialog-cloud-api-migration.md`
+- [x] No regressions in existing message-kind payload tests (48/48 in `Dialog.spec.ts`, including the 5 pre-existing inbound-file tests updated for the new two-step media mock)
 
 ## References
 

@@ -23,7 +23,6 @@ Git-native Markdown plans for multi-step work.
 | # | Plan | Folder | Status | Description |
 |---|------|--------|--------|-------------|
 | 5 | [Ecomanda Fly.io Deploy](./ecomanda-flyio/overview.md) | `ecomanda-flyio/` | not-started | Deploy on Fly.io single 1 GB VM (server + worker), replacing Heroku — 3 phases, 4 tasks |
-| 6 | [360dialog Cloud API Migration](./dialog-cloud-api-migration/overview.md) | `dialog-cloud-api-migration/` | not-started | Migrate Dialog messenger plugin from retired waba.360dialog.io On-Premise API to Cloud API (waba-v2.360dialog.io) — issue #3346 — 3 phases, 6 tasks |
 
 ---
 
@@ -59,6 +58,7 @@ Git-native Markdown plans for multi-step work.
 | 24 | [Remove Plugin Fields from Licensee](./licensee-plugin-fields-to-inbox/overview.md) | `licensee-plugin-fields-to-inbox/` | 2026-08-13 | Remove 7 plugin fields from Licensee model; migrate all consumers to read from Inbox instead — 3 phases, 6 tasks |
 | 25 | [Schedule Message](./schedule-message/overview.md) | `schedule-message/` | 2026-08-24 | Allow agents to schedule a Chat message for future delivery via BullMQ delay — 3 phases, 8 tasks |
 | 26 | [Local Chat — File Sending](./local-chat-files/overview.md) | `local-chat-files/` | 2026-10-08 | Agent file upload in the admin Chat panel via LocalStorage/S3; image/video/audio/document rendering — 3 phases, 8 tasks |
+| 27 | [360dialog Cloud API Migration](./dialog-cloud-api-migration/overview.md) | `dialog-cloud-api-migration/` | 2026-10-30 | Migrate Dialog messenger plugin from retired waba.360dialog.io On-Premise API to Cloud API (waba-v2.360dialog.io) — issue #3346 — 3 phases, 6 tasks |
 
 ---
 
