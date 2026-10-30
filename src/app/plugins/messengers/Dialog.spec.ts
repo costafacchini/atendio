@@ -2638,8 +2638,15 @@ describe('Dialog plugin', () => {
       })
 
       const dialog = new Dialog(licensee, dependencies)
-      const setted = await dialog.setWebhook('https://waba.360dialog.io/', 'token-dialog')
+      const setted = await dialog.setWebhook('https://waba-v2.360dialog.io/', 'token-dialog')
       expect(setted).toEqual(true)
+      expect(request.post).toHaveBeenCalledWith(
+        'https://waba-v2.360dialog.io/v1/configs/webhook',
+        expect.objectContaining({
+          headers: { 'D360-API-KEY': 'token-dialog' },
+          body: expectedBody,
+        }),
+      )
     })
   })
 
@@ -2722,7 +2729,10 @@ describe('Dialog plugin', () => {
       })
 
       const dialog = new Dialog(licensee, dependencies)
-      const templates = await dialog.searchTemplates('https://waba.360dialog.io/', 'token-dialog')
+      const templates = await dialog.searchTemplates('https://waba-v2.360dialog.io/', 'token-dialog')
+      expect(request.get).toHaveBeenCalledWith('https://waba-v2.360dialog.io/v1/configs/templates', {
+        headers: { 'D360-API-KEY': 'token-dialog' },
+      })
       expect(templates[0].name).toEqual('sample_movie_ticket_confirmation')
       expect(templates[0].namespace).toEqual('93aa6bf3_3bfc_4840_a76c_0f43073739e2')
       expect(templates[0].licensee).toEqual(licensee._id)
