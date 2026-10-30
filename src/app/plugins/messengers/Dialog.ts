@@ -9,24 +9,6 @@ import { requireDependency } from '../../helpers/RequireDependency'
 import { ILicensee, IContact, ITemplate } from '../../../types'
 import { IRepository } from '../../repositories/repository'
 
-const getWaIdContact = async (number: any, url: any, token: any) => {
-  const headers = { 'D360-API-KEY': token }
-
-  const body = {
-    blocking: 'wait',
-    contacts: [`+${number}`],
-    force_check: true,
-  }
-
-  const response = await request.post(`${url}v1/contacts/`, { headers, body })
-
-  return {
-    valid: response.status === 200 && response.data.contacts[0].status === 'valid',
-    waId: response.data.contacts[0].wa_id,
-    data: response.data,
-  }
-}
-
 const getTemplates = async (url: any, token: any) => {
   const headers = { 'D360-API-KEY': token }
 
@@ -131,11 +113,32 @@ const parseComponentParam = (param: any, value: any) => {
   }
 }
 
-const downloadMedia = async (mediaId: any, whatsappToken: any) => {
+const LOOKASIDE_HOST = 'lookaside.fbsbx.com'
+const CLOUD_API_HOST = 'waba-v2.360dialog.io'
+
+const downloadMedia = async (mediaId: any, url: any, whatsappToken: any) => {
   const headers = { 'D360-API-KEY': whatsappToken }
-  const response = await request.download(`https://waba.360dialog.io/v1/media/${mediaId}`, {
-    headers,
-  })
+
+  const mediaResponse = await request.get(`${url}${mediaId}`, { headers })
+  const lookasideUrl = mediaResponse.data.url
+
+  let parsedLookasideUrl: URL
+  try {
+    parsedLookasideUrl = new URL(lookasideUrl)
+  } catch {
+    logger.error(`Dialog media download got a malformed URL for mediaId ${mediaId}: ${lookasideUrl}`)
+    throw new Error(`Malformed media URL returned by Dialog for mediaId ${mediaId}`)
+  }
+
+  if (parsedLookasideUrl.hostname !== LOOKASIDE_HOST) {
+    logger.error(
+      `Dialog media download expected host ${LOOKASIDE_HOST} but got ${parsedLookasideUrl.hostname} for mediaId ${mediaId}`,
+    )
+    throw new Error(`Unexpected media host returned by Dialog for mediaId ${mediaId}`)
+  }
+
+  const downloadUrl = `https://${CLOUD_API_HOST}${parsedLookasideUrl.pathname}${parsedLookasideUrl.search}`
+  const response = await request.download(downloadUrl, { headers })
 
   return response
 }
@@ -293,18 +296,12 @@ class Dialog extends MessengersBase {
     if (!messageToSend) return
     const messageContact = messageToSend.contact as IContact
 
-    let waId = messageContact.waId
-    if (!waId) {
-      const waContact = await getWaIdContact(messageContact.number, url, token)
-      if (waContact.valid) {
-        waId = waContact.waId
-      } else {
-        logger.error(
-          `A mensagem não foi enviada para a Dialog pois o contato não é válido ${JSON.stringify(waContact.data)}`,
-        )
-        return
-      }
-    }
+    // Cloud API has no pre-send contact-validation endpoint (On-Premise's v1/contacts
+    // was dropped). wa_id for a never-contacted number is the E.164-digits number itself,
+    // which is exactly what messageContact.number already is (see NormalizePhone) — so a
+    // missing waId falls back to the number, and any invalid/unknown recipient is reported
+    // by the /messages response itself via the existing error branch below.
+    const waId = messageContact.waId || messageContact.number
 
     const headers = { 'D360-API-KEY': token }
 
@@ -406,7 +403,7 @@ class Dialog extends MessengersBase {
       }
     }
 
-    const messageResponse = await request.post(`${url}v1/messages/`, { headers, body: messageBody })
+    const messageResponse = await request.post(`${url}messages`, { headers, body: messageBody })
     if (messageResponse.status === 201) {
       messageToSend.messageWaId = messageResponse.data.messages[0].id
       messageToSend.sended = true
@@ -438,8 +435,8 @@ class Dialog extends MessengersBase {
     return templates
   }
 
-  async getMediaUrl(mediaId: any, _url: any, token: any, contact: any) {
-    const response = await downloadMedia(mediaId, token)
+  async getMediaUrl(mediaId: any, url: any, token: any, contact: any) {
+    const response = await downloadMedia(mediaId, url, token)
     const extension = mime.extension(response.headers?.get('content-type'))
     const fileName = `${mediaId}.${extension}`
     const fileBase64 = Buffer.from(response.data).toString('base64')

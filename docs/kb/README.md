@@ -32,6 +32,7 @@ Load ONLY documents relevant to your current task.
 | [deploy-heroku](features/deploy-heroku.md) | Deploying to Heroku: process types, env vars, scaler setup, Formation API |
 | [deploy-fly](features/deploy-fly.md) | Deploying to Fly.io: machines, fly.toml, scaler wiring via Machines API |
 | [deploy-ecs](features/deploy-ecs.md) | Deploying to AWS ECS Fargate: task definitions, IAM policy, scaler via UpdateService |
+| [dialog-360dialog-cloud-api-migration](features/dialog-360dialog-cloud-api-migration.md) | Debugging a licensee's 360dialog integration, onboarding a new 360dialog licensee, or touching `Dialog.ts` (sendMessage, media download, contact validation, webhook/templates) |
 | [local-smoke-workflow](features/local-smoke-workflow.md) | Running the hybrid local smoke stack, seeded demo data, or the scripted pre-deploy smoke verification flow |
 | [local-chat-file-upload](features/local-chat-file-upload.md) | Extending the Local Chat file-sending flow (upload route, LocalChat plugin, file picker/rendering), or adding another multipart/form-data upload endpoint |
 
@@ -61,6 +62,7 @@ Load ONLY documents relevant to your current task.
 
 | Document | When to Read |
 |----------|--------------|
+| [360dialog-cloud-api-contact-validation-2026](research/360dialog-cloud-api-contact-validation-2026.md) | Migrating Dialog messenger from On-Premise API to Cloud API: contact validation strategy decision and implementation spec |
 | [centralized-logger-2026](research/centralized-logger-2026.md) | Implementing or modifying the centralized logger using plain JS + Sentry Node SDK v10 |
 | [cookie-auth-express5-2026](research/cookie-auth-express5-2026.md) | httpOnly cookie auth for Express 5 or Bull Board authentication |
 | [express-validator-v1-2026](research/express-validator-v1-2026.md) | Adding express-validator v7 input validation to v1 API routes |
