@@ -1414,30 +1414,30 @@
   resolved "https://registry.yarnpkg.com/@borewit/text-codec/-/text-codec-0.2.2.tgz#75025f735c0983b3a871668804a57387e3649375"
   integrity sha512-DDaRehssg1aNrH4+2hnj1B7vnUGEjU6OIlyRdkMd0aUdIUvKXrJfXsy8LVtXAy7DRvYVluWbMspsRhz2lcW0mQ==
 
-"@bull-board/api@9.10.5", "@bull-board/api@^9.0.0":
-  version "9.10.5"
-  resolved "https://registry.yarnpkg.com/@bull-board/api/-/api-9.10.5.tgz#a9b02397bfb3b0cf419f96bd2236432191a52d09"
-  integrity sha512-CMA5WCN5rkpQWG8+IQBFuwf54JVrWE+1mjHEiwyb9+rdHAqXTbZOpjJLZZB0QA+2DGQCK8z0WqqdprCFnhy8aA==
+"@bull-board/api@9.11.0", "@bull-board/api@^9.0.0":
+  version "9.11.0"
+  resolved "https://registry.yarnpkg.com/@bull-board/api/-/api-9.11.0.tgz#73fff6623f948d3fdaa82e27ef4f47b3349e0f4f"
+  integrity sha512-qmFGI87uahtILEduzQTFSWbFiqixuvAm06ZA3O53QO7WhvJQmh4smKSXuW04tpM7aHHp1nCFsuRy2YnXdSW1tw==
   dependencies:
     redis-info "^3.1.0"
     valibot "^1.5.0"
 
 "@bull-board/express@^9.0.0":
-  version "9.10.5"
-  resolved "https://registry.yarnpkg.com/@bull-board/express/-/express-9.10.5.tgz#24b92c4f5eb69f427cfb716d45f7314356ddc1ba"
-  integrity sha512-SLaT82KDiEXDHeSfJBsfwN/Q7Zp5fizx7PaaJm//o4rzonlbWielyTRPtzSLsUlX1ZjW5JdQJjAks25uKqZmyw==
+  version "9.11.0"
+  resolved "https://registry.yarnpkg.com/@bull-board/express/-/express-9.11.0.tgz#4cbb635a7214eee1c1e33f3db9e76f149c04c9b6"
+  integrity sha512-X6mk0a8edJtkKHRXUo8vf/mpGjS/0TO40PIniPyV9S0XfkgQHCSRF/yPJkU16q0UbYwat8IDrA7EZ0bcXnuAQw==
   dependencies:
-    "@bull-board/api" "9.10.5"
-    "@bull-board/ui" "9.10.5"
+    "@bull-board/api" "9.11.0"
+    "@bull-board/ui" "9.11.0"
     ejs "^6.0.1"
-    express "^5.2.1"
+    express "^5.3.0"
 
-"@bull-board/ui@9.10.5", "@bull-board/ui@^9.0.0":
-  version "9.10.5"
-  resolved "https://registry.yarnpkg.com/@bull-board/ui/-/ui-9.10.5.tgz#8a5e819b0807e7fce2af50633a12684522bba85f"
-  integrity sha512-CW97tdUiD0e7VMvezb0+cjDUdwfBU2Vo1ChLRvqNgn4qoUuqX/q9PnX+y9sF7bkXnc4Kor2u+rj/wRge9pqeVg==
+"@bull-board/ui@9.11.0", "@bull-board/ui@^9.0.0":
+  version "9.11.0"
+  resolved "https://registry.yarnpkg.com/@bull-board/ui/-/ui-9.11.0.tgz#f7f0eb78698c52d86216082d56bf83df7be09f4b"
+  integrity sha512-E7Gvnq6WUKhrJ4/hxbeifQu7DIb2kvEL0LPbdQAJifCsFHFYO4nh+iHTqGC3h8vTlgx7uxDXU/F6HRVa2ZZfuQ==
   dependencies:
-    "@bull-board/api" "9.10.5"
+    "@bull-board/api" "9.11.0"
 
 "@cacheable/memory@^2.2.0":
   version "2.2.0"
@@ -5398,9 +5398,9 @@ enabled@2.0.x:
   integrity sha512-AKrN98kuwOzMIdAizXGI86UFBoo26CL21UM763y1h/GMSJ4/OHU9k2YlsmBpyScFo/wbLzWQJBMCW4+IO3/+OQ==
 
 encodeurl@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/encodeurl/-/encodeurl-2.0.0.tgz#7b8ea898077d7e409d3ac45474ea38eaf0857a58"
-  integrity sha512-Q0n9HRi4m6JuGIV1eFlmvJB7ZEVxu93IrMyiMsGC0lrMJMWzRgx6WGquyfQgZVb31vhGgXnfmPNNXmxnOkRBrg==
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/encodeurl/-/encodeurl-2.0.1.tgz#f268548822bd87b5b4fdce83c56388c6d33c9de6"
+  integrity sha512-Ev/hIyePLZtpL98x562lvPtenrUfGr0lfaf44HFZ+hDEwso7ccV9QAZrEVLg0hxNAzygaAFxy2dYaAKKM0G06A==
 
 encoding@^0.1.13:
   version "0.1.14"
@@ -5953,7 +5953,7 @@ express-validator@7.3.2:
     lodash "^4.18.1"
     validator "~13.15.23"
 
-express@5.3.0, express@^5.2.1:
+express@5.3.0, express@^5.3.0:
   version "5.3.0"
   resolved "https://registry.yarnpkg.com/express/-/express-5.3.0.tgz#ab72dace89c50c8417bd3f865dad0b4fd1ca1c73"
   integrity sha512-qCqy1xSoaugxOD4IVHb1ZWdkvCF2W3aE2okKouWj8VwJ+ztskSiXoBnCSJqfKT+cVPJhuJqe9YLbY425+Zh00g==
@@ -8925,10 +8925,18 @@ qified@^0.10.1:
   dependencies:
     hookified "^2.1.1"
 
-qs@^6.14.1, qs@^6.16.0, qs@^6.16.1:
+qs@^6.14.1:
   version "6.16.1"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.16.1.tgz#0643e17993e551759c85078e1f0bc4b9fe908020"
   integrity sha512-5Px6J7rfHBAGUhNQ3es4YzcOdBBw0SDcVtThJml4RdnKw4tKs2epA0kPZ+K8X+WiHktT93RHVcQ/3ym5aTCgtg==
+  dependencies:
+    es-define-property "^1.0.1"
+    side-channel "^1.1.1"
+
+qs@^6.16.0, qs@^6.16.1:
+  version "6.17.1"
+  resolved "https://registry.yarnpkg.com/qs/-/qs-6.17.1.tgz#43ac71d29ca0e9d0eed16a218e35b6cde5628e81"
+  integrity sha512-jd3COkaKVgGUW+ZHyEHCG9bH7RoaaiWuMgzsIBjUMVjLAaWGWpoUAVwljVvBHxRu/2qEHnadLGZrkutYUBPQJA==
   dependencies:
     es-define-property "^1.0.1"
     side-channel "^1.1.1"
