@@ -23,7 +23,7 @@ Git-native Markdown plans for multi-step work.
 | # | Plan | Folder | Status | Description |
 |---|------|--------|--------|-------------|
 | 5 | [Ecomanda Fly.io Deploy](./ecomanda-flyio/overview.md) | `ecomanda-flyio/` | not-started | Deploy on Fly.io single 1 GB VM (server + worker), replacing Heroku — 3 phases, 4 tasks |
-| 6 | [Wppconnect-Server WhatsApp Plugin](./wppconnect-server-plugin/overview.md) | `wppconnect-server-plugin/` | not-started | HTTP-client plugin for a self-hosted `wppconnect-server` instance, Dialog/Utalk-style — 4 phases, 6 tasks |
+| 6 | [Wppconnect-Server WhatsApp Plugin](./wppconnect-server-plugin/overview.md) | `wppconnect-server-plugin/` | in-progress | HTTP-client plugin for a self-hosted `wppconnect-server` instance, Dialog/Utalk-style — 4 phases, 6 tasks (1/6 complete) |
 
 ---
 

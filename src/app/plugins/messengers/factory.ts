@@ -3,6 +3,7 @@ import { Dialog } from './Dialog'
 import { YCloud } from './YCloud'
 import { Pabbly } from './Pabbly'
 import { Baileys } from './Baileys'
+import { WppconnectServer } from './WppconnectServer'
 import { IMessengerPlugin } from './Base'
 import { ILicensee, IInbox } from '../../../types'
 
@@ -24,6 +25,8 @@ function createMessengerPlugin(
       return new Pabbly(licensee, deps)
     case 'baileys':
       return new Baileys(licensee, deps)
+    case 'wppconnect-server':
+      return new WppconnectServer(licensee, deps)
     default:
       throw `Plugin de messenger não configurado: ${plugin}`
   }

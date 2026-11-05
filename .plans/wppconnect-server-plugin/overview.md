@@ -1,8 +1,8 @@
 # Plan: Wppconnect-Server WhatsApp Plugin
 
-**Status**: not-started
+**Status**: in-progress
 **Created**: 2026-11-04
-**Last Updated**: 2026-11-04
+**Last Updated**: 2026-11-05
 **Assigned Dev**: Alan Costa Facchini
 **PR Strategy**: single
 **Spec**: [spec.md](spec.md) — 4 user stories · 12 acceptance scenarios · 4 success criteria
@@ -48,7 +48,7 @@ Add a `wppconnect-server`-based WhatsApp messenger plugin — an HTTP-client plu
 
 | Task Path | Title | Phase | Status | Depends On |
 |-----------|-------|-------|--------|------------|
-| phase-1/task-01-plugin-core | Wppconnect-Server Plugin Core | 1 | not-started | — |
+| phase-1/task-01-plugin-core | Wppconnect-Server Plugin Core | 1 | complete | — |
 | phase-2/task-02-inbox-qr-status | Inbox QR/Status Endpoints | 2 | not-started | phase-1/task-01-plugin-core |
 | phase-2/task-03-department-qr-status | Department & Licensee QR/Status Endpoints | 2 | not-started | phase-2/task-02-inbox-qr-status |
 | phase-3/task-04-inbox-admin-ui | Inbox Admin Form + QR Panel | 3 | not-started | phase-2/task-02-inbox-qr-status |

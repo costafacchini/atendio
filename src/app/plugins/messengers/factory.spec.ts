@@ -3,6 +3,7 @@ import { Utalk } from './Utalk'
 import { Dialog } from './Dialog'
 import { YCloud } from './YCloud'
 import { Pabbly } from './Pabbly'
+import { WppconnectServer } from './WppconnectServer'
 import { licensee as licenseeFactory } from '@factories/licensee'
 
 describe('createMessengerPlugin', () => {
@@ -36,6 +37,14 @@ describe('createMessengerPlugin', () => {
     const plugin = createMessengerPlugin(licensee, {}, { whatsappDefault: 'pabbly' } as any)
 
     expect(plugin).toBeInstanceOf(Pabbly)
+  })
+
+  it('returns the wppconnect-server plugin if it is configured on inbox', () => {
+    const licensee = licenseeFactory.build()
+
+    const plugin = createMessengerPlugin(licensee, {}, { whatsappDefault: 'wppconnect-server' } as any)
+
+    expect(plugin).toBeInstanceOf(WppconnectServer)
   })
 
   it('throws if option plugin is unknow', () => {
