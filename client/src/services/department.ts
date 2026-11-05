@@ -37,6 +37,14 @@ function syncDepartmentBaileys(department: any) {
   return api().post(`resources/departments/${department.id}/baileys-sync`, { headers: headers() })
 }
 
+function getDepartmentWppconnectServerStatus(department: any) {
+  return api().get(`resources/departments/${department.id}/wppconnect-server-status`, { headers: headers() })
+}
+
+function getDepartmentWppconnectServerQr(department: any) {
+  return api().post(`resources/departments/${department.id}/wppconnect-server-qr`, { headers: headers() })
+}
+
 export {
   getDepartments,
   getDepartment,
@@ -46,4 +54,6 @@ export {
   getDepartmentBaileysStatus,
   getDepartmentBaileysQr,
   syncDepartmentBaileys,
+  getDepartmentWppconnectServerStatus,
+  getDepartmentWppconnectServerQr,
 }
