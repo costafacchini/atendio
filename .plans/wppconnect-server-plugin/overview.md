@@ -50,7 +50,7 @@ Add a `wppconnect-server`-based WhatsApp messenger plugin — an HTTP-client plu
 |-----------|-------|-------|--------|------------|
 | phase-1/task-01-plugin-core | Wppconnect-Server Plugin Core | 1 | complete | — |
 | phase-2/task-02-inbox-qr-status | Inbox QR/Status Endpoints | 2 | complete | phase-1/task-01-plugin-core |
-| phase-2/task-03-department-qr-status | Department & Licensee QR/Status Endpoints | 2 | not-started | phase-2/task-02-inbox-qr-status |
+| phase-2/task-03-department-qr-status | Department & Licensee QR/Status Endpoints | 2 | complete | phase-2/task-02-inbox-qr-status |
 | phase-3/task-04-inbox-admin-ui | Inbox Admin Form + QR Panel | 3 | not-started | phase-2/task-02-inbox-qr-status |
 | phase-3/task-05-department-admin-ui | Department Admin Form + QR Panel | 3 | not-started | phase-2/task-03-department-qr-status |
 | phase-4/task-06-kb-docs | KB Usage Guide + Deployment Doc | 4 | not-started | phase-3/task-04-inbox-admin-ui, phase-3/task-05-department-admin-ui |
@@ -105,7 +105,7 @@ Base branch: `main`
 
 | Found In | Description | Status | Notes |
 |----------|-------------|--------|-------|
-| task-02 | `resources-routes.ts` never passes `getBaileysQrForInbox`/`getBaileysStatusForInbox`/`syncBaileysDirectoryForInbox` into `new DepartmentsController({...})`, even though `DepartmentsController` destructures and uses them — pre-existing bug in the **Baileys** Department QR/status path, unrelated to this plan's `wppconnect-server` provider | Logged, not fixed (out of scope) | See `phase-2/task-02-inbox-qr-status/status.md` for detail. task-03 must correctly wire the `wppconnect-server` equivalents so this gap isn't repeated for the new provider. |
+| task-02 | `resources-routes.ts` never passes `getBaileysQrForInbox`/`getBaileysStatusForInbox`/`syncBaileysDirectoryForInbox` into `new DepartmentsController({...})`, even though `DepartmentsController` destructures and uses them — pre-existing bug in the **Baileys** Department QR/status path, unrelated to this plan's `wppconnect-server` provider | Logged, not fixed (out of scope) | See `phase-2/task-02-inbox-qr-status/status.md` for detail. Confirmed in task-03 that the equivalent `wppconnect-server` wiring IS correct (`getWppconnectServerQrForInbox`/`getWppconnectServerStatusForInbox` are passed into `DepartmentsController`) — only the pre-existing Baileys gap remains unfixed. |
 
 ## References
 

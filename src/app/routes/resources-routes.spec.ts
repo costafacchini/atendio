@@ -23,6 +23,7 @@ jest.mock('../runtime/dependencies', () => {
     roomRepository: { findFirst: jest.fn(), find: jest.fn() },
     whatsappSessionRepository: { findFirst: jest.fn() },
     inboxRepository: { findFirst: jest.fn(), find: jest.fn() },
+    departmentRepository: { findFirst: jest.fn(), find: jest.fn() },
     createMessengerPlugin: jest.fn(),
     createTemplatesImporter: jest.fn(),
   }
@@ -207,6 +208,52 @@ describe('GET /inboxes/:id/wppconnect-server-status', () => {
     expect(res.status).not.toBe(401)
     expect(res.status).not.toBe(403)
     expect(res.body).toEqual({ connected: false })
+  })
+})
+
+describe('POST /departments/:id/wppconnect-server-qr', () => {
+  it('returns 401 when no token is provided', async () => {
+    const res = await request(app).post('/resources/departments/some-id/wppconnect-server-qr')
+
+    expect(res.status).toBe(401)
+    expect(res.body).toMatchObject({ auth: false })
+  })
+
+  it('is accessible to admin users and reaches the controller', async () => {
+    userRepository.findFirst.mockResolvedValue({ _id: 'uid-9', role: 'admin' })
+    deps.departmentRepository.findFirst.mockResolvedValue(null)
+    const token = signToken({ id: 'uid-9' })
+
+    const res = await request(app)
+      .post('/resources/departments/some-id/wppconnect-server-qr')
+      .set('x-access-token', token)
+
+    expect(res.status).not.toBe(401)
+    expect(res.status).not.toBe(403)
+    expect(res.body).toEqual({ message: 'Departamento não encontrado' })
+  })
+})
+
+describe('POST /licensees/:id/wppconnect-server-qr', () => {
+  it('returns 401 when no token is provided', async () => {
+    const res = await request(app).post('/resources/licensees/some-id/wppconnect-server-qr')
+
+    expect(res.status).toBe(401)
+    expect(res.body).toMatchObject({ auth: false })
+  })
+
+  it('is accessible to authenticated users and reaches the controller', async () => {
+    userRepository.findFirst.mockResolvedValue({ _id: 'uid-10', role: 'agent' })
+    deps.licenseeRepository.findFirst.mockResolvedValue(null)
+    const token = signToken({ id: 'uid-10' })
+
+    const res = await request(app)
+      .post('/resources/licensees/some-id/wppconnect-server-qr')
+      .set('x-access-token', token)
+
+    expect(res.status).not.toBe(401)
+    expect(res.status).not.toBe(403)
+    expect(res.body).toEqual({ message: 'Licensee não usa Wppconnect Server' })
   })
 })
 

@@ -56,6 +56,8 @@ const {
   createTemplatesImporter,
   startBaileysSocket,
   socketManager,
+  getWppconnectServerQrForInbox,
+  getWppconnectServerStatusForInbox,
 } = createRuntimeDependencies()
 
 const usersController = new UsersController({
@@ -107,6 +109,8 @@ const departmentsController = new DepartmentsController({
   createMessengerPlugin,
   startBaileysSocket,
   socketManager,
+  getWppconnectServerQrForInbox,
+  getWppconnectServerStatusForInbox,
 })
 
 const inboxesController = new InboxesController({
@@ -216,6 +220,8 @@ router.post('/licensees/:id/dialogwebhook', licenseesController.setDialogWebhook
 router.get('/licensees/:id/baileys-status', licenseesController.getBaileysStatus)
 router.post('/licensees/:id/baileys-qr', (req, res) => licenseesController.getBaileysQr(req, res))
 router.post('/licensees/:id/baileys-sync', licenseesController.baileysSync)
+router.get('/licensees/:id/wppconnect-server-status', licenseesController.getWppconnectServerStatus)
+router.post('/licensees/:id/wppconnect-server-qr', (req, res) => licenseesController.getWppconnectServerQr(req, res))
 
 router.get('/departments', authorize('admin', 'super'), departmentsController.index)
 router.get('/departments/:id', authorize('admin', 'super'), departmentsController.show)
@@ -225,6 +231,16 @@ router.delete('/departments/:id', authorize('admin', 'super'), departmentsContro
 router.post('/departments/:id/baileys-qr', authorize('admin', 'super'), departmentsController.getBaileysQr)
 router.get('/departments/:id/baileys-status', authorize('admin', 'super'), departmentsController.getBaileysStatus)
 router.post('/departments/:id/baileys-sync', authorize('admin', 'super'), departmentsController.baileysSync)
+router.post(
+  '/departments/:id/wppconnect-server-qr',
+  authorize('admin', 'super'),
+  departmentsController.wppconnectServerQr,
+)
+router.get(
+  '/departments/:id/wppconnect-server-status',
+  authorize('admin', 'super'),
+  departmentsController.wppconnectServerStatus,
+)
 
 router.get('/inboxes', authorize('admin', 'super'), inboxesController.index)
 router.post('/inboxes', authorize('admin', 'super'), inboxesController.create)

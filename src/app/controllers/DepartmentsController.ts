@@ -5,12 +5,16 @@ import { IDepartment } from '../../types'
 import { GetBaileysQrForDepartment } from '../usecases/licensees/GetBaileysQrForDepartment'
 import { GetBaileysStatusForDepartment } from '../usecases/licensees/GetBaileysStatusForDepartment'
 import { SyncBaileysDirectoryForDepartment } from '../usecases/licensees/SyncBaileysDirectoryForDepartment'
+import { GetWppconnectServerQrForDepartment } from '../usecases/licensees/GetWppconnectServerQrForDepartment'
+import { GetWppconnectServerStatusForDepartment } from '../usecases/licensees/GetWppconnectServerStatusForDepartment'
 
 class DepartmentsController {
   departmentRepository: IRepository<IDepartment>
   getBaileysQrUseCase: GetBaileysQrForDepartment
   getBaileysStatusUseCase: GetBaileysStatusForDepartment
   syncBaileysDirectoryUseCase: SyncBaileysDirectoryForDepartment
+  getWppconnectServerQrUseCase: GetWppconnectServerQrForDepartment
+  getWppconnectServerStatusUseCase: GetWppconnectServerStatusForDepartment
 
   constructor({
     departmentRepository,
@@ -24,6 +28,8 @@ class DepartmentsController {
     getBaileysQrForInbox,
     getBaileysStatusForInbox,
     syncBaileysDirectoryForInbox,
+    getWppconnectServerQrForInbox,
+    getWppconnectServerStatusForInbox,
   }: Record<string, any> = {}) {
     this.departmentRepository = departmentRepository!
     this.getBaileysQrUseCase = new GetBaileysQrForDepartment({
@@ -51,6 +57,20 @@ class DepartmentsController {
       createMessengerPlugin,
       syncBaileysDirectoryForInbox,
     })
+    this.getWppconnectServerQrUseCase = new GetWppconnectServerQrForDepartment({
+      departmentRepository,
+      licenseeRepository,
+      inboxRepository,
+      createMessengerPlugin,
+      getWppconnectServerQrForInbox,
+    })
+    this.getWppconnectServerStatusUseCase = new GetWppconnectServerStatusForDepartment({
+      departmentRepository,
+      licenseeRepository,
+      inboxRepository,
+      createMessengerPlugin,
+      getWppconnectServerStatusForInbox,
+    })
 
     this.index = this.index.bind(this)
     this.show = this.show.bind(this)
@@ -60,6 +80,8 @@ class DepartmentsController {
     this.getBaileysQr = this.getBaileysQr.bind(this)
     this.getBaileysStatus = this.getBaileysStatus.bind(this)
     this.baileysSync = this.baileysSync.bind(this)
+    this.wppconnectServerQr = this.wppconnectServerQr.bind(this)
+    this.wppconnectServerStatus = this.wppconnectServerStatus.bind(this)
   }
 
   async index(req: Request, res: Response) {
@@ -146,6 +168,26 @@ class DepartmentsController {
   async baileysSync(req: Request, res: Response) {
     try {
       const response = await this.syncBaileysDirectoryUseCase.execute(req.params.id as string)
+
+      return res.status(200).send(response)
+    } catch (err: any) {
+      return res.status(500).send({ errors: { message: `Erro interno do servidor: ${err.message}` } })
+    }
+  }
+
+  async wppconnectServerQr(req: Request, res: Response) {
+    try {
+      const response = await this.getWppconnectServerQrUseCase.execute(req.params.id as string)
+
+      return res.status(200).send(response)
+    } catch (err: any) {
+      return res.status(408).send({ errors: { message: `Erro interno do servidor: ${err.message}` } })
+    }
+  }
+
+  async wppconnectServerStatus(req: Request, res: Response) {
+    try {
+      const response = await this.getWppconnectServerStatusUseCase.execute(req.params.id as string)
 
       return res.status(200).send(response)
     } catch (err: any) {

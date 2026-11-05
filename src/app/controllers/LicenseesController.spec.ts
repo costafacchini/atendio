@@ -345,4 +345,80 @@ describe('LicenseesController delegation', () => {
       errors: { message: 'Erro interno do servidor: sync failed' },
     })
   })
+
+  it('delegates getWppconnectServerQr to the use case and returns status 200', async () => {
+    const getWppconnectServerQrUseCase = { execute: jest.fn() }
+    const licenseeRepository = new LicenseeRepositoryMemory()
+    const controller = new LicenseesController({ licenseeRepository })
+    controller.getWppconnectServerQrUseCase = getWppconnectServerQrUseCase
+
+    const req = { params: { id: 'licensee-id' } }
+    const res = buildResponse()
+    const qrResponse = { qr: 'data:image/png;base64,abc123' }
+
+    getWppconnectServerQrUseCase.execute.mockResolvedValue(qrResponse)
+
+    await controller.getWppconnectServerQr(req, res)
+
+    expect(getWppconnectServerQrUseCase.execute).toHaveBeenCalledWith('licensee-id')
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.send).toHaveBeenCalledWith(qrResponse)
+  })
+
+  it('returns status 408 when getWppconnectServerQr use case throws an error', async () => {
+    const getWppconnectServerQrUseCase = { execute: jest.fn() }
+    const licenseeRepository = new LicenseeRepositoryMemory()
+    const controller = new LicenseesController({ licenseeRepository })
+    controller.getWppconnectServerQrUseCase = getWppconnectServerQrUseCase
+
+    const req = { params: { id: 'licensee-id' } }
+    const res = buildResponse()
+
+    getWppconnectServerQrUseCase.execute.mockRejectedValue(new Error('timeout'))
+
+    await controller.getWppconnectServerQr(req, res)
+
+    expect(res.status).toHaveBeenCalledWith(408)
+    expect(res.send).toHaveBeenCalledWith({
+      errors: { message: 'Erro interno do servidor: timeout' },
+    })
+  })
+
+  it('delegates getWppconnectServerStatus to the use case and returns status 200', async () => {
+    const getWppconnectServerStatusUseCase = { execute: jest.fn() }
+    const licenseeRepository = new LicenseeRepositoryMemory()
+    const controller = new LicenseesController({ licenseeRepository })
+    controller.getWppconnectServerStatusUseCase = getWppconnectServerStatusUseCase
+
+    const req = { params: { id: 'licensee-id' } }
+    const res = buildResponse()
+    const statusResponse = { connected: true }
+
+    getWppconnectServerStatusUseCase.execute.mockResolvedValue(statusResponse)
+
+    await controller.getWppconnectServerStatus(req, res)
+
+    expect(getWppconnectServerStatusUseCase.execute).toHaveBeenCalledWith('licensee-id')
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.send).toHaveBeenCalledWith(statusResponse)
+  })
+
+  it('returns status 500 when getWppconnectServerStatus use case throws an error', async () => {
+    const getWppconnectServerStatusUseCase = { execute: jest.fn() }
+    const licenseeRepository = new LicenseeRepositoryMemory()
+    const controller = new LicenseesController({ licenseeRepository })
+    controller.getWppconnectServerStatusUseCase = getWppconnectServerStatusUseCase
+
+    const req = { params: { id: 'licensee-id' } }
+    const res = buildResponse()
+
+    getWppconnectServerStatusUseCase.execute.mockRejectedValue(new Error('boom'))
+
+    await controller.getWppconnectServerStatus(req, res)
+
+    expect(res.status).toHaveBeenCalledWith(500)
+    expect(res.send).toHaveBeenCalledWith({
+      errors: { message: 'Erro interno do servidor: boom' },
+    })
+  })
 })
