@@ -1,35 +1,35 @@
 import { IRepository } from '@repositories/repository'
 import { ILicensee, IInbox, IDepartment } from '../../../types'
 
-const WHATSAPP_DEFAULT_WPPCONNECT_SERVER = 'wppconnect-server'
+const WHATSAPP_DEFAULT_WPPCONNECT_SERVER = 'wppconnect-server-v2'
 
-interface GetWppconnectServerQrForDepartmentDeps {
+interface GetWppconnectServerV2QrForDepartmentDeps {
   departmentRepository: IRepository<IDepartment>
   licenseeRepository: IRepository<ILicensee>
   inboxRepository: IRepository<IInbox>
   createMessengerPlugin: (licensee: ILicensee, extras: Record<string, any>) => any
-  getWppconnectServerQrForInbox: { execute(inboxId: string): Promise<Record<string, any>> }
+  getWppconnectServerV2QrForInbox: { execute(inboxId: string): Promise<Record<string, any>> }
 }
 
-class GetWppconnectServerQrForDepartment {
+class GetWppconnectServerV2QrForDepartment {
   departmentRepository: IRepository<IDepartment>
   licenseeRepository: IRepository<ILicensee>
   inboxRepository: IRepository<IInbox>
-  createMessengerPlugin: GetWppconnectServerQrForDepartmentDeps['createMessengerPlugin']
-  getWppconnectServerQrForInbox: GetWppconnectServerQrForDepartmentDeps['getWppconnectServerQrForInbox']
+  createMessengerPlugin: GetWppconnectServerV2QrForDepartmentDeps['createMessengerPlugin']
+  getWppconnectServerV2QrForInbox: GetWppconnectServerV2QrForDepartmentDeps['getWppconnectServerV2QrForInbox']
 
   constructor({
     departmentRepository,
     licenseeRepository,
     inboxRepository,
     createMessengerPlugin,
-    getWppconnectServerQrForInbox,
-  }: GetWppconnectServerQrForDepartmentDeps) {
+    getWppconnectServerV2QrForInbox,
+  }: GetWppconnectServerV2QrForDepartmentDeps) {
     this.departmentRepository = departmentRepository
     this.licenseeRepository = licenseeRepository
     this.inboxRepository = inboxRepository
     this.createMessengerPlugin = createMessengerPlugin
-    this.getWppconnectServerQrForInbox = getWppconnectServerQrForInbox
+    this.getWppconnectServerV2QrForInbox = getWppconnectServerV2QrForInbox
   }
 
   async execute(departmentId: string) {
@@ -39,18 +39,18 @@ class GetWppconnectServerQrForDepartment {
     }
 
     if (department.inbox) {
-      return this.getWppconnectServerQrForInbox.execute(department.inbox as string)
+      return this.getWppconnectServerV2QrForInbox.execute(department.inbox as string)
     }
 
     const licensee = await this.licenseeRepository.findFirst({ _id: department.licensee })
-    if (!licensee) return { message: 'Licensee não usa Wppconnect Server' }
+    if (!licensee) return { message: 'Licensee não usa Wppconnect Server v2' }
 
     const inbox = await this.inboxRepository.findFirst({
       licensee: String(department.licensee),
       kind: 'messenger',
       whatsappDefault: WHATSAPP_DEFAULT_WPPCONNECT_SERVER,
     })
-    if (!inbox) return { message: 'Licensee não usa Wppconnect Server' }
+    if (!inbox) return { message: 'Licensee não usa Wppconnect Server v2' }
 
     if (!inbox.whatsappUrl || !inbox.whatsappToken) {
       return { message: 'Configuração incompleta: whatsappUrl e whatsappToken são obrigatórios' }
@@ -67,4 +67,4 @@ class GetWppconnectServerQrForDepartment {
   }
 }
 
-export { GetWppconnectServerQrForDepartment }
+export { GetWppconnectServerV2QrForDepartment }

@@ -2,22 +2,22 @@ import { licenseeComplete as licenseeCompleteFactory } from '@factories/licensee
 import { inbox as inboxFactory } from '@factories/inbox'
 import { LicenseeRepositoryMemory } from '@repositories/licensee'
 import { InboxRepositoryMemory } from '@repositories/inbox'
-import { GetWppconnectServerStatus } from './GetWppconnectServerStatus'
+import { GetWppconnectServerV2Status } from './GetWppconnectServerV2Status'
 
-describe('GetWppconnectServerStatus', () => {
+describe('GetWppconnectServerV2Status', () => {
   it('returns { connected: true } when plugin.getConnectionStatus() resolves true', async () => {
     const licenseeRepository = new LicenseeRepositoryMemory()
     const inboxRepository = new InboxRepositoryMemory()
     const plugin = { getConnectionStatus: jest.fn().mockResolvedValue(true) }
     const createMessengerPlugin = jest.fn().mockReturnValue(plugin)
-    const useCase = new GetWppconnectServerStatus({ licenseeRepository, inboxRepository, createMessengerPlugin })
+    const useCase = new GetWppconnectServerV2Status({ licenseeRepository, inboxRepository, createMessengerPlugin })
     const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
     const inbox = await inboxRepository.create(
       inboxFactory.build({
         licensee: licensee._id,
         kind: 'messenger',
-        whatsappDefault: 'wppconnect-server',
-        whatsappUrl: 'https://my-wppconnect-server.com',
+        whatsappDefault: 'wppconnect-server-v2',
+        whatsappUrl: 'https://my-wppconnect-server-v2.com',
         whatsappToken: 'session-token',
       }),
     )
@@ -25,15 +25,15 @@ describe('GetWppconnectServerStatus', () => {
     const response = await useCase.execute(licensee._id)
 
     expect(createMessengerPlugin).toHaveBeenCalledWith(licensee, { inbox })
-    expect(plugin.getConnectionStatus).toHaveBeenCalledWith('https://my-wppconnect-server.com', 'session-token')
+    expect(plugin.getConnectionStatus).toHaveBeenCalledWith('https://my-wppconnect-server-v2.com', 'session-token')
     expect(response).toEqual({ connected: true })
   })
 
-  it('returns { connected: false } when licensee has no wppconnect-server inbox', async () => {
+  it('returns { connected: false } when licensee has no wppconnect-server-v2 inbox', async () => {
     const licenseeRepository = new LicenseeRepositoryMemory()
     const inboxRepository = new InboxRepositoryMemory()
     const createMessengerPlugin = jest.fn()
-    const useCase = new GetWppconnectServerStatus({ licenseeRepository, inboxRepository, createMessengerPlugin })
+    const useCase = new GetWppconnectServerV2Status({ licenseeRepository, inboxRepository, createMessengerPlugin })
     const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
     await inboxRepository.create(
       inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'dialog' }),
@@ -49,7 +49,7 @@ describe('GetWppconnectServerStatus', () => {
     const licenseeRepository = new LicenseeRepositoryMemory()
     const inboxRepository = new InboxRepositoryMemory()
     const createMessengerPlugin = jest.fn()
-    const useCase = new GetWppconnectServerStatus({ licenseeRepository, inboxRepository, createMessengerPlugin })
+    const useCase = new GetWppconnectServerV2Status({ licenseeRepository, inboxRepository, createMessengerPlugin })
 
     const response = await useCase.execute('000000000000000000000001')
 
@@ -60,10 +60,10 @@ describe('GetWppconnectServerStatus', () => {
     const licenseeRepository = new LicenseeRepositoryMemory()
     const inboxRepository = new InboxRepositoryMemory()
     const createMessengerPlugin = jest.fn()
-    const useCase = new GetWppconnectServerStatus({ licenseeRepository, inboxRepository, createMessengerPlugin })
+    const useCase = new GetWppconnectServerV2Status({ licenseeRepository, inboxRepository, createMessengerPlugin })
     const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
     await inboxRepository.create(
-      inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'wppconnect-server' }),
+      inboxFactory.build({ licensee: licensee._id, kind: 'messenger', whatsappDefault: 'wppconnect-server-v2' }),
     )
 
     const response = await useCase.execute(licensee._id)

@@ -11,6 +11,8 @@
 
 Add a `wppconnect-server`-based WhatsApp messenger plugin — an HTTP-client plugin (same architectural family as `Dialog`/`Utalk`) that talks to a self-hosted, externally-operated `wppconnect-server` instance via its own REST API, using the existing `whatsappUrl`/`whatsappToken` Inbox fields. No Puppeteer/Chromium runs inside this app's process.
 
+> **Post-implementation naming update (2026-11-05, before merge)**: after all 6 tasks were implemented under the plugin identifier `wppconnect-server`, the user requested the identifier be version-pinned to the upstream `wppconnect-server` project's major version instead — since this is self-hosted, different licensees could run different major versions simultaneously, and a future breaking API change upstream shouldn't silently break already-configured Inboxes. Every class name, file name, route segment (`wppconnect-server-qr` → `wppconnect-server-v2-qr`), `whatsappDefault` value, i18n key, and the KB guide were renamed from `wppconnect-server` to **`wppconnect-server-v2`**, pinned to the verified upstream release `v2.10.76` (2026-11-05, major version 2). This plan's own folder path (`.plans/wppconnect-server-plugin/`) and the task files below were **not** renamed/rewritten — they remain the historical record of what was planned and built under the original identifier; the actual shipped identifier is `wppconnect-server-v2`, documented in `docs/kb/features/wppconnect-server-v2-whatsapp-guide.md`. A future `wppconnect-server-v3` plugin (for a breaking upstream major release) would be a new, separate plugin, not a modification of this one.
+
 ## Scope
 
 ### In Scope

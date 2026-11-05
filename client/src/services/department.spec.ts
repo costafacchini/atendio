@@ -9,8 +9,8 @@ import {
   getDepartmentBaileysStatus,
   getDepartmentBaileysQr,
   syncDepartmentBaileys,
-  getDepartmentWppconnectServerStatus,
-  getDepartmentWppconnectServerQr,
+  getDepartmentWppconnectServerV2Status,
+  getDepartmentWppconnectServerV2Qr,
 } from './department'
 
 vi.mock('./auth')
@@ -120,21 +120,21 @@ describe('department service', () => {
     })
   })
 
-  describe('getDepartmentWppconnectServerStatus', () => {
-    it('sends GET to resources/departments/:id/wppconnect-server-status', async () => {
-      await getDepartmentWppconnectServerStatus({ id: 'department-id' })
+  describe('getDepartmentWppconnectServerV2Status', () => {
+    it('sends GET to resources/departments/:id/wppconnect-server-v2-status', async () => {
+      await getDepartmentWppconnectServerV2Status({ id: 'department-id' })
       expect(mockGet).toHaveBeenCalledWith(
-        'resources/departments/department-id/wppconnect-server-status',
+        'resources/departments/department-id/wppconnect-server-v2-status',
         { headers: { 'x-access-token': 'test-token' } }
       )
     })
   })
 
-  describe('getDepartmentWppconnectServerQr', () => {
-    it('sends POST to resources/departments/:id/wppconnect-server-qr', async () => {
-      await getDepartmentWppconnectServerQr({ id: 'department-id' })
+  describe('getDepartmentWppconnectServerV2Qr', () => {
+    it('sends POST to resources/departments/:id/wppconnect-server-v2-qr', async () => {
+      await getDepartmentWppconnectServerV2Qr({ id: 'department-id' })
       expect(mockPost).toHaveBeenCalledWith(
-        'resources/departments/department-id/wppconnect-server-qr',
+        'resources/departments/department-id/wppconnect-server-v2-qr',
         { headers: { 'x-access-token': 'test-token' } }
       )
     })

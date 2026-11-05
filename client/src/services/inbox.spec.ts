@@ -9,8 +9,8 @@ import {
   getInboxBaileysStatus,
   getInboxBaileysQr,
   syncInboxBaileys,
-  getInboxWppconnectServerStatus,
-  getInboxWppconnectServerQr,
+  getInboxWppconnectServerV2Status,
+  getInboxWppconnectServerV2Qr,
 } from './inbox'
 
 vi.mock('./auth')
@@ -120,21 +120,21 @@ describe('inbox service', () => {
     })
   })
 
-  describe('getInboxWppconnectServerStatus', () => {
-    it('sends GET to resources/inboxes/:id/wppconnect-server-status', async () => {
-      await getInboxWppconnectServerStatus('inbox-id')
+  describe('getInboxWppconnectServerV2Status', () => {
+    it('sends GET to resources/inboxes/:id/wppconnect-server-v2-status', async () => {
+      await getInboxWppconnectServerV2Status('inbox-id')
       expect(mockGet).toHaveBeenCalledWith(
-        'resources/inboxes/inbox-id/wppconnect-server-status',
+        'resources/inboxes/inbox-id/wppconnect-server-v2-status',
         { headers: { 'x-access-token': 'test-token' } }
       )
     })
   })
 
-  describe('getInboxWppconnectServerQr', () => {
-    it('sends POST to resources/inboxes/:id/wppconnect-server-qr', async () => {
-      await getInboxWppconnectServerQr('inbox-id')
+  describe('getInboxWppconnectServerV2Qr', () => {
+    it('sends POST to resources/inboxes/:id/wppconnect-server-v2-qr', async () => {
+      await getInboxWppconnectServerV2Qr('inbox-id')
       expect(mockPost).toHaveBeenCalledWith(
-        'resources/inboxes/inbox-id/wppconnect-server-qr',
+        'resources/inboxes/inbox-id/wppconnect-server-v2-qr',
         { headers: { 'x-access-token': 'test-token' } }
       )
     })

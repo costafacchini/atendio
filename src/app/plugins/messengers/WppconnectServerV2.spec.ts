@@ -1,4 +1,4 @@
-import { WppconnectServer } from './WppconnectServer'
+import { WppconnectServerV2 } from './WppconnectServerV2'
 import { installMemoryRepositories, resetMemoryRepositories } from '@repositories/testing'
 import { licensee as licenseeFactory } from '@factories/licensee'
 import { contact as contactFactory } from '@factories/contact'
@@ -18,7 +18,7 @@ import { logger } from '../../helpers/logger'
 
 let dependencies: any
 
-describe('WppconnectServer plugin', () => {
+describe('WppconnectServerV2 plugin', () => {
   let licensee: any
 
   beforeEach(async () => {
@@ -36,7 +36,7 @@ describe('WppconnectServer plugin', () => {
   describe('#responseToMessages', () => {
     describe('when the contact does not exist', () => {
       it('registers the contact and returns the response body transformed in a message', async () => {
-        const wppconnectServer = new WppconnectServer(licensee, dependencies)
+        const wppconnectServerV2 = new WppconnectServerV2(licensee, dependencies)
 
         const responseBody = {
           event: 'onmessage',
@@ -49,7 +49,7 @@ describe('WppconnectServer plugin', () => {
           notifyName: 'John Doe',
         }
 
-        const messages = await wppconnectServer.responseToMessages(responseBody)
+        const messages = await wppconnectServerV2.responseToMessages(responseBody)
 
         expect(messages).toHaveLength(1)
         expect(messages[0]).toMatchObject({
@@ -72,9 +72,9 @@ describe('WppconnectServer plugin', () => {
           contactFactory.build({ name: 'John Doe', number: '5511990283745', talkingWithChatBot: true, licensee }),
         )
 
-        const wppconnectServer = new WppconnectServer(licensee, dependencies)
+        const wppconnectServerV2 = new WppconnectServerV2(licensee, dependencies)
 
-        const messages = await wppconnectServer.responseToMessages({
+        const messages = await wppconnectServerV2.responseToMessages({
           event: 'onmessage',
           id: 'msg-1',
           from: '5511990283745@c.us',
@@ -90,9 +90,9 @@ describe('WppconnectServer plugin', () => {
 
     describe('when the message is from me', () => {
       it('returns empty messages', async () => {
-        const wppconnectServer = new WppconnectServer(licensee, dependencies)
+        const wppconnectServerV2 = new WppconnectServerV2(licensee, dependencies)
 
-        const messages = await wppconnectServer.responseToMessages({
+        const messages = await wppconnectServerV2.responseToMessages({
           event: 'onmessage',
           id: 'msg-1',
           from: '5511990283745@c.us',
@@ -107,9 +107,9 @@ describe('WppconnectServer plugin', () => {
 
     describe('when the event is not onmessage', () => {
       it('returns empty messages', async () => {
-        const wppconnectServer = new WppconnectServer(licensee, dependencies)
+        const wppconnectServerV2 = new WppconnectServerV2(licensee, dependencies)
 
-        const messages = await wppconnectServer.responseToMessages({ event: 'onack', id: 'msg-1' })
+        const messages = await wppconnectServerV2.responseToMessages({ event: 'onack', id: 'msg-1' })
 
         expect(messages).toEqual([])
       })
@@ -117,9 +117,9 @@ describe('WppconnectServer plugin', () => {
 
     describe('when the message type is not chat', () => {
       it('returns empty messages', async () => {
-        const wppconnectServer = new WppconnectServer(licensee, dependencies)
+        const wppconnectServerV2 = new WppconnectServerV2(licensee, dependencies)
 
-        const messages = await wppconnectServer.responseToMessages({
+        const messages = await wppconnectServerV2.responseToMessages({
           event: 'onmessage',
           id: 'msg-1',
           from: '5511990283745@c.us',
@@ -150,13 +150,16 @@ describe('WppconnectServer plugin', () => {
           data: { status: 'success', response: [{ id: 'true_...@c.us' }], mapper: 'return' },
         })
 
-        const wppconnectServer = new WppconnectServer(licensee, { ...dependencies, inbox: { _id: '1' } })
-        await wppconnectServer.sendMessage(message._id, 'https://my-wppconnect-server.com', 'session-token')
+        const wppconnectServerV2 = new WppconnectServerV2(licensee, { ...dependencies, inbox: { _id: '1' } })
+        await wppconnectServerV2.sendMessage(message._id, 'https://my-wppconnect-server-v2.com', 'session-token')
 
-        expect(request.post).toHaveBeenCalledWith('https://my-wppconnect-server.com/api/atendio-inbox-1/send-message', {
-          headers: { Authorization: 'Bearer session-token' },
-          body: { phone: ['5511990283745'], isGroup: false, message: 'Message to send' },
-        })
+        expect(request.post).toHaveBeenCalledWith(
+          'https://my-wppconnect-server-v2.com/api/atendio-inbox-1/send-message',
+          {
+            headers: { Authorization: 'Bearer session-token' },
+            body: { phone: ['5511990283745'], isGroup: false, message: 'Message to send' },
+          },
+        )
 
         const messageUpdated = await messageRepository.findFirst({ _id: message._id })
         expect(messageUpdated.sended).toEqual(true)
@@ -182,8 +185,8 @@ describe('WppconnectServer plugin', () => {
 
         ;(request.post as jest.Mock).mockResolvedValueOnce({ status: 201, data: { status: 'success' } })
 
-        const wppconnectServer = new WppconnectServer(licensee, { ...dependencies, inbox: { _id: '1' } })
-        await wppconnectServer.sendMessage(message._id, 'https://my-wppconnect-server.com', 'session-token')
+        const wppconnectServerV2 = new WppconnectServerV2(licensee, { ...dependencies, inbox: { _id: '1' } })
+        await wppconnectServerV2.sendMessage(message._id, 'https://my-wppconnect-server-v2.com', 'session-token')
 
         expect(request.post).toHaveBeenCalledWith(
           expect.any(String),
@@ -209,8 +212,8 @@ describe('WppconnectServer plugin', () => {
           data: { status: 'Error', message: 'Erro ao enviar a mensagem.' },
         })
 
-        const wppconnectServer = new WppconnectServer(licensee, { ...dependencies, inbox: { _id: '1' } })
-        await wppconnectServer.sendMessage(message._id, 'https://my-wppconnect-server.com', 'session-token')
+        const wppconnectServerV2 = new WppconnectServerV2(licensee, { ...dependencies, inbox: { _id: '1' } })
+        await wppconnectServerV2.sendMessage(message._id, 'https://my-wppconnect-server-v2.com', 'session-token')
 
         const messageUpdated = await messageRepository.findFirst({ _id: message._id })
         expect(messageUpdated.sended).toEqual(false)
@@ -229,8 +232,8 @@ describe('WppconnectServer plugin', () => {
           messageFactory.build({ kind: 'file', contact, licensee, sended: false }),
         )
 
-        const wppconnectServer = new WppconnectServer(licensee, { ...dependencies, inbox: { _id: '1' } })
-        await wppconnectServer.sendMessage(message._id, 'https://my-wppconnect-server.com', 'session-token')
+        const wppconnectServerV2 = new WppconnectServerV2(licensee, { ...dependencies, inbox: { _id: '1' } })
+        await wppconnectServerV2.sendMessage(message._id, 'https://my-wppconnect-server-v2.com', 'session-token')
 
         expect(request.post).not.toHaveBeenCalled()
       })
@@ -245,22 +248,25 @@ describe('WppconnectServer plugin', () => {
         data: { status: 'QRCODE', qrcode: 'data:image/png;base64,abc123' },
       })
 
-      const wppconnectServer = new WppconnectServer(licensee, { ...dependencies, inbox: { _id: '1' } })
-      const qr = await wppconnectServer.getQrCode('https://my-wppconnect-server.com', 'session-token')
+      const wppconnectServerV2 = new WppconnectServerV2(licensee, { ...dependencies, inbox: { _id: '1' } })
+      const qr = await wppconnectServerV2.getQrCode('https://my-wppconnect-server-v2.com', 'session-token')
 
       expect(qr).toEqual('data:image/png;base64,abc123')
-      expect(request.post).toHaveBeenCalledWith('https://my-wppconnect-server.com/api/atendio-inbox-1/start-session', {
-        headers: { Authorization: 'Bearer session-token' },
-        body: { waitQrCode: false },
-      })
+      expect(request.post).toHaveBeenCalledWith(
+        'https://my-wppconnect-server-v2.com/api/atendio-inbox-1/start-session',
+        {
+          headers: { Authorization: 'Bearer session-token' },
+          body: { waitQrCode: false },
+        },
+      )
     })
 
     it('returns null when already connected', async () => {
       ;(request.post as jest.Mock).mockResolvedValueOnce({ status: 200, data: { status: 'CONNECTED' } })
       ;(request.get as jest.Mock).mockResolvedValueOnce({ status: 200, data: { status: 'CONNECTED', qrcode: null } })
 
-      const wppconnectServer = new WppconnectServer(licensee, { ...dependencies, inbox: { _id: '1' } })
-      const qr = await wppconnectServer.getQrCode('https://my-wppconnect-server.com', 'session-token')
+      const wppconnectServerV2 = new WppconnectServerV2(licensee, { ...dependencies, inbox: { _id: '1' } })
+      const qr = await wppconnectServerV2.getQrCode('https://my-wppconnect-server-v2.com', 'session-token')
 
       expect(qr).toBeNull()
     })
@@ -270,8 +276,11 @@ describe('WppconnectServer plugin', () => {
     it('returns true when the external session status is CONNECTED', async () => {
       ;(request.get as jest.Mock).mockResolvedValueOnce({ status: 200, data: { status: 'CONNECTED' } })
 
-      const wppconnectServer = new WppconnectServer(licensee, { ...dependencies, inbox: { _id: '1' } })
-      const connected = await wppconnectServer.getConnectionStatus('https://my-wppconnect-server.com', 'session-token')
+      const wppconnectServerV2 = new WppconnectServerV2(licensee, { ...dependencies, inbox: { _id: '1' } })
+      const connected = await wppconnectServerV2.getConnectionStatus(
+        'https://my-wppconnect-server-v2.com',
+        'session-token',
+      )
 
       expect(connected).toEqual(true)
     })
@@ -279,8 +288,11 @@ describe('WppconnectServer plugin', () => {
     it('returns false when the external session status is not CONNECTED', async () => {
       ;(request.get as jest.Mock).mockResolvedValueOnce({ status: 200, data: { status: 'CLOSED' } })
 
-      const wppconnectServer = new WppconnectServer(licensee, { ...dependencies, inbox: { _id: '1' } })
-      const connected = await wppconnectServer.getConnectionStatus('https://my-wppconnect-server.com', 'session-token')
+      const wppconnectServerV2 = new WppconnectServerV2(licensee, { ...dependencies, inbox: { _id: '1' } })
+      const connected = await wppconnectServerV2.getConnectionStatus(
+        'https://my-wppconnect-server-v2.com',
+        'session-token',
+      )
 
       expect(connected).toEqual(false)
     })
@@ -288,13 +300,13 @@ describe('WppconnectServer plugin', () => {
 
   describe('#action', () => {
     it('returns send-message-to-chat if message destination is to-chat', () => {
-      const wppconnectServer = new WppconnectServer(licensee, dependencies)
-      expect(wppconnectServer.action('to-chat')).toEqual('send-message-to-chat')
+      const wppconnectServerV2 = new WppconnectServerV2(licensee, dependencies)
+      expect(wppconnectServerV2.action('to-chat')).toEqual('send-message-to-chat')
     })
 
     it('returns send-message-to-chatbot otherwise', () => {
-      const wppconnectServer = new WppconnectServer(licensee, dependencies)
-      expect(wppconnectServer.action('to-chatbot')).toEqual('send-message-to-chatbot')
+      const wppconnectServerV2 = new WppconnectServerV2(licensee, dependencies)
+      expect(wppconnectServerV2.action('to-chatbot')).toEqual('send-message-to-chatbot')
     })
   })
 })

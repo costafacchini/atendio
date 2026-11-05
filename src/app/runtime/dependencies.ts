@@ -25,8 +25,8 @@ import { SyncBaileysDirectoryForInbox } from '../usecases/licensees/SyncBaileysD
 import { GetBaileysQrForDepartment } from '../usecases/licensees/GetBaileysQrForDepartment'
 import { GetBaileysStatusForDepartment } from '../usecases/licensees/GetBaileysStatusForDepartment'
 import { SyncBaileysDirectoryForDepartment } from '../usecases/licensees/SyncBaileysDirectoryForDepartment'
-import { GetWppconnectServerQrForInbox } from '../usecases/licensees/GetWppconnectServerQrForInbox'
-import { GetWppconnectServerStatusForInbox } from '../usecases/licensees/GetWppconnectServerStatusForInbox'
+import { GetWppconnectServerV2QrForInbox } from '../usecases/licensees/GetWppconnectServerV2QrForInbox'
+import { GetWppconnectServerV2StatusForInbox } from '../usecases/licensees/GetWppconnectServerV2StatusForInbox'
 import { IngestMessengerMessage } from '../usecases/webhooks/IngestMessengerMessage'
 import { queueServer } from '../../config/queue'
 
@@ -136,13 +136,13 @@ function buildRuntimeDependencies({
     createMessengerPlugin,
   })
 
-  const getWppconnectServerQrForInbox = new GetWppconnectServerQrForInbox({
+  const getWppconnectServerV2QrForInbox = new GetWppconnectServerV2QrForInbox({
     inboxRepository,
     licenseeRepository,
     createMessengerPlugin,
   })
 
-  const getWppconnectServerStatusForInbox = new GetWppconnectServerStatusForInbox({
+  const getWppconnectServerV2StatusForInbox = new GetWppconnectServerV2StatusForInbox({
     inboxRepository,
     licenseeRepository,
     createMessengerPlugin,
@@ -203,8 +203,8 @@ function buildRuntimeDependencies({
     getBaileysQrForDepartment,
     getBaileysStatusForDepartment,
     syncBaileysDirectoryForDepartment,
-    getWppconnectServerQrForInbox,
-    getWppconnectServerStatusForInbox,
+    getWppconnectServerV2QrForInbox,
+    getWppconnectServerV2StatusForInbox,
   }
 }
 

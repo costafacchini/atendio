@@ -29,7 +29,7 @@ Load ONLY documents relevant to your current task.
 | Document | When to Read |
 |----------|--------------|
 | [baileys-whatsapp-guide](features/baileys-whatsapp-guide.md) | Configuring a Licensee to use the Baileys WhatsApp plugin, QR auth, sending/receiving messages, and the group sync & directory flow |
-| [wppconnect-server-whatsapp-guide](features/wppconnect-server-whatsapp-guide.md) | Configuring an Inbox to use the `wppconnect-server` HTTP-client WhatsApp plugin, external instance deployment prerequisite, QR auth, and the inbound webhook payload shape |
+| [wppconnect-server-v2-whatsapp-guide](features/wppconnect-server-v2-whatsapp-guide.md) | Configuring an Inbox to use the `wppconnect-server-v2` HTTP-client WhatsApp plugin, external instance deployment prerequisite, QR auth, and the inbound webhook payload shape |
 | [deploy-heroku](features/deploy-heroku.md) | Deploying to Heroku: process types, env vars, scaler setup, Formation API |
 | [deploy-fly](features/deploy-fly.md) | Deploying to Fly.io: machines, fly.toml, scaler wiring via Machines API |
 | [deploy-ecs](features/deploy-ecs.md) | Deploying to AWS ECS Fargate: task definitions, IAM policy, scaler via UpdateService |

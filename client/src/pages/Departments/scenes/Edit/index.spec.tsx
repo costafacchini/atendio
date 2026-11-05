@@ -4,7 +4,7 @@ import {
   getDepartment,
   updateDepartment,
   getDepartmentBaileysStatus,
-  getDepartmentWppconnectServerStatus,
+  getDepartmentWppconnectServerV2Status,
 } from '../../../../services/department'
 import { getUsers } from '../../../../services/user'
 import { getInboxes } from '../../../../services/inbox'
@@ -38,7 +38,7 @@ describe('<SectorEdit />', () => {
   function mount() {
     ;(getUsers as any).mockResolvedValue({ data: [] })
     ;(getDepartmentBaileysStatus as any).mockResolvedValue({ data: { connected: false } })
-    ;(getDepartmentWppconnectServerStatus as any).mockResolvedValue({ data: { connected: false } })
+    ;(getDepartmentWppconnectServerV2Status as any).mockResolvedValue({ data: { connected: false } })
 
     const Stub = createRoutesStub([
       {
@@ -136,7 +136,7 @@ describe('<SectorEdit />', () => {
     )
   })
 
-  it('renders the DepartmentWppconnectServerPanel alongside the Baileys panel', async () => {
+  it('renders the DepartmentWppconnectServerV2Panel alongside the Baileys panel', async () => {
     ;(getDepartment as any).mockResolvedValue({
       status: 200,
       data: { id: '1', name: 'Suporte', active: true, users: [] },
@@ -146,6 +146,6 @@ describe('<SectorEdit />', () => {
 
     await screen.findByDisplayValue('Suporte')
 
-    expect(await screen.findByText('departments.wppconnectServer.title')).toBeInTheDocument()
+    expect(await screen.findByText('departments.wppconnectServerV2.title')).toBeInTheDocument()
   })
 })

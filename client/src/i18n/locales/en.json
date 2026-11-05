@@ -353,8 +353,8 @@
       "syncError": "Error syncing groups",
       "qrError": "Error generating QR"
     },
-    "wppconnectServer": {
-      "title": "Wppconnect Server Connection",
+    "wppconnectServerV2": {
+      "title": "Wppconnect Server v2 Connection",
       "checking": "Checking connection...",
       "connected": "Connected",
       "reconnect": "Reconnect",
@@ -396,8 +396,8 @@
       "syncError": "Error syncing groups",
       "qrError": "Error generating QR"
     },
-    "wppconnectServer": {
-      "title": "Wppconnect Server Connection",
+    "wppconnectServerV2": {
+      "title": "Wppconnect Server v2 Connection",
       "checking": "Checking connection...",
       "connected": "Connected",
       "reconnect": "Reconnect",

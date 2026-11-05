@@ -5,16 +5,16 @@ import { IDepartment } from '../../types'
 import { GetBaileysQrForDepartment } from '../usecases/licensees/GetBaileysQrForDepartment'
 import { GetBaileysStatusForDepartment } from '../usecases/licensees/GetBaileysStatusForDepartment'
 import { SyncBaileysDirectoryForDepartment } from '../usecases/licensees/SyncBaileysDirectoryForDepartment'
-import { GetWppconnectServerQrForDepartment } from '../usecases/licensees/GetWppconnectServerQrForDepartment'
-import { GetWppconnectServerStatusForDepartment } from '../usecases/licensees/GetWppconnectServerStatusForDepartment'
+import { GetWppconnectServerV2QrForDepartment } from '../usecases/licensees/GetWppconnectServerV2QrForDepartment'
+import { GetWppconnectServerV2StatusForDepartment } from '../usecases/licensees/GetWppconnectServerV2StatusForDepartment'
 
 class DepartmentsController {
   departmentRepository: IRepository<IDepartment>
   getBaileysQrUseCase: GetBaileysQrForDepartment
   getBaileysStatusUseCase: GetBaileysStatusForDepartment
   syncBaileysDirectoryUseCase: SyncBaileysDirectoryForDepartment
-  getWppconnectServerQrUseCase: GetWppconnectServerQrForDepartment
-  getWppconnectServerStatusUseCase: GetWppconnectServerStatusForDepartment
+  getWppconnectServerV2QrUseCase: GetWppconnectServerV2QrForDepartment
+  getWppconnectServerV2StatusUseCase: GetWppconnectServerV2StatusForDepartment
 
   constructor({
     departmentRepository,
@@ -28,8 +28,8 @@ class DepartmentsController {
     getBaileysQrForInbox,
     getBaileysStatusForInbox,
     syncBaileysDirectoryForInbox,
-    getWppconnectServerQrForInbox,
-    getWppconnectServerStatusForInbox,
+    getWppconnectServerV2QrForInbox,
+    getWppconnectServerV2StatusForInbox,
   }: Record<string, any> = {}) {
     this.departmentRepository = departmentRepository!
     this.getBaileysQrUseCase = new GetBaileysQrForDepartment({
@@ -57,19 +57,19 @@ class DepartmentsController {
       createMessengerPlugin,
       syncBaileysDirectoryForInbox,
     })
-    this.getWppconnectServerQrUseCase = new GetWppconnectServerQrForDepartment({
+    this.getWppconnectServerV2QrUseCase = new GetWppconnectServerV2QrForDepartment({
       departmentRepository,
       licenseeRepository,
       inboxRepository,
       createMessengerPlugin,
-      getWppconnectServerQrForInbox,
+      getWppconnectServerV2QrForInbox,
     })
-    this.getWppconnectServerStatusUseCase = new GetWppconnectServerStatusForDepartment({
+    this.getWppconnectServerV2StatusUseCase = new GetWppconnectServerV2StatusForDepartment({
       departmentRepository,
       licenseeRepository,
       inboxRepository,
       createMessengerPlugin,
-      getWppconnectServerStatusForInbox,
+      getWppconnectServerV2StatusForInbox,
     })
 
     this.index = this.index.bind(this)
@@ -80,8 +80,8 @@ class DepartmentsController {
     this.getBaileysQr = this.getBaileysQr.bind(this)
     this.getBaileysStatus = this.getBaileysStatus.bind(this)
     this.baileysSync = this.baileysSync.bind(this)
-    this.wppconnectServerQr = this.wppconnectServerQr.bind(this)
-    this.wppconnectServerStatus = this.wppconnectServerStatus.bind(this)
+    this.wppconnectServerV2Qr = this.wppconnectServerV2Qr.bind(this)
+    this.wppconnectServerV2Status = this.wppconnectServerV2Status.bind(this)
   }
 
   async index(req: Request, res: Response) {
@@ -175,9 +175,9 @@ class DepartmentsController {
     }
   }
 
-  async wppconnectServerQr(req: Request, res: Response) {
+  async wppconnectServerV2Qr(req: Request, res: Response) {
     try {
-      const response = await this.getWppconnectServerQrUseCase.execute(req.params.id as string)
+      const response = await this.getWppconnectServerV2QrUseCase.execute(req.params.id as string)
 
       return res.status(200).send(response)
     } catch (err: any) {
@@ -185,9 +185,9 @@ class DepartmentsController {
     }
   }
 
-  async wppconnectServerStatus(req: Request, res: Response) {
+  async wppconnectServerV2Status(req: Request, res: Response) {
     try {
-      const response = await this.getWppconnectServerStatusUseCase.execute(req.params.id as string)
+      const response = await this.getWppconnectServerV2StatusUseCase.execute(req.params.id as string)
 
       return res.status(200).send(response)
     } catch (err: any) {

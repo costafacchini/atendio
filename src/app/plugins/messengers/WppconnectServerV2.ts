@@ -12,7 +12,7 @@ function sessionNameFor(inboxId: string | undefined | null) {
   return `atendio-inbox-${inboxId}`
 }
 
-class WppconnectServer extends MessengersBase {
+class WppconnectServerV2 extends MessengersBase {
   constructor(licensee: ILicensee, dependencies: Record<string, unknown> = {}) {
     super(licensee, dependencies)
   }
@@ -106,13 +106,13 @@ class WppconnectServer extends MessengersBase {
   async sendMessage(messageId: string, url?: string, token?: string): Promise<void> {
     const messageToSend = await this.messageRepository.findFirst({ _id: messageId }, ['contact'])
     if (!messageToSend) {
-      logger.error(`WppconnectServer: mensagem ${messageId} não encontrada.`)
+      logger.error(`WppconnectServerV2: mensagem ${messageId} não encontrada.`)
       return
     }
 
     if (messageToSend.kind !== 'text') {
       logger.warn(
-        `WppconnectServer: tipo de mensagem '${messageToSend.kind}' não suportado. Mensagem ${messageId} ignorada.`,
+        `WppconnectServerV2: tipo de mensagem '${messageToSend.kind}' não suportado. Mensagem ${messageId} ignorada.`,
       )
       return
     }
@@ -130,17 +130,19 @@ class WppconnectServer extends MessengersBase {
       messageToSend.sended = true
       await this.messageRepository.save(messageToSend)
       logger.info(
-        `Mensagem ${messageToSend._id} enviada para Wppconnect Server com sucesso! ${JSON.stringify(response.data)}`,
+        `Mensagem ${messageToSend._id} enviada para Wppconnect Server v2 com sucesso! ${JSON.stringify(response.data)}`,
       )
     } else {
       messageToSend.error = JSON.stringify(response.data)
       await this.messageRepository.save(messageToSend)
-      logger.error(`Mensagem ${messageToSend._id} não enviada para Wppconnect Server. ${JSON.stringify(response.data)}`)
+      logger.error(
+        `Mensagem ${messageToSend._id} não enviada para Wppconnect Server v2. ${JSON.stringify(response.data)}`,
+      )
     }
   }
 
   // Starts (or resumes) the session and returns the pending QR as a base64 data URL,
-  // or null when already connected. Consumed by GetWppconnectServerQrForInbox (task-02).
+  // or null when already connected. Consumed by GetWppconnectServerV2QrForInbox (task-02).
   async getQrCode(url: string, token: string): Promise<string | null> {
     const session = sessionNameFor(this.inbox?._id)
     const headers = { Authorization: `Bearer ${token}` }
@@ -155,7 +157,7 @@ class WppconnectServer extends MessengersBase {
     return qrcode ?? null
   }
 
-  // Consumed by GetWppconnectServerStatusForInbox (task-02).
+  // Consumed by GetWppconnectServerV2StatusForInbox (task-02).
   async getConnectionStatus(url: string, token: string): Promise<boolean> {
     const session = sessionNameFor(this.inbox?._id)
     const headers = { Authorization: `Bearer ${token}` }
@@ -166,4 +168,4 @@ class WppconnectServer extends MessengersBase {
   }
 }
 
-export { WppconnectServer }
+export { WppconnectServerV2 }

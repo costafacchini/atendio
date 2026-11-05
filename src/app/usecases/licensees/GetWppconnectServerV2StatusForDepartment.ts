@@ -1,35 +1,35 @@
 import { IRepository } from '@repositories/repository'
 import { ILicensee, IInbox, IDepartment } from '../../../types'
 
-const WHATSAPP_DEFAULT_WPPCONNECT_SERVER = 'wppconnect-server'
+const WHATSAPP_DEFAULT_WPPCONNECT_SERVER = 'wppconnect-server-v2'
 
-interface GetWppconnectServerStatusForDepartmentDeps {
+interface GetWppconnectServerV2StatusForDepartmentDeps {
   departmentRepository: IRepository<IDepartment>
   licenseeRepository: IRepository<ILicensee>
   inboxRepository: IRepository<IInbox>
   createMessengerPlugin: (licensee: ILicensee, extras: Record<string, any>) => any
-  getWppconnectServerStatusForInbox: { execute(inboxId: string): Promise<{ connected: boolean }> }
+  getWppconnectServerV2StatusForInbox: { execute(inboxId: string): Promise<{ connected: boolean }> }
 }
 
-class GetWppconnectServerStatusForDepartment {
+class GetWppconnectServerV2StatusForDepartment {
   departmentRepository: IRepository<IDepartment>
   licenseeRepository: IRepository<ILicensee>
   inboxRepository: IRepository<IInbox>
-  createMessengerPlugin: GetWppconnectServerStatusForDepartmentDeps['createMessengerPlugin']
-  getWppconnectServerStatusForInbox: GetWppconnectServerStatusForDepartmentDeps['getWppconnectServerStatusForInbox']
+  createMessengerPlugin: GetWppconnectServerV2StatusForDepartmentDeps['createMessengerPlugin']
+  getWppconnectServerV2StatusForInbox: GetWppconnectServerV2StatusForDepartmentDeps['getWppconnectServerV2StatusForInbox']
 
   constructor({
     departmentRepository,
     licenseeRepository,
     inboxRepository,
     createMessengerPlugin,
-    getWppconnectServerStatusForInbox,
-  }: GetWppconnectServerStatusForDepartmentDeps) {
+    getWppconnectServerV2StatusForInbox,
+  }: GetWppconnectServerV2StatusForDepartmentDeps) {
     this.departmentRepository = departmentRepository
     this.licenseeRepository = licenseeRepository
     this.inboxRepository = inboxRepository
     this.createMessengerPlugin = createMessengerPlugin
-    this.getWppconnectServerStatusForInbox = getWppconnectServerStatusForInbox
+    this.getWppconnectServerV2StatusForInbox = getWppconnectServerV2StatusForInbox
   }
 
   async execute(departmentId: string): Promise<{ connected: boolean }> {
@@ -39,7 +39,7 @@ class GetWppconnectServerStatusForDepartment {
     }
 
     if (department.inbox) {
-      return this.getWppconnectServerStatusForInbox.execute(department.inbox as string)
+      return this.getWppconnectServerV2StatusForInbox.execute(department.inbox as string)
     }
 
     const licensee = await this.licenseeRepository.findFirst({ _id: department.licensee })
@@ -59,4 +59,4 @@ class GetWppconnectServerStatusForDepartment {
   }
 }
 
-export { GetWppconnectServerStatusForDepartment }
+export { GetWppconnectServerV2StatusForDepartment }

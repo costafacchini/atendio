@@ -1,4 +1,4 @@
-import { GetWppconnectServerQrForDepartment } from './GetWppconnectServerQrForDepartment'
+import { GetWppconnectServerV2QrForDepartment } from './GetWppconnectServerV2QrForDepartment'
 import { LicenseeRepositoryMemory } from '@repositories/licensee'
 import { InboxRepositoryMemory } from '@repositories/inbox'
 import { DepartmentRepositoryMemory } from '@repositories/department'
@@ -10,25 +10,25 @@ function buildUseCase(overrides: Record<string, any> = {}) {
   const inboxRepository = overrides.inboxRepository ?? new InboxRepositoryMemory()
   const departmentRepository = overrides.departmentRepository ?? new DepartmentRepositoryMemory()
   const createMessengerPlugin = overrides.createMessengerPlugin ?? jest.fn()
-  const getWppconnectServerQrForInbox = overrides.getWppconnectServerQrForInbox ?? { execute: jest.fn() }
-  const useCase = new GetWppconnectServerQrForDepartment({
+  const getWppconnectServerV2QrForInbox = overrides.getWppconnectServerV2QrForInbox ?? { execute: jest.fn() }
+  const useCase = new GetWppconnectServerV2QrForDepartment({
     licenseeRepository,
     inboxRepository,
     departmentRepository,
     createMessengerPlugin,
-    getWppconnectServerQrForInbox,
+    getWppconnectServerV2QrForInbox,
   })
   return {
     licenseeRepository,
     inboxRepository,
     departmentRepository,
     createMessengerPlugin,
-    getWppconnectServerQrForInbox,
+    getWppconnectServerV2QrForInbox,
     useCase,
   }
 }
 
-describe('GetWppconnectServerQrForDepartment', () => {
+describe('GetWppconnectServerV2QrForDepartment', () => {
   it('returns { message: "Departamento não encontrado" } when department is not found', async () => {
     const { useCase } = buildUseCase()
 
@@ -37,7 +37,7 @@ describe('GetWppconnectServerQrForDepartment', () => {
     expect(result).toEqual({ message: 'Departamento não encontrado' })
   })
 
-  it('returns { message: "Licensee não usa Wppconnect Server" } when licensee has no wppconnect-server inbox', async () => {
+  it('returns { message: "Licensee não usa Wppconnect Server v2" } when licensee has no wppconnect-server-v2 inbox', async () => {
     const { licenseeRepository, inboxRepository, departmentRepository, createMessengerPlugin, useCase } = buildUseCase()
     const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
     await inboxRepository.create(
@@ -48,7 +48,7 @@ describe('GetWppconnectServerQrForDepartment', () => {
     const result = await useCase.execute(department._id)
 
     expect(createMessengerPlugin).not.toHaveBeenCalled()
-    expect(result).toEqual({ message: 'Licensee não usa Wppconnect Server' })
+    expect(result).toEqual({ message: 'Licensee não usa Wppconnect Server v2' })
   })
 
   it('returns a missing-configuration message when the resolved inbox has no whatsappUrl/whatsappToken', async () => {
@@ -58,7 +58,7 @@ describe('GetWppconnectServerQrForDepartment', () => {
       inboxFactory.build({
         licensee: licensee._id,
         kind: 'messenger',
-        whatsappDefault: 'wppconnect-server',
+        whatsappDefault: 'wppconnect-server-v2',
         whatsappUrl: '',
         whatsappToken: '',
       }),
@@ -78,8 +78,8 @@ describe('GetWppconnectServerQrForDepartment', () => {
       inboxFactory.build({
         licensee: licensee._id,
         kind: 'messenger',
-        whatsappDefault: 'wppconnect-server',
-        whatsappUrl: 'https://my-wppconnect-server.com',
+        whatsappDefault: 'wppconnect-server-v2',
+        whatsappUrl: 'https://my-wppconnect-server-v2.com',
         whatsappToken: 'session-token',
       }),
     )
@@ -90,7 +90,7 @@ describe('GetWppconnectServerQrForDepartment', () => {
     const result = await useCase.execute(department._id)
 
     expect(createMessengerPlugin).toHaveBeenCalledWith(licensee, { department, inbox })
-    expect(plugin.getQrCode).toHaveBeenCalledWith('https://my-wppconnect-server.com', 'session-token')
+    expect(plugin.getQrCode).toHaveBeenCalledWith('https://my-wppconnect-server-v2.com', 'session-token')
     expect(result).toEqual({ qr: 'data:image/png;base64,abc123' })
   })
 
@@ -101,8 +101,8 @@ describe('GetWppconnectServerQrForDepartment', () => {
       inboxFactory.build({
         licensee: licensee._id,
         kind: 'messenger',
-        whatsappDefault: 'wppconnect-server',
-        whatsappUrl: 'https://my-wppconnect-server.com',
+        whatsappDefault: 'wppconnect-server-v2',
+        whatsappUrl: 'https://my-wppconnect-server-v2.com',
         whatsappToken: 'session-token',
       }),
     )
@@ -115,15 +115,15 @@ describe('GetWppconnectServerQrForDepartment', () => {
     expect(result).toEqual({ connected: true, message: 'Já conectado' })
   })
 
-  it('delegates to getWppconnectServerQrForInbox when department has a linked inbox', async () => {
+  it('delegates to getWppconnectServerV2QrForInbox when department has a linked inbox', async () => {
     const inboxId = 'inbox-id-abc'
-    const { departmentRepository, getWppconnectServerQrForInbox, createMessengerPlugin, useCase } = buildUseCase()
+    const { departmentRepository, getWppconnectServerV2QrForInbox, createMessengerPlugin, useCase } = buildUseCase()
     const department = await departmentRepository.create({ name: 'Suporte', licensee: 'licensee-id-1', inbox: inboxId })
-    getWppconnectServerQrForInbox.execute.mockResolvedValue({ qr: 'inbox-qr-data' })
+    getWppconnectServerV2QrForInbox.execute.mockResolvedValue({ qr: 'inbox-qr-data' })
 
     const result = await useCase.execute(department._id)
 
-    expect(getWppconnectServerQrForInbox.execute).toHaveBeenCalledWith(inboxId)
+    expect(getWppconnectServerV2QrForInbox.execute).toHaveBeenCalledWith(inboxId)
     expect(createMessengerPlugin).not.toHaveBeenCalled()
     expect(result).toEqual({ qr: 'inbox-qr-data' })
   })

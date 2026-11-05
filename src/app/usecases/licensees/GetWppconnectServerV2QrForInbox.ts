@@ -1,20 +1,20 @@
 import { IRepository } from '@repositories/repository'
 import { ILicensee, IInbox } from '../../../types'
 
-const WHATSAPP_DEFAULT_WPPCONNECT_SERVER = 'wppconnect-server'
+const WHATSAPP_DEFAULT_WPPCONNECT_SERVER = 'wppconnect-server-v2'
 
-interface GetWppconnectServerQrForInboxDeps {
+interface GetWppconnectServerV2QrForInboxDeps {
   inboxRepository: IRepository<IInbox>
   licenseeRepository: IRepository<ILicensee>
   createMessengerPlugin: (licensee: ILicensee, extras: Record<string, any>) => any
 }
 
-class GetWppconnectServerQrForInbox {
+class GetWppconnectServerV2QrForInbox {
   inboxRepository: IRepository<IInbox>
   licenseeRepository: IRepository<ILicensee>
-  createMessengerPlugin: GetWppconnectServerQrForInboxDeps['createMessengerPlugin']
+  createMessengerPlugin: GetWppconnectServerV2QrForInboxDeps['createMessengerPlugin']
 
-  constructor({ inboxRepository, licenseeRepository, createMessengerPlugin }: GetWppconnectServerQrForInboxDeps) {
+  constructor({ inboxRepository, licenseeRepository, createMessengerPlugin }: GetWppconnectServerV2QrForInboxDeps) {
     this.inboxRepository = inboxRepository
     this.licenseeRepository = licenseeRepository
     this.createMessengerPlugin = createMessengerPlugin
@@ -28,7 +28,7 @@ class GetWppconnectServerQrForInbox {
 
     const licensee = await this.licenseeRepository.findFirst({ _id: inbox.licensee })
     if (!licensee || inbox.whatsappDefault !== WHATSAPP_DEFAULT_WPPCONNECT_SERVER) {
-      return { message: 'Inbox não usa Wppconnect Server' }
+      return { message: 'Inbox não usa Wppconnect Server v2' }
     }
 
     if (!inbox.whatsappUrl || !inbox.whatsappToken) {
@@ -46,4 +46,4 @@ class GetWppconnectServerQrForInbox {
   }
 }
 
-export { GetWppconnectServerQrForInbox }
+export { GetWppconnectServerV2QrForInbox }

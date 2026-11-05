@@ -320,60 +320,60 @@ describe('DepartmentsController', () => {
     })
   })
 
-  describe('#wppconnectServerQr', () => {
+  describe('#wppconnectServerV2Qr', () => {
     it('returns 200 with the response from the use case', async () => {
       const { controller } = buildController()
       const qrResponse = { qr: 'data:image/png;base64,abc123' }
-      controller.getWppconnectServerQrUseCase = { execute: jest.fn().mockResolvedValue(qrResponse) }
+      controller.getWppconnectServerV2QrUseCase = { execute: jest.fn().mockResolvedValue(qrResponse) }
 
       const req = { params: { id: 'department-id' } }
       const res = buildResponse()
 
-      await controller.wppconnectServerQr(req, res)
+      await controller.wppconnectServerV2Qr(req, res)
 
-      expect(controller.getWppconnectServerQrUseCase.execute).toHaveBeenCalledWith('department-id')
+      expect(controller.getWppconnectServerV2QrUseCase.execute).toHaveBeenCalledWith('department-id')
       expect(res.status).toHaveBeenCalledWith(200)
       expect(res.send).toHaveBeenCalledWith(qrResponse)
     })
 
     it('returns 408 on error', async () => {
       const { controller } = buildController()
-      controller.getWppconnectServerQrUseCase = { execute: jest.fn().mockRejectedValue(new Error('timeout')) }
+      controller.getWppconnectServerV2QrUseCase = { execute: jest.fn().mockRejectedValue(new Error('timeout')) }
 
       const req = { params: { id: 'department-id' } }
       const res = buildResponse()
 
-      await controller.wppconnectServerQr(req, res)
+      await controller.wppconnectServerV2Qr(req, res)
 
       expect(res.status).toHaveBeenCalledWith(408)
       expect(res.send).toHaveBeenCalledWith(expect.objectContaining({ errors: expect.any(Object) }))
     })
   })
 
-  describe('#wppconnectServerStatus', () => {
+  describe('#wppconnectServerV2Status', () => {
     it('returns 200 with the response from the use case', async () => {
       const { controller } = buildController()
       const statusResponse = { connected: true }
-      controller.getWppconnectServerStatusUseCase = { execute: jest.fn().mockResolvedValue(statusResponse) }
+      controller.getWppconnectServerV2StatusUseCase = { execute: jest.fn().mockResolvedValue(statusResponse) }
 
       const req = { params: { id: 'department-id' } }
       const res = buildResponse()
 
-      await controller.wppconnectServerStatus(req, res)
+      await controller.wppconnectServerV2Status(req, res)
 
-      expect(controller.getWppconnectServerStatusUseCase.execute).toHaveBeenCalledWith('department-id')
+      expect(controller.getWppconnectServerV2StatusUseCase.execute).toHaveBeenCalledWith('department-id')
       expect(res.status).toHaveBeenCalledWith(200)
       expect(res.send).toHaveBeenCalledWith(statusResponse)
     })
 
     it('returns 500 on error', async () => {
       const { controller } = buildController()
-      controller.getWppconnectServerStatusUseCase = { execute: jest.fn().mockRejectedValue(new Error('boom')) }
+      controller.getWppconnectServerV2StatusUseCase = { execute: jest.fn().mockRejectedValue(new Error('boom')) }
 
       const req = { params: { id: 'department-id' } }
       const res = buildResponse()
 
-      await controller.wppconnectServerStatus(req, res)
+      await controller.wppconnectServerV2Status(req, res)
 
       expect(res.status).toHaveBeenCalledWith(500)
       expect(res.send).toHaveBeenCalledWith(expect.objectContaining({ errors: expect.any(Object) }))

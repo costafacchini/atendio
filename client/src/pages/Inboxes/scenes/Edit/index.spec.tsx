@@ -4,7 +4,7 @@ import {
   getInbox,
   updateInbox,
   getInboxBaileysStatus,
-  getInboxWppconnectServerStatus,
+  getInboxWppconnectServerV2Status,
 } from '../../../../services/inbox'
 import { createRoutesStub } from 'react-router'
 
@@ -24,7 +24,7 @@ describe('<InboxEdit />', () => {
 
   function mount() {
     ;(getInboxBaileysStatus as any).mockResolvedValue({ data: { connected: false } })
-    ;(getInboxWppconnectServerStatus as any).mockResolvedValue({ data: { connected: false } })
+    ;(getInboxWppconnectServerV2Status as any).mockResolvedValue({ data: { connected: false } })
 
     const Stub = createRoutesStub([
       {
@@ -95,42 +95,42 @@ describe('<InboxEdit />', () => {
     expect(screen.queryByText('inboxes.baileys.title')).not.toBeInTheDocument()
   })
 
-  it('shows InboxWppconnectServerPanel when kind is messenger and whatsappDefault is wppconnect-server', async () => {
+  it('shows InboxWppconnectServerV2Panel when kind is messenger and whatsappDefault is wppconnect-server-v2', async () => {
     ;(getInbox as any).mockResolvedValue({
       status: 200,
       data: {
         id: '1',
-        name: 'Wppconnect Server Inbox',
+        name: 'Wppconnect Server v2 Inbox',
         kind: 'messenger',
         active: true,
-        whatsappDefault: 'wppconnect-server',
-        whatsappUrl: 'https://my-wppconnect-server.com',
+        whatsappDefault: 'wppconnect-server-v2',
+        whatsappUrl: 'https://my-wppconnect-server-v2.com',
         whatsappToken: 'session-token',
       },
     })
 
     mount()
 
-    expect(await screen.findByText('inboxes.wppconnectServer.title')).toBeInTheDocument()
+    expect(await screen.findByText('inboxes.wppconnectServerV2.title')).toBeInTheDocument()
   })
 
-  it('keeps whatsappToken/whatsappUrl fields visible when whatsappDefault is wppconnect-server', async () => {
+  it('keeps whatsappToken/whatsappUrl fields visible when whatsappDefault is wppconnect-server-v2', async () => {
     ;(getInbox as any).mockResolvedValue({
       status: 200,
       data: {
         id: '1',
-        name: 'Wppconnect Server Inbox',
+        name: 'Wppconnect Server v2 Inbox',
         kind: 'messenger',
         active: true,
-        whatsappDefault: 'wppconnect-server',
-        whatsappUrl: 'https://my-wppconnect-server.com',
+        whatsappDefault: 'wppconnect-server-v2',
+        whatsappUrl: 'https://my-wppconnect-server-v2.com',
         whatsappToken: 'session-token',
       },
     })
 
     mount()
 
-    await screen.findByDisplayValue('Wppconnect Server Inbox')
+    await screen.findByDisplayValue('Wppconnect Server v2 Inbox')
 
     expect(screen.getByLabelText('inboxes.whatsappToken')).toBeInTheDocument()
     expect(screen.getByLabelText('inboxes.whatsappUrl')).toBeInTheDocument()

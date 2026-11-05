@@ -56,8 +56,8 @@ const {
   createTemplatesImporter,
   startBaileysSocket,
   socketManager,
-  getWppconnectServerQrForInbox,
-  getWppconnectServerStatusForInbox,
+  getWppconnectServerV2QrForInbox,
+  getWppconnectServerV2StatusForInbox,
 } = createRuntimeDependencies()
 
 const usersController = new UsersController({
@@ -109,8 +109,8 @@ const departmentsController = new DepartmentsController({
   createMessengerPlugin,
   startBaileysSocket,
   socketManager,
-  getWppconnectServerQrForInbox,
-  getWppconnectServerStatusForInbox,
+  getWppconnectServerV2QrForInbox,
+  getWppconnectServerV2StatusForInbox,
 })
 
 const inboxesController = new InboxesController({
@@ -220,8 +220,10 @@ router.post('/licensees/:id/dialogwebhook', licenseesController.setDialogWebhook
 router.get('/licensees/:id/baileys-status', licenseesController.getBaileysStatus)
 router.post('/licensees/:id/baileys-qr', (req, res) => licenseesController.getBaileysQr(req, res))
 router.post('/licensees/:id/baileys-sync', licenseesController.baileysSync)
-router.get('/licensees/:id/wppconnect-server-status', licenseesController.getWppconnectServerStatus)
-router.post('/licensees/:id/wppconnect-server-qr', (req, res) => licenseesController.getWppconnectServerQr(req, res))
+router.get('/licensees/:id/wppconnect-server-v2-status', licenseesController.getWppconnectServerV2Status)
+router.post('/licensees/:id/wppconnect-server-v2-qr', (req, res) =>
+  licenseesController.getWppconnectServerV2Qr(req, res),
+)
 
 router.get('/departments', authorize('admin', 'super'), departmentsController.index)
 router.get('/departments/:id', authorize('admin', 'super'), departmentsController.show)
@@ -232,14 +234,14 @@ router.post('/departments/:id/baileys-qr', authorize('admin', 'super'), departme
 router.get('/departments/:id/baileys-status', authorize('admin', 'super'), departmentsController.getBaileysStatus)
 router.post('/departments/:id/baileys-sync', authorize('admin', 'super'), departmentsController.baileysSync)
 router.post(
-  '/departments/:id/wppconnect-server-qr',
+  '/departments/:id/wppconnect-server-v2-qr',
   authorize('admin', 'super'),
-  departmentsController.wppconnectServerQr,
+  departmentsController.wppconnectServerV2Qr,
 )
 router.get(
-  '/departments/:id/wppconnect-server-status',
+  '/departments/:id/wppconnect-server-v2-status',
   authorize('admin', 'super'),
-  departmentsController.wppconnectServerStatus,
+  departmentsController.wppconnectServerV2Status,
 )
 
 router.get('/inboxes', authorize('admin', 'super'), inboxesController.index)
@@ -250,11 +252,11 @@ router.delete('/inboxes/:id', authorize('admin', 'super'), inboxesController.des
 router.post('/inboxes/:id/baileys-qr', authorize('admin', 'super'), inboxesController.baileysQr)
 router.get('/inboxes/:id/baileys-status', authorize('admin', 'super'), inboxesController.baileysStatus)
 router.post('/inboxes/:id/baileys-sync', authorize('admin', 'super'), inboxesController.baileysSync)
-router.post('/inboxes/:id/wppconnect-server-qr', authorize('admin', 'super'), inboxesController.wppconnectServerQr)
+router.post('/inboxes/:id/wppconnect-server-v2-qr', authorize('admin', 'super'), inboxesController.wppconnectServerV2Qr)
 router.get(
-  '/inboxes/:id/wppconnect-server-status',
+  '/inboxes/:id/wppconnect-server-v2-status',
   authorize('admin', 'super'),
-  inboxesController.wppconnectServerStatus,
+  inboxesController.wppconnectServerV2Status,
 )
 
 router.get('/messages', messagesController.index)

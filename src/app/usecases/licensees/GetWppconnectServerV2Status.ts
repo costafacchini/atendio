@@ -1,20 +1,20 @@
 import { IRepository } from '@repositories/repository'
 import { ILicensee, IInbox } from '../../../types'
 
-const WHATSAPP_DEFAULT_WPPCONNECT_SERVER = 'wppconnect-server'
+const WHATSAPP_DEFAULT_WPPCONNECT_SERVER = 'wppconnect-server-v2'
 
-interface GetWppconnectServerStatusDeps {
+interface GetWppconnectServerV2StatusDeps {
   licenseeRepository: IRepository<ILicensee>
   inboxRepository: IRepository<IInbox>
   createMessengerPlugin: (licensee: ILicensee, extras: Record<string, any>) => any
 }
 
-class GetWppconnectServerStatus {
+class GetWppconnectServerV2Status {
   licenseeRepository: IRepository<ILicensee>
   inboxRepository: IRepository<IInbox>
-  createMessengerPlugin: GetWppconnectServerStatusDeps['createMessengerPlugin']
+  createMessengerPlugin: GetWppconnectServerV2StatusDeps['createMessengerPlugin']
 
-  constructor({ licenseeRepository, inboxRepository, createMessengerPlugin }: GetWppconnectServerStatusDeps) {
+  constructor({ licenseeRepository, inboxRepository, createMessengerPlugin }: GetWppconnectServerV2StatusDeps) {
     this.licenseeRepository = licenseeRepository
     this.inboxRepository = inboxRepository
     this.createMessengerPlugin = createMessengerPlugin
@@ -38,4 +38,4 @@ class GetWppconnectServerStatus {
   }
 }
 
-export { GetWppconnectServerStatus }
+export { GetWppconnectServerV2Status }

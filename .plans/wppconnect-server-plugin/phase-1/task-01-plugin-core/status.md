@@ -53,3 +53,8 @@ Verified by reading `src/routes/index.ts`, `src/middleware/auth.ts`, `src/contro
 - **Task file said**: mirror `Baileys.ts`'s structure.
 - **Reality**: `Baileys.ts` duplicates `this._inbox` alongside `MessengersBase`'s own `this.inbox` (needed because Baileys destructures `whatsappSessionRepository` before calling `super`). `WppconnectServer` has no extra dependency to destructure, so it relies directly on `this.inbox` from `MessengersBase` — simpler, no duplication.
 - **Action taken**: No `_inbox` field; `sessionNameFor(this.inbox?._id)` used directly.
+
+### Deviation 3 (post-implementation, before merge): plugin renamed to `WppconnectServerV2` / `wppconnect-server-v2`
+- **Task file said**: implement under the identifier `wppconnect-server` / class `WppconnectServer`.
+- **Reality**: after all 6 tasks completed, the user requested the identifier be version-pinned to the upstream `wppconnect-server` project's major version (verified release `v2.10.76`), so a future breaking upstream major version doesn't silently break this plugin — a new major version gets a new, separately-implemented plugin instead of modifying this one.
+- **Action taken**: `WppconnectServer.ts` → `WppconnectServerV2.ts` (and the same rename across every file, route, `whatsappDefault` value, i18n key, and the KB guide — see `overview.md`'s "Post-implementation naming update" note). This file (`status.md`) was left as the historical record of the original implementation; the `Artifacts` list above refers to the pre-rename file names.

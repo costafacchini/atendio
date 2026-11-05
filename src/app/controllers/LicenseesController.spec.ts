@@ -346,37 +346,37 @@ describe('LicenseesController delegation', () => {
     })
   })
 
-  it('delegates getWppconnectServerQr to the use case and returns status 200', async () => {
-    const getWppconnectServerQrUseCase = { execute: jest.fn() }
+  it('delegates getWppconnectServerV2Qr to the use case and returns status 200', async () => {
+    const getWppconnectServerV2QrUseCase = { execute: jest.fn() }
     const licenseeRepository = new LicenseeRepositoryMemory()
     const controller = new LicenseesController({ licenseeRepository })
-    controller.getWppconnectServerQrUseCase = getWppconnectServerQrUseCase
+    controller.getWppconnectServerV2QrUseCase = getWppconnectServerV2QrUseCase
 
     const req = { params: { id: 'licensee-id' } }
     const res = buildResponse()
     const qrResponse = { qr: 'data:image/png;base64,abc123' }
 
-    getWppconnectServerQrUseCase.execute.mockResolvedValue(qrResponse)
+    getWppconnectServerV2QrUseCase.execute.mockResolvedValue(qrResponse)
 
-    await controller.getWppconnectServerQr(req, res)
+    await controller.getWppconnectServerV2Qr(req, res)
 
-    expect(getWppconnectServerQrUseCase.execute).toHaveBeenCalledWith('licensee-id')
+    expect(getWppconnectServerV2QrUseCase.execute).toHaveBeenCalledWith('licensee-id')
     expect(res.status).toHaveBeenCalledWith(200)
     expect(res.send).toHaveBeenCalledWith(qrResponse)
   })
 
-  it('returns status 408 when getWppconnectServerQr use case throws an error', async () => {
-    const getWppconnectServerQrUseCase = { execute: jest.fn() }
+  it('returns status 408 when getWppconnectServerV2Qr use case throws an error', async () => {
+    const getWppconnectServerV2QrUseCase = { execute: jest.fn() }
     const licenseeRepository = new LicenseeRepositoryMemory()
     const controller = new LicenseesController({ licenseeRepository })
-    controller.getWppconnectServerQrUseCase = getWppconnectServerQrUseCase
+    controller.getWppconnectServerV2QrUseCase = getWppconnectServerV2QrUseCase
 
     const req = { params: { id: 'licensee-id' } }
     const res = buildResponse()
 
-    getWppconnectServerQrUseCase.execute.mockRejectedValue(new Error('timeout'))
+    getWppconnectServerV2QrUseCase.execute.mockRejectedValue(new Error('timeout'))
 
-    await controller.getWppconnectServerQr(req, res)
+    await controller.getWppconnectServerV2Qr(req, res)
 
     expect(res.status).toHaveBeenCalledWith(408)
     expect(res.send).toHaveBeenCalledWith({
@@ -384,37 +384,37 @@ describe('LicenseesController delegation', () => {
     })
   })
 
-  it('delegates getWppconnectServerStatus to the use case and returns status 200', async () => {
-    const getWppconnectServerStatusUseCase = { execute: jest.fn() }
+  it('delegates getWppconnectServerV2Status to the use case and returns status 200', async () => {
+    const getWppconnectServerV2StatusUseCase = { execute: jest.fn() }
     const licenseeRepository = new LicenseeRepositoryMemory()
     const controller = new LicenseesController({ licenseeRepository })
-    controller.getWppconnectServerStatusUseCase = getWppconnectServerStatusUseCase
+    controller.getWppconnectServerV2StatusUseCase = getWppconnectServerV2StatusUseCase
 
     const req = { params: { id: 'licensee-id' } }
     const res = buildResponse()
     const statusResponse = { connected: true }
 
-    getWppconnectServerStatusUseCase.execute.mockResolvedValue(statusResponse)
+    getWppconnectServerV2StatusUseCase.execute.mockResolvedValue(statusResponse)
 
-    await controller.getWppconnectServerStatus(req, res)
+    await controller.getWppconnectServerV2Status(req, res)
 
-    expect(getWppconnectServerStatusUseCase.execute).toHaveBeenCalledWith('licensee-id')
+    expect(getWppconnectServerV2StatusUseCase.execute).toHaveBeenCalledWith('licensee-id')
     expect(res.status).toHaveBeenCalledWith(200)
     expect(res.send).toHaveBeenCalledWith(statusResponse)
   })
 
-  it('returns status 500 when getWppconnectServerStatus use case throws an error', async () => {
-    const getWppconnectServerStatusUseCase = { execute: jest.fn() }
+  it('returns status 500 when getWppconnectServerV2Status use case throws an error', async () => {
+    const getWppconnectServerV2StatusUseCase = { execute: jest.fn() }
     const licenseeRepository = new LicenseeRepositoryMemory()
     const controller = new LicenseesController({ licenseeRepository })
-    controller.getWppconnectServerStatusUseCase = getWppconnectServerStatusUseCase
+    controller.getWppconnectServerV2StatusUseCase = getWppconnectServerV2StatusUseCase
 
     const req = { params: { id: 'licensee-id' } }
     const res = buildResponse()
 
-    getWppconnectServerStatusUseCase.execute.mockRejectedValue(new Error('boom'))
+    getWppconnectServerV2StatusUseCase.execute.mockRejectedValue(new Error('boom'))
 
-    await controller.getWppconnectServerStatus(req, res)
+    await controller.getWppconnectServerV2Status(req, res)
 
     expect(res.status).toHaveBeenCalledWith(500)
     expect(res.send).toHaveBeenCalledWith({

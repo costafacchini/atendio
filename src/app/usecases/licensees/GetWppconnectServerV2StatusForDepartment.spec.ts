@@ -1,4 +1,4 @@
-import { GetWppconnectServerStatusForDepartment } from './GetWppconnectServerStatusForDepartment'
+import { GetWppconnectServerV2StatusForDepartment } from './GetWppconnectServerV2StatusForDepartment'
 import { LicenseeRepositoryMemory } from '@repositories/licensee'
 import { InboxRepositoryMemory } from '@repositories/inbox'
 import { DepartmentRepositoryMemory } from '@repositories/department'
@@ -10,25 +10,25 @@ function buildUseCase(overrides: Record<string, any> = {}) {
   const inboxRepository = overrides.inboxRepository ?? new InboxRepositoryMemory()
   const departmentRepository = overrides.departmentRepository ?? new DepartmentRepositoryMemory()
   const createMessengerPlugin = overrides.createMessengerPlugin ?? jest.fn()
-  const getWppconnectServerStatusForInbox = overrides.getWppconnectServerStatusForInbox ?? { execute: jest.fn() }
-  const useCase = new GetWppconnectServerStatusForDepartment({
+  const getWppconnectServerV2StatusForInbox = overrides.getWppconnectServerV2StatusForInbox ?? { execute: jest.fn() }
+  const useCase = new GetWppconnectServerV2StatusForDepartment({
     licenseeRepository,
     inboxRepository,
     departmentRepository,
     createMessengerPlugin,
-    getWppconnectServerStatusForInbox,
+    getWppconnectServerV2StatusForInbox,
   })
   return {
     licenseeRepository,
     inboxRepository,
     departmentRepository,
     createMessengerPlugin,
-    getWppconnectServerStatusForInbox,
+    getWppconnectServerV2StatusForInbox,
     useCase,
   }
 }
 
-describe('GetWppconnectServerStatusForDepartment', () => {
+describe('GetWppconnectServerV2StatusForDepartment', () => {
   it('returns { connected: false } when department is not found', async () => {
     const { useCase } = buildUseCase()
 
@@ -37,7 +37,7 @@ describe('GetWppconnectServerStatusForDepartment', () => {
     expect(result).toEqual({ connected: false })
   })
 
-  it('returns { connected: false } when licensee has no wppconnect-server inbox', async () => {
+  it('returns { connected: false } when licensee has no wppconnect-server-v2 inbox', async () => {
     const { licenseeRepository, inboxRepository, departmentRepository, useCase } = buildUseCase()
     const licensee = await licenseeRepository.create(licenseeCompleteFactory.build())
     await inboxRepository.create(
@@ -57,8 +57,8 @@ describe('GetWppconnectServerStatusForDepartment', () => {
       inboxFactory.build({
         licensee: licensee._id,
         kind: 'messenger',
-        whatsappDefault: 'wppconnect-server',
-        whatsappUrl: 'https://my-wppconnect-server.com',
+        whatsappDefault: 'wppconnect-server-v2',
+        whatsappUrl: 'https://my-wppconnect-server-v2.com',
         whatsappToken: 'session-token',
       }),
     )
@@ -72,15 +72,15 @@ describe('GetWppconnectServerStatusForDepartment', () => {
     expect(result).toEqual({ connected: true })
   })
 
-  it('delegates to getWppconnectServerStatusForInbox when department has a linked inbox', async () => {
+  it('delegates to getWppconnectServerV2StatusForInbox when department has a linked inbox', async () => {
     const inboxId = 'inbox-id-abc'
-    const { departmentRepository, getWppconnectServerStatusForInbox, createMessengerPlugin, useCase } = buildUseCase()
+    const { departmentRepository, getWppconnectServerV2StatusForInbox, createMessengerPlugin, useCase } = buildUseCase()
     const department = await departmentRepository.create({ name: 'Suporte', licensee: 'licensee-id-1', inbox: inboxId })
-    getWppconnectServerStatusForInbox.execute.mockResolvedValue({ connected: true })
+    getWppconnectServerV2StatusForInbox.execute.mockResolvedValue({ connected: true })
 
     const result = await useCase.execute(department._id)
 
-    expect(getWppconnectServerStatusForInbox.execute).toHaveBeenCalledWith(inboxId)
+    expect(getWppconnectServerV2StatusForInbox.execute).toHaveBeenCalledWith(inboxId)
     expect(createMessengerPlugin).not.toHaveBeenCalled()
     expect(result).toEqual({ connected: true })
   })

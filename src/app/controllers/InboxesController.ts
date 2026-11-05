@@ -5,16 +5,16 @@ import { IInbox } from '../../types'
 import { GetBaileysQrForInbox } from '../usecases/licensees/GetBaileysQrForInbox'
 import { GetBaileysStatusForInbox } from '../usecases/licensees/GetBaileysStatusForInbox'
 import { SyncBaileysDirectoryForInbox } from '../usecases/licensees/SyncBaileysDirectoryForInbox'
-import { GetWppconnectServerQrForInbox } from '../usecases/licensees/GetWppconnectServerQrForInbox'
-import { GetWppconnectServerStatusForInbox } from '../usecases/licensees/GetWppconnectServerStatusForInbox'
+import { GetWppconnectServerV2QrForInbox } from '../usecases/licensees/GetWppconnectServerV2QrForInbox'
+import { GetWppconnectServerV2StatusForInbox } from '../usecases/licensees/GetWppconnectServerV2StatusForInbox'
 
 class InboxesController {
   inboxRepository: IRepository<IInbox>
   getBaileysQrUseCase: GetBaileysQrForInbox
   getBaileysStatusUseCase: GetBaileysStatusForInbox
   syncBaileysDirectoryUseCase: SyncBaileysDirectoryForInbox
-  getWppconnectServerQrUseCase: GetWppconnectServerQrForInbox
-  getWppconnectServerStatusUseCase: GetWppconnectServerStatusForInbox
+  getWppconnectServerV2QrUseCase: GetWppconnectServerV2QrForInbox
+  getWppconnectServerV2StatusUseCase: GetWppconnectServerV2StatusForInbox
 
   constructor({
     inboxRepository,
@@ -45,12 +45,12 @@ class InboxesController {
       contactRepository,
       createMessengerPlugin,
     })
-    this.getWppconnectServerQrUseCase = new GetWppconnectServerQrForInbox({
+    this.getWppconnectServerV2QrUseCase = new GetWppconnectServerV2QrForInbox({
       inboxRepository,
       licenseeRepository,
       createMessengerPlugin,
     })
-    this.getWppconnectServerStatusUseCase = new GetWppconnectServerStatusForInbox({
+    this.getWppconnectServerV2StatusUseCase = new GetWppconnectServerV2StatusForInbox({
       inboxRepository,
       licenseeRepository,
       createMessengerPlugin,
@@ -64,8 +64,8 @@ class InboxesController {
     this.baileysQr = this.baileysQr.bind(this)
     this.baileysStatus = this.baileysStatus.bind(this)
     this.baileysSync = this.baileysSync.bind(this)
-    this.wppconnectServerQr = this.wppconnectServerQr.bind(this)
-    this.wppconnectServerStatus = this.wppconnectServerStatus.bind(this)
+    this.wppconnectServerV2Qr = this.wppconnectServerV2Qr.bind(this)
+    this.wppconnectServerV2Status = this.wppconnectServerV2Status.bind(this)
   }
 
   async index(req: Request, res: Response) {
@@ -156,9 +156,9 @@ class InboxesController {
     }
   }
 
-  async wppconnectServerQr(req: Request, res: Response) {
+  async wppconnectServerV2Qr(req: Request, res: Response) {
     try {
-      const response = await this.getWppconnectServerQrUseCase.execute(req.params.id as string)
+      const response = await this.getWppconnectServerV2QrUseCase.execute(req.params.id as string)
 
       return res.status(200).send(response)
     } catch (err: any) {
@@ -166,9 +166,9 @@ class InboxesController {
     }
   }
 
-  async wppconnectServerStatus(req: Request, res: Response) {
+  async wppconnectServerV2Status(req: Request, res: Response) {
     try {
-      const response = await this.getWppconnectServerStatusUseCase.execute(req.params.id as string)
+      const response = await this.getWppconnectServerV2StatusUseCase.execute(req.params.id as string)
 
       return res.status(200).send(response)
     } catch (err: any) {

@@ -167,9 +167,9 @@ describe('POST /licensees/:id/baileys-sync', () => {
   })
 })
 
-describe('POST /inboxes/:id/wppconnect-server-qr', () => {
+describe('POST /inboxes/:id/wppconnect-server-v2-qr', () => {
   it('returns 401 when no token is provided', async () => {
-    const res = await request(app).post('/resources/inboxes/some-id/wppconnect-server-qr')
+    const res = await request(app).post('/resources/inboxes/some-id/wppconnect-server-v2-qr')
 
     expect(res.status).toBe(401)
     expect(res.body).toMatchObject({ auth: false })
@@ -180,7 +180,9 @@ describe('POST /inboxes/:id/wppconnect-server-qr', () => {
     deps.inboxRepository.findFirst.mockResolvedValue(null)
     const token = signToken({ id: 'uid-7' })
 
-    const res = await request(app).post('/resources/inboxes/some-id/wppconnect-server-qr').set('x-access-token', token)
+    const res = await request(app)
+      .post('/resources/inboxes/some-id/wppconnect-server-v2-qr')
+      .set('x-access-token', token)
 
     expect(res.status).not.toBe(401)
     expect(res.status).not.toBe(403)
@@ -188,9 +190,9 @@ describe('POST /inboxes/:id/wppconnect-server-qr', () => {
   })
 })
 
-describe('GET /inboxes/:id/wppconnect-server-status', () => {
+describe('GET /inboxes/:id/wppconnect-server-v2-status', () => {
   it('returns 401 when no token is provided', async () => {
-    const res = await request(app).get('/resources/inboxes/some-id/wppconnect-server-status')
+    const res = await request(app).get('/resources/inboxes/some-id/wppconnect-server-v2-status')
 
     expect(res.status).toBe(401)
     expect(res.body).toMatchObject({ auth: false })
@@ -202,7 +204,7 @@ describe('GET /inboxes/:id/wppconnect-server-status', () => {
     const token = signToken({ id: 'uid-8' })
 
     const res = await request(app)
-      .get('/resources/inboxes/some-id/wppconnect-server-status')
+      .get('/resources/inboxes/some-id/wppconnect-server-v2-status')
       .set('x-access-token', token)
 
     expect(res.status).not.toBe(401)
@@ -211,9 +213,9 @@ describe('GET /inboxes/:id/wppconnect-server-status', () => {
   })
 })
 
-describe('POST /departments/:id/wppconnect-server-qr', () => {
+describe('POST /departments/:id/wppconnect-server-v2-qr', () => {
   it('returns 401 when no token is provided', async () => {
-    const res = await request(app).post('/resources/departments/some-id/wppconnect-server-qr')
+    const res = await request(app).post('/resources/departments/some-id/wppconnect-server-v2-qr')
 
     expect(res.status).toBe(401)
     expect(res.body).toMatchObject({ auth: false })
@@ -225,7 +227,7 @@ describe('POST /departments/:id/wppconnect-server-qr', () => {
     const token = signToken({ id: 'uid-9' })
 
     const res = await request(app)
-      .post('/resources/departments/some-id/wppconnect-server-qr')
+      .post('/resources/departments/some-id/wppconnect-server-v2-qr')
       .set('x-access-token', token)
 
     expect(res.status).not.toBe(401)
@@ -234,9 +236,9 @@ describe('POST /departments/:id/wppconnect-server-qr', () => {
   })
 })
 
-describe('POST /licensees/:id/wppconnect-server-qr', () => {
+describe('POST /licensees/:id/wppconnect-server-v2-qr', () => {
   it('returns 401 when no token is provided', async () => {
-    const res = await request(app).post('/resources/licensees/some-id/wppconnect-server-qr')
+    const res = await request(app).post('/resources/licensees/some-id/wppconnect-server-v2-qr')
 
     expect(res.status).toBe(401)
     expect(res.body).toMatchObject({ auth: false })
@@ -248,12 +250,12 @@ describe('POST /licensees/:id/wppconnect-server-qr', () => {
     const token = signToken({ id: 'uid-10' })
 
     const res = await request(app)
-      .post('/resources/licensees/some-id/wppconnect-server-qr')
+      .post('/resources/licensees/some-id/wppconnect-server-v2-qr')
       .set('x-access-token', token)
 
     expect(res.status).not.toBe(401)
     expect(res.status).not.toBe(403)
-    expect(res.body).toEqual({ message: 'Licensee não usa Wppconnect Server' })
+    expect(res.body).toEqual({ message: 'Licensee não usa Wppconnect Server v2' })
   })
 })
 
