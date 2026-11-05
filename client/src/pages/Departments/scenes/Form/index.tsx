@@ -8,6 +8,7 @@ import { getUsers } from '../../../../services/user'
 import { getInboxes } from '../../../../services/inbox'
 import type { IInbox } from '../../../../types/inbox'
 import DepartmentBaileysPanel from '../Edit/DepartmentBaileysPanel'
+import DepartmentWppconnectServerV2Panel from '../Edit/DepartmentWppconnectServerV2Panel'
 import { useApp } from '../../../../contexts/App'
 
 const sectorInitialValues = {
@@ -150,6 +151,10 @@ function SectorForm(props: any) {
               )}
 
               {departmentId && <DepartmentBaileysPanel departmentId={departmentId} isActive={initialValues.active} />}
+
+              {departmentId && (
+                <DepartmentWppconnectServerV2Panel departmentId={departmentId} isActive={initialValues.active} />
+              )}
 
               <div className='row'>
                 <div className='col-5'>

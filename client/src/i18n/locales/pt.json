@@ -352,6 +352,14 @@
       "syncResult": "Grupos importados: {{imported}} | Grupos atualizados: {{updated}}",
       "syncError": "Erro ao sincronizar grupos",
       "qrError": "Erro ao gerar QR"
+    },
+    "wppconnectServerV2": {
+      "title": "Conexão Wppconnect Server v2",
+      "checking": "Verificando conexão...",
+      "connected": "Conectado",
+      "reconnect": "Reconectar",
+      "generateQr": "Gerar QR Code",
+      "qrError": "Erro ao gerar QR"
     }
   },
   "departments": {
@@ -386,6 +394,14 @@
       "generateQr": "Gerar QR Code",
       "syncResult": "Grupos importados: {{imported}} | Grupos atualizados: {{updated}}",
       "syncError": "Erro ao sincronizar grupos",
+      "qrError": "Erro ao gerar QR"
+    },
+    "wppconnectServerV2": {
+      "title": "Conexão Wppconnect Server v2",
+      "checking": "Verificando conexão...",
+      "connected": "Conectado",
+      "reconnect": "Reconectar",
+      "generateQr": "Gerar QR Code",
       "qrError": "Erro ao gerar QR"
     }
   },

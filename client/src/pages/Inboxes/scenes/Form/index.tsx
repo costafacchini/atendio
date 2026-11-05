@@ -4,6 +4,7 @@ import { FieldWithError, Form } from '../../../../components/form'
 import * as Yup from 'yup'
 import { useNavigate } from 'react-router'
 import InboxBaileysPanel from '../Edit/InboxBaileysPanel'
+import InboxWppconnectServerV2Panel from '../Edit/InboxWppconnectServerV2Panel'
 
 const inboxInitialValues = {
   name: '',
@@ -55,10 +56,12 @@ function InboxForm({ onSubmit, errors, initialValues, inboxId }: InboxFormProps)
           const isMessenger = values.kind === 'messenger'
           const isChat = values.kind === 'chat'
           const isBaileys = values.whatsappDefault === 'baileys'
+          const isWppconnectServerV2 = values.whatsappDefault === 'wppconnect-server-v2'
           const showWhatsappCredentials = isMessenger && values.whatsappDefault !== '' && !isBaileys
           const showChatUrl = isChat && CHAT_PLATFORMS_WITH_URL.includes(values.chatDefault)
           const showChatKey = isChat && CHAT_PLATFORMS_WITH_KEY.includes(values.chatDefault)
           const isBaileysMessenger = inboxId && isMessenger && isBaileys
+          const isWppconnectServerV2Messenger = inboxId && isMessenger && isWppconnectServerV2
 
           return (
             <form onSubmit={formikProps.handleSubmit}>
@@ -126,6 +129,7 @@ function InboxForm({ onSubmit, errors, initialValues, inboxId }: InboxFormProps)
                           <option value='ycloud'>YCloud</option>
                           <option value='pabbly'>Pabbly</option>
                           <option value='baileys'>Baileys</option>
+                          <option value='wppconnect-server-v2'>Wppconnect Server v2</option>
                         </select>
                       </div>
                     </div>
@@ -255,6 +259,10 @@ function InboxForm({ onSubmit, errors, initialValues, inboxId }: InboxFormProps)
 
               {isBaileysMessenger && (
                 <InboxBaileysPanel inboxId={inboxId} isActive={values.active} />
+              )}
+
+              {isWppconnectServerV2Messenger && (
+                <InboxWppconnectServerV2Panel inboxId={inboxId} isActive={values.active} />
               )}
 
               <div className='row'>

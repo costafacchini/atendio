@@ -5,12 +5,16 @@ import { IInbox } from '../../types'
 import { GetBaileysQrForInbox } from '../usecases/licensees/GetBaileysQrForInbox'
 import { GetBaileysStatusForInbox } from '../usecases/licensees/GetBaileysStatusForInbox'
 import { SyncBaileysDirectoryForInbox } from '../usecases/licensees/SyncBaileysDirectoryForInbox'
+import { GetWppconnectServerV2QrForInbox } from '../usecases/licensees/GetWppconnectServerV2QrForInbox'
+import { GetWppconnectServerV2StatusForInbox } from '../usecases/licensees/GetWppconnectServerV2StatusForInbox'
 
 class InboxesController {
   inboxRepository: IRepository<IInbox>
   getBaileysQrUseCase: GetBaileysQrForInbox
   getBaileysStatusUseCase: GetBaileysStatusForInbox
   syncBaileysDirectoryUseCase: SyncBaileysDirectoryForInbox
+  getWppconnectServerV2QrUseCase: GetWppconnectServerV2QrForInbox
+  getWppconnectServerV2StatusUseCase: GetWppconnectServerV2StatusForInbox
 
   constructor({
     inboxRepository,
@@ -41,6 +45,16 @@ class InboxesController {
       contactRepository,
       createMessengerPlugin,
     })
+    this.getWppconnectServerV2QrUseCase = new GetWppconnectServerV2QrForInbox({
+      inboxRepository,
+      licenseeRepository,
+      createMessengerPlugin,
+    })
+    this.getWppconnectServerV2StatusUseCase = new GetWppconnectServerV2StatusForInbox({
+      inboxRepository,
+      licenseeRepository,
+      createMessengerPlugin,
+    })
 
     this.index = this.index.bind(this)
     this.show = this.show.bind(this)
@@ -50,6 +64,8 @@ class InboxesController {
     this.baileysQr = this.baileysQr.bind(this)
     this.baileysStatus = this.baileysStatus.bind(this)
     this.baileysSync = this.baileysSync.bind(this)
+    this.wppconnectServerV2Qr = this.wppconnectServerV2Qr.bind(this)
+    this.wppconnectServerV2Status = this.wppconnectServerV2Status.bind(this)
   }
 
   async index(req: Request, res: Response) {
@@ -133,6 +149,26 @@ class InboxesController {
   async baileysSync(req: Request, res: Response) {
     try {
       const response = await this.syncBaileysDirectoryUseCase.execute(req.params.id as string)
+
+      return res.status(200).send(response)
+    } catch (err: any) {
+      return res.status(500).send({ errors: { message: `Erro interno do servidor: ${err.message}` } })
+    }
+  }
+
+  async wppconnectServerV2Qr(req: Request, res: Response) {
+    try {
+      const response = await this.getWppconnectServerV2QrUseCase.execute(req.params.id as string)
+
+      return res.status(200).send(response)
+    } catch (err: any) {
+      return res.status(408).send({ errors: { message: `Erro interno do servidor: ${err.message}` } })
+    }
+  }
+
+  async wppconnectServerV2Status(req: Request, res: Response) {
+    try {
+      const response = await this.getWppconnectServerV2StatusUseCase.execute(req.params.id as string)
 
       return res.status(200).send(response)
     } catch (err: any) {

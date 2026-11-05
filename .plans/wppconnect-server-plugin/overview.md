@@ -1,8 +1,8 @@
 # Plan: Wppconnect-Server WhatsApp Plugin
 
-**Status**: not-started
+**Status**: complete
 **Created**: 2026-11-04
-**Last Updated**: 2026-11-04
+**Last Updated**: 2026-11-05
 **Assigned Dev**: Alan Costa Facchini
 **PR Strategy**: single
 **Spec**: [spec.md](spec.md) — 4 user stories · 12 acceptance scenarios · 4 success criteria
@@ -10,6 +10,8 @@
 ## Objective
 
 Add a `wppconnect-server`-based WhatsApp messenger plugin — an HTTP-client plugin (same architectural family as `Dialog`/`Utalk`) that talks to a self-hosted, externally-operated `wppconnect-server` instance via its own REST API, using the existing `whatsappUrl`/`whatsappToken` Inbox fields. No Puppeteer/Chromium runs inside this app's process.
+
+> **Post-implementation naming update (2026-11-05, before merge)**: after all 6 tasks were implemented under the plugin identifier `wppconnect-server`, the user requested the identifier be version-pinned to the upstream `wppconnect-server` project's major version instead — since this is self-hosted, different licensees could run different major versions simultaneously, and a future breaking API change upstream shouldn't silently break already-configured Inboxes. Every class name, file name, route segment (`wppconnect-server-qr` → `wppconnect-server-v2-qr`), `whatsappDefault` value, i18n key, and the KB guide were renamed from `wppconnect-server` to **`wppconnect-server-v2`**, pinned to the verified upstream release `v2.10.76` (2026-11-05, major version 2). This plan's own folder path (`.plans/wppconnect-server-plugin/`) and the task files below were **not** renamed/rewritten — they remain the historical record of what was planned and built under the original identifier; the actual shipped identifier is `wppconnect-server-v2`, documented in `docs/kb/features/wppconnect-server-v2-whatsapp-guide.md`. A future `wppconnect-server-v3` plugin (for a breaking upstream major release) would be a new, separate plugin, not a modification of this one.
 
 ## Scope
 
@@ -48,12 +50,12 @@ Add a `wppconnect-server`-based WhatsApp messenger plugin — an HTTP-client plu
 
 | Task Path | Title | Phase | Status | Depends On |
 |-----------|-------|-------|--------|------------|
-| phase-1/task-01-plugin-core | Wppconnect-Server Plugin Core | 1 | not-started | — |
-| phase-2/task-02-inbox-qr-status | Inbox QR/Status Endpoints | 2 | not-started | phase-1/task-01-plugin-core |
-| phase-2/task-03-department-qr-status | Department & Licensee QR/Status Endpoints | 2 | not-started | phase-2/task-02-inbox-qr-status |
-| phase-3/task-04-inbox-admin-ui | Inbox Admin Form + QR Panel | 3 | not-started | phase-2/task-02-inbox-qr-status |
-| phase-3/task-05-department-admin-ui | Department Admin Form + QR Panel | 3 | not-started | phase-2/task-03-department-qr-status |
-| phase-4/task-06-kb-docs | KB Usage Guide + Deployment Doc | 4 | not-started | phase-3/task-04-inbox-admin-ui, phase-3/task-05-department-admin-ui |
+| phase-1/task-01-plugin-core | Wppconnect-Server Plugin Core | 1 | complete | — |
+| phase-2/task-02-inbox-qr-status | Inbox QR/Status Endpoints | 2 | complete | phase-1/task-01-plugin-core |
+| phase-2/task-03-department-qr-status | Department & Licensee QR/Status Endpoints | 2 | complete | phase-2/task-02-inbox-qr-status |
+| phase-3/task-04-inbox-admin-ui | Inbox Admin Form + QR Panel | 3 | complete | phase-2/task-02-inbox-qr-status |
+| phase-3/task-05-department-admin-ui | Department Admin Form + QR Panel | 3 | complete | phase-2/task-03-department-qr-status |
+| phase-4/task-06-kb-docs | KB Usage Guide + Deployment Doc | 4 | complete | phase-3/task-04-inbox-admin-ui, phase-3/task-05-department-admin-ui |
 
 **Parallelizable**: task-04 can start as soon as task-02 is done, in parallel with task-03.
 
@@ -92,14 +94,27 @@ Base branch: `main`
 
 ## Success Criteria
 
-- [ ] `WppconnectServer.ts` implements all abstract methods from `MessengersBase`
-- [ ] `factory.ts` instantiates `WppconnectServer` for `whatsappDefault === 'wppconnect-server'`
-- [ ] Inbox/Department/Licensee QR/status endpoints behave per spec Stories 1 and 3
-- [ ] Inbound messages flow through the existing generic webhook with no new route added
-- [ ] Inbox and Department admin forms expose `wppconnect-server`, show (not hide) token/URL fields, and render the QR panel per spec Story 4
-- [ ] All existing tests pass (no regressions)
-- [ ] `npx eslint .` passes clean
-- [ ] `docs/kb/features/wppconnect-server-whatsapp-guide.md` created and `docs/kb/README.md` index updated
+- [x] `WppconnectServer.ts` implements all abstract methods from `MessengersBase`
+- [x] `factory.ts` instantiates `WppconnectServer` for `whatsappDefault === 'wppconnect-server'`
+- [x] Inbox/Department/Licensee QR/status endpoints behave per spec Stories 1 and 3
+- [x] Inbound messages flow through the existing generic webhook with no new route added
+- [x] Inbox and Department admin forms expose `wppconnect-server`, show (not hide) token/URL fields, and render the QR panel per spec Story 4
+- [x] All existing tests pass (no regressions) — full backend suite (2693 tests) and client suite (338 tests) green as of task-05
+- [x] `npx eslint .` passes clean on all touched backend files
+- [x] `docs/kb/features/wppconnect-server-whatsapp-guide.md` created and `docs/kb/README.md` index updated
+
+## Spec Success Criteria Verification
+
+- **SC-001** (end-to-end QR connect without touching code): Met structurally — QR/status endpoints and admin UI are wired end-to-end. Not verified against a live `wppconnect-server` instance (none available in this environment); FR-009/FR-010 were verified against the public source code instead, per task-01.
+- **SC-002** (text message round-trip through the existing webhook): Met — no new webhook route added; `WppconnectServer.responseToMessages()`/`sendMessage()` covered by unit tests.
+- **SC-003** (no regression in existing plugin tests): Met — full test suite green after every task.
+- **SC-004** (no Puppeteer/Chromium dependency added): Met — `WppconnectServer.ts` only uses the existing `request` HTTP service.
+
+## Defects
+
+| Found In | Description | Status | Notes |
+|----------|-------------|--------|-------|
+| task-02 | `resources-routes.ts` never passes `getBaileysQrForInbox`/`getBaileysStatusForInbox`/`syncBaileysDirectoryForInbox` into `new DepartmentsController({...})`, even though `DepartmentsController` destructures and uses them — pre-existing bug in the **Baileys** Department QR/status path, unrelated to this plan's `wppconnect-server` provider | Logged, not fixed (out of scope) | See `phase-2/task-02-inbox-qr-status/status.md` for detail. Confirmed in task-03 that the equivalent `wppconnect-server` wiring IS correct (`getWppconnectServerQrForInbox`/`getWppconnectServerStatusForInbox` are passed into `DepartmentsController`) — only the pre-existing Baileys gap remains unfixed. |
 
 ## References
 

@@ -43,6 +43,14 @@ function syncInboxBaileys(inboxId: string) {
   return api().post(`resources/inboxes/${inboxId}/baileys-sync`, { headers: headers() })
 }
 
+function getInboxWppconnectServerV2Status(inboxId: string) {
+  return api().get(`resources/inboxes/${inboxId}/wppconnect-server-v2-status`, { headers: headers() })
+}
+
+function getInboxWppconnectServerV2Qr(inboxId: string) {
+  return api().post(`resources/inboxes/${inboxId}/wppconnect-server-v2-qr`, { headers: headers() })
+}
+
 export {
   getInboxes,
   getInbox,
@@ -52,4 +60,6 @@ export {
   getInboxBaileysStatus,
   getInboxBaileysQr,
   syncInboxBaileys,
+  getInboxWppconnectServerV2Status,
+  getInboxWppconnectServerV2Qr,
 }

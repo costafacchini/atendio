@@ -1,6 +1,11 @@
 import SectorEdit from './'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { getDepartment, updateDepartment, getDepartmentBaileysStatus } from '../../../../services/department'
+import {
+  getDepartment,
+  updateDepartment,
+  getDepartmentBaileysStatus,
+  getDepartmentWppconnectServerV2Status,
+} from '../../../../services/department'
 import { getUsers } from '../../../../services/user'
 import { getInboxes } from '../../../../services/inbox'
 import { createRoutesStub } from 'react-router'
@@ -33,6 +38,7 @@ describe('<SectorEdit />', () => {
   function mount() {
     ;(getUsers as any).mockResolvedValue({ data: [] })
     ;(getDepartmentBaileysStatus as any).mockResolvedValue({ data: { connected: false } })
+    ;(getDepartmentWppconnectServerV2Status as any).mockResolvedValue({ data: { connected: false } })
 
     const Stub = createRoutesStub([
       {
@@ -128,5 +134,18 @@ describe('<SectorEdit />', () => {
     await waitFor(() =>
       expect(updateDepartment).toHaveBeenCalledWith(expect.objectContaining({ inbox: 'i1' }))
     )
+  })
+
+  it('renders the DepartmentWppconnectServerV2Panel alongside the Baileys panel', async () => {
+    ;(getDepartment as any).mockResolvedValue({
+      status: 200,
+      data: { id: '1', name: 'Suporte', active: true, users: [] },
+    })
+
+    mount()
+
+    await screen.findByDisplayValue('Suporte')
+
+    expect(await screen.findByText('departments.wppconnectServerV2.title')).toBeInTheDocument()
   })
 })
