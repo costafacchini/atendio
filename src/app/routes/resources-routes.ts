@@ -234,6 +234,12 @@ router.delete('/inboxes/:id', authorize('admin', 'super'), inboxesController.des
 router.post('/inboxes/:id/baileys-qr', authorize('admin', 'super'), inboxesController.baileysQr)
 router.get('/inboxes/:id/baileys-status', authorize('admin', 'super'), inboxesController.baileysStatus)
 router.post('/inboxes/:id/baileys-sync', authorize('admin', 'super'), inboxesController.baileysSync)
+router.post('/inboxes/:id/wppconnect-server-qr', authorize('admin', 'super'), inboxesController.wppconnectServerQr)
+router.get(
+  '/inboxes/:id/wppconnect-server-status',
+  authorize('admin', 'super'),
+  inboxesController.wppconnectServerStatus,
+)
 
 router.get('/messages', messagesController.index)
 router.post('/messages', messagesController.create)

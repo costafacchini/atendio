@@ -22,6 +22,7 @@ jest.mock('../runtime/dependencies', () => {
     messageRepository: { findFirst: jest.fn(), find: jest.fn() },
     roomRepository: { findFirst: jest.fn(), find: jest.fn() },
     whatsappSessionRepository: { findFirst: jest.fn() },
+    inboxRepository: { findFirst: jest.fn(), find: jest.fn() },
     createMessengerPlugin: jest.fn(),
     createTemplatesImporter: jest.fn(),
   }
@@ -162,6 +163,50 @@ describe('POST /licensees/:id/baileys-sync', () => {
 
     expect(res.status).not.toBe(401)
     expect(res.status).not.toBe(403)
+  })
+})
+
+describe('POST /inboxes/:id/wppconnect-server-qr', () => {
+  it('returns 401 when no token is provided', async () => {
+    const res = await request(app).post('/resources/inboxes/some-id/wppconnect-server-qr')
+
+    expect(res.status).toBe(401)
+    expect(res.body).toMatchObject({ auth: false })
+  })
+
+  it('is accessible to admin users and reaches the controller', async () => {
+    userRepository.findFirst.mockResolvedValue({ _id: 'uid-7', role: 'admin' })
+    deps.inboxRepository.findFirst.mockResolvedValue(null)
+    const token = signToken({ id: 'uid-7' })
+
+    const res = await request(app).post('/resources/inboxes/some-id/wppconnect-server-qr').set('x-access-token', token)
+
+    expect(res.status).not.toBe(401)
+    expect(res.status).not.toBe(403)
+    expect(res.body).toEqual({ message: 'Inbox não encontrado' })
+  })
+})
+
+describe('GET /inboxes/:id/wppconnect-server-status', () => {
+  it('returns 401 when no token is provided', async () => {
+    const res = await request(app).get('/resources/inboxes/some-id/wppconnect-server-status')
+
+    expect(res.status).toBe(401)
+    expect(res.body).toMatchObject({ auth: false })
+  })
+
+  it('is accessible to admin users and reaches the controller', async () => {
+    userRepository.findFirst.mockResolvedValue({ _id: 'uid-8', role: 'admin' })
+    deps.inboxRepository.findFirst.mockResolvedValue(null)
+    const token = signToken({ id: 'uid-8' })
+
+    const res = await request(app)
+      .get('/resources/inboxes/some-id/wppconnect-server-status')
+      .set('x-access-token', token)
+
+    expect(res.status).not.toBe(401)
+    expect(res.status).not.toBe(403)
+    expect(res.body).toEqual({ connected: false })
   })
 })
 

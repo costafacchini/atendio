@@ -49,7 +49,7 @@ Add a `wppconnect-server`-based WhatsApp messenger plugin — an HTTP-client plu
 | Task Path | Title | Phase | Status | Depends On |
 |-----------|-------|-------|--------|------------|
 | phase-1/task-01-plugin-core | Wppconnect-Server Plugin Core | 1 | complete | — |
-| phase-2/task-02-inbox-qr-status | Inbox QR/Status Endpoints | 2 | not-started | phase-1/task-01-plugin-core |
+| phase-2/task-02-inbox-qr-status | Inbox QR/Status Endpoints | 2 | complete | phase-1/task-01-plugin-core |
 | phase-2/task-03-department-qr-status | Department & Licensee QR/Status Endpoints | 2 | not-started | phase-2/task-02-inbox-qr-status |
 | phase-3/task-04-inbox-admin-ui | Inbox Admin Form + QR Panel | 3 | not-started | phase-2/task-02-inbox-qr-status |
 | phase-3/task-05-department-admin-ui | Department Admin Form + QR Panel | 3 | not-started | phase-2/task-03-department-qr-status |
@@ -100,6 +100,12 @@ Base branch: `main`
 - [ ] All existing tests pass (no regressions)
 - [ ] `npx eslint .` passes clean
 - [ ] `docs/kb/features/wppconnect-server-whatsapp-guide.md` created and `docs/kb/README.md` index updated
+
+## Defects
+
+| Found In | Description | Status | Notes |
+|----------|-------------|--------|-------|
+| task-02 | `resources-routes.ts` never passes `getBaileysQrForInbox`/`getBaileysStatusForInbox`/`syncBaileysDirectoryForInbox` into `new DepartmentsController({...})`, even though `DepartmentsController` destructures and uses them — pre-existing bug in the **Baileys** Department QR/status path, unrelated to this plan's `wppconnect-server` provider | Logged, not fixed (out of scope) | See `phase-2/task-02-inbox-qr-status/status.md` for detail. task-03 must correctly wire the `wppconnect-server` equivalents so this gap isn't repeated for the new provider. |
 
 ## References
 
