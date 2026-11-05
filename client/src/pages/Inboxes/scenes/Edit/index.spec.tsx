@@ -1,6 +1,11 @@
 import InboxEdit from './'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { getInbox, updateInbox, getInboxBaileysStatus } from '../../../../services/inbox'
+import {
+  getInbox,
+  updateInbox,
+  getInboxBaileysStatus,
+  getInboxWppconnectServerStatus,
+} from '../../../../services/inbox'
 import { createRoutesStub } from 'react-router'
 
 vi.mock('../../../../services/inbox')
@@ -19,6 +24,7 @@ describe('<InboxEdit />', () => {
 
   function mount() {
     ;(getInboxBaileysStatus as any).mockResolvedValue({ data: { connected: false } })
+    ;(getInboxWppconnectServerStatus as any).mockResolvedValue({ data: { connected: false } })
 
     const Stub = createRoutesStub([
       {
@@ -87,5 +93,46 @@ describe('<InboxEdit />', () => {
     await screen.findByDisplayValue('UTalk Inbox')
 
     expect(screen.queryByText('inboxes.baileys.title')).not.toBeInTheDocument()
+  })
+
+  it('shows InboxWppconnectServerPanel when kind is messenger and whatsappDefault is wppconnect-server', async () => {
+    ;(getInbox as any).mockResolvedValue({
+      status: 200,
+      data: {
+        id: '1',
+        name: 'Wppconnect Server Inbox',
+        kind: 'messenger',
+        active: true,
+        whatsappDefault: 'wppconnect-server',
+        whatsappUrl: 'https://my-wppconnect-server.com',
+        whatsappToken: 'session-token',
+      },
+    })
+
+    mount()
+
+    expect(await screen.findByText('inboxes.wppconnectServer.title')).toBeInTheDocument()
+  })
+
+  it('keeps whatsappToken/whatsappUrl fields visible when whatsappDefault is wppconnect-server', async () => {
+    ;(getInbox as any).mockResolvedValue({
+      status: 200,
+      data: {
+        id: '1',
+        name: 'Wppconnect Server Inbox',
+        kind: 'messenger',
+        active: true,
+        whatsappDefault: 'wppconnect-server',
+        whatsappUrl: 'https://my-wppconnect-server.com',
+        whatsappToken: 'session-token',
+      },
+    })
+
+    mount()
+
+    await screen.findByDisplayValue('Wppconnect Server Inbox')
+
+    expect(screen.getByLabelText('inboxes.whatsappToken')).toBeInTheDocument()
+    expect(screen.getByLabelText('inboxes.whatsappUrl')).toBeInTheDocument()
   })
 })

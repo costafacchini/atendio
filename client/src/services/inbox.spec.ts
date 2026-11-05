@@ -9,6 +9,8 @@ import {
   getInboxBaileysStatus,
   getInboxBaileysQr,
   syncInboxBaileys,
+  getInboxWppconnectServerStatus,
+  getInboxWppconnectServerQr,
 } from './inbox'
 
 vi.mock('./auth')
@@ -113,6 +115,26 @@ describe('inbox service', () => {
       await syncInboxBaileys('inbox-id')
       expect(mockPost).toHaveBeenCalledWith(
         'resources/inboxes/inbox-id/baileys-sync',
+        { headers: { 'x-access-token': 'test-token' } }
+      )
+    })
+  })
+
+  describe('getInboxWppconnectServerStatus', () => {
+    it('sends GET to resources/inboxes/:id/wppconnect-server-status', async () => {
+      await getInboxWppconnectServerStatus('inbox-id')
+      expect(mockGet).toHaveBeenCalledWith(
+        'resources/inboxes/inbox-id/wppconnect-server-status',
+        { headers: { 'x-access-token': 'test-token' } }
+      )
+    })
+  })
+
+  describe('getInboxWppconnectServerQr', () => {
+    it('sends POST to resources/inboxes/:id/wppconnect-server-qr', async () => {
+      await getInboxWppconnectServerQr('inbox-id')
+      expect(mockPost).toHaveBeenCalledWith(
+        'resources/inboxes/inbox-id/wppconnect-server-qr',
         { headers: { 'x-access-token': 'test-token' } }
       )
     })

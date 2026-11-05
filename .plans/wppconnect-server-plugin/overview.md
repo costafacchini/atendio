@@ -51,7 +51,7 @@ Add a `wppconnect-server`-based WhatsApp messenger plugin — an HTTP-client plu
 | phase-1/task-01-plugin-core | Wppconnect-Server Plugin Core | 1 | complete | — |
 | phase-2/task-02-inbox-qr-status | Inbox QR/Status Endpoints | 2 | complete | phase-1/task-01-plugin-core |
 | phase-2/task-03-department-qr-status | Department & Licensee QR/Status Endpoints | 2 | complete | phase-2/task-02-inbox-qr-status |
-| phase-3/task-04-inbox-admin-ui | Inbox Admin Form + QR Panel | 3 | not-started | phase-2/task-02-inbox-qr-status |
+| phase-3/task-04-inbox-admin-ui | Inbox Admin Form + QR Panel | 3 | complete | phase-2/task-02-inbox-qr-status |
 | phase-3/task-05-department-admin-ui | Department Admin Form + QR Panel | 3 | not-started | phase-2/task-03-department-qr-status |
 | phase-4/task-06-kb-docs | KB Usage Guide + Deployment Doc | 4 | not-started | phase-3/task-04-inbox-admin-ui, phase-3/task-05-department-admin-ui |
 

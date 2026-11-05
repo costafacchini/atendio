@@ -352,6 +352,14 @@
       "syncResult": "Imported groups: {{imported}} | Updated groups: {{updated}}",
       "syncError": "Error syncing groups",
       "qrError": "Error generating QR"
+    },
+    "wppconnectServer": {
+      "title": "Wppconnect Server Connection",
+      "checking": "Checking connection...",
+      "connected": "Connected",
+      "reconnect": "Reconnect",
+      "generateQr": "Generate QR Code",
+      "qrError": "Error generating QR"
     }
   },
   "departments": {
