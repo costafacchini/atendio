@@ -1066,10 +1066,10 @@ html-parse-stringify@^4.0.1:
   resolved "https://registry.yarnpkg.com/html-parse-stringify/-/html-parse-stringify-4.0.1.tgz#7264be901df0fef8829eb04632191be0aa94f55e"
   integrity sha512-0zHsZJrK7S3K2aucXWL6ycoYJ/iNtIcFHC/nYQgFklPtrv5LpJctIiSCroWZWeuoXvuyFdzp6KzjJQ+OT5MfFw==
 
-i18next@27.0.0:
-  version "27.0.0"
-  resolved "https://registry.yarnpkg.com/i18next/-/i18next-27.0.0.tgz#5aa1d1d4db30b221a1a0a8108df09d69ffe78344"
-  integrity sha512-lCP39wHw2s0MZLyNXNvVEVhSRx3STHXB7XUbyS5qVabE3b+SSqFM/Ffb6HIygeKjYrMAwRV2qDShBQRba/DvAQ==
+i18next@27.0.1:
+  version "27.0.1"
+  resolved "https://registry.yarnpkg.com/i18next/-/i18next-27.0.1.tgz#7a656c8cd0c7169d54f63f887ef01ef9a3e0ba40"
+  integrity sha512-KaE5ozP8UUeVpOJIwMVbbnpRKpyYQuxd9ZbseJoDzezE3nvLnZZQn20pkzyIJwPI2Uet/Qs3WzPTG812f6F/Eg==
 
 immutable@^5.1.5:
   version "5.1.9"
