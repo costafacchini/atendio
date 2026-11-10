@@ -2284,10 +2284,10 @@
   resolved "https://registry.yarnpkg.com/@opentelemetry/context-async-hooks/-/context-async-hooks-2.10.0.tgz#7259acfd5936ae713be3f6d36249add7ae8aca5a"
   integrity sha512-bvyMcgLEkozzSzpEEEo1OMoeQ97bxj6Qs2uN3mPrSdDvObMI1myffD/BPqcLlzZO9//d1SqQA/WPw7Cz2AiqhA==
 
-"@opentelemetry/core@2.10.0", "@opentelemetry/core@2.12.0", "@opentelemetry/core@3.0.0", "@opentelemetry/core@3.1.0", "@opentelemetry/core@^2.0.0", "@opentelemetry/core@^2.9.0":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/core/-/core-3.1.0.tgz#f1293092765dbe6115bb82139aec40c89d5702f0"
-  integrity sha512-TS/6jqU5gilzjvjGnsTEKVFF/0MMAtBc2psxaX39IGCBYLat83/iHxYBWn+O6WB+pnyB0SwiH46rvTEp/OeYxA==
+"@opentelemetry/core@2.10.0", "@opentelemetry/core@2.12.0", "@opentelemetry/core@3.0.0", "@opentelemetry/core@3.1.1", "@opentelemetry/core@^2.0.0", "@opentelemetry/core@^2.9.0":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/core/-/core-3.1.1.tgz#2a6dd8fd3748a729fcef611a6617b6714c647318"
+  integrity sha512-6wc9r0zrTsAVOd/5UrZBsrHhXWNfwisolgWxd8o3Eu1HKIz8cAxQjOdGrrJB406ceFiGV+ckTcLdXzB+y/QVTA==
   dependencies:
     "@opentelemetry/semantic-conventions" "^1.29.0"
 
