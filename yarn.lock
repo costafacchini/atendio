@@ -1401,30 +1401,30 @@
   resolved "https://registry.yarnpkg.com/@borewit/text-codec/-/text-codec-0.2.2.tgz#75025f735c0983b3a871668804a57387e3649375"
   integrity sha512-DDaRehssg1aNrH4+2hnj1B7vnUGEjU6OIlyRdkMd0aUdIUvKXrJfXsy8LVtXAy7DRvYVluWbMspsRhz2lcW0mQ==
 
-"@bull-board/api@9.13.1", "@bull-board/api@^9.0.0":
-  version "9.13.1"
-  resolved "https://registry.yarnpkg.com/@bull-board/api/-/api-9.13.1.tgz#4819c1fecd210f53039357c9ef5b91a34b15eac5"
-  integrity sha512-27i+RakyykqJtZhPJk8er8z3hKn5pN32N+0lNLMDsBH0nRF9OhAWR9bjcVe7OrAq7UHmY1/3DaYtk60496CnDQ==
+"@bull-board/api@9.13.2", "@bull-board/api@^9.0.0":
+  version "9.13.2"
+  resolved "https://registry.yarnpkg.com/@bull-board/api/-/api-9.13.2.tgz#eb2c6a874343dd649c396ba89e5c9885f047d66b"
+  integrity sha512-sirRus3gpnq3rpf3Be/7UHpI6FD/1X0928zWSLeaf0d8nB4cODzCcTz3lwbhEFwvXOvd1hO3wnicsVVnE5udKA==
   dependencies:
     redis-info "^3.1.0"
     valibot "^1.5.0"
 
 "@bull-board/express@^9.0.0":
-  version "9.13.1"
-  resolved "https://registry.yarnpkg.com/@bull-board/express/-/express-9.13.1.tgz#f49d16e0214da72468210105ace784f11def9acf"
-  integrity sha512-mK8IazbLNkmBeTOXbN01vcUTw8T0pGfN9p9TwORU8yAavE8GmtdJW/6sDHjHRU6t5VlhLKIXgrqX4Z9NYfJuUw==
+  version "9.13.2"
+  resolved "https://registry.yarnpkg.com/@bull-board/express/-/express-9.13.2.tgz#e32d875f481d75e7217474ff05a65b33d7e6da86"
+  integrity sha512-wvW/9x2z3PoIxXMgpp1GLRchfp9b7jBMLvyvG6Yanjes1V6DFs5EisjHJz6rxoxLkMIXizdRtr8hR9KJ2YW/UQ==
   dependencies:
-    "@bull-board/api" "9.13.1"
-    "@bull-board/ui" "9.13.1"
+    "@bull-board/api" "9.13.2"
+    "@bull-board/ui" "9.13.2"
     ejs "^6.0.1"
     express "^5.3.0"
 
-"@bull-board/ui@9.13.1", "@bull-board/ui@^9.0.0":
-  version "9.13.1"
-  resolved "https://registry.yarnpkg.com/@bull-board/ui/-/ui-9.13.1.tgz#1036ca5a597ff2c6725026ec9f39798437531027"
-  integrity sha512-J/ZC+0CtJr6HqMs2IptxjnSzmYmslHq2ZPTBp2pB8cpxxg6is9V4+/tRWti4kmk6dOYWlM6vSI0IsrrlQ8MO9Q==
+"@bull-board/ui@9.13.2", "@bull-board/ui@^9.0.0":
+  version "9.13.2"
+  resolved "https://registry.yarnpkg.com/@bull-board/ui/-/ui-9.13.2.tgz#76623cb6428bbec6e5defbb52e7c8c4f33bc3279"
+  integrity sha512-p6hFBN4K6Ja2IChe12hAqBscJq4/ax1F4/tA7fcQS3GaX5M2BzLWN3VoOs7Ucy7hleazYxxx+sGnVyf5ppthYw==
   dependencies:
-    "@bull-board/api" "9.13.1"
+    "@bull-board/api" "9.13.2"
 
 "@cacheable/memory@^2.2.0":
   version "2.2.0"
