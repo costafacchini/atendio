@@ -2186,10 +2186,10 @@
     node-gyp-build "^4.8.1"
     prebuildify "^6.0.1"
 
-"@newrelic/security-agent@^3.0.0":
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/@newrelic/security-agent/-/security-agent-3.0.4.tgz#ec252a9a4d116e1ca17722293dfc357c01774555"
-  integrity sha512-em1kkd08yWh4i7qi7QMzLU3aAb9yg0KbbUwFiGlhgoDPNvEfGCJFGifnERDZzZGJJSfGVegEPQCu7zaZs/hx1g==
+"@newrelic/security-agent@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@newrelic/security-agent/-/security-agent-4.0.1.tgz#a4ddcfd5cdd723db8445ca84738623012e23283b"
+  integrity sha512-IqzIMExcld1HJOfpdPvbjX0CjHzewlSwVt/anr9FRZYKhR5Ls4n1Fx7wNS2MKI4WSD9KVuNnGObtGdJCMD7cpw==
   dependencies:
     check-disk-space "^3.4.0"
     content-type "^1.0.5"
@@ -2204,10 +2204,10 @@
     request-ip "^3.3.0"
     ringbufferjs "^2.0.0"
     semver "^7.5.4"
-    undici "^7.19.0"
+    undici "^7.30.1"
     unescape "^1.0.1"
     unescape-js "^1.1.4"
-    ws "^8.17.1"
+    ws "^8.22.0"
 
 "@noble/hashes@^1.1.5":
   version "1.8.0"
@@ -8143,15 +8143,15 @@ new-find-package-json@^2.0.0:
   dependencies:
     debug "^4.3.4"
 
-newrelic@14.12.0:
-  version "14.12.0"
-  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-14.12.0.tgz#15f6911857c303429fdcd6d7ef3a5a77b80933df"
-  integrity sha512-WV5BP60xDl4zPrrS2iTqYouf64DSCix5iN7Ne6OshtQURaZGoWlH4vjMEzujAh6qbrdBm8t1bIj9p0CnhhC6Aw==
+newrelic@14.13.0:
+  version "14.13.0"
+  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-14.13.0.tgz#b0ec054afa572d6ee5c6733ce5da124761746233"
+  integrity sha512-+HLcxjNATKgV+Fd9ebnhcA4ftpNXh8sqkE71hZ3fI9aZCW9wvzy4cKFkt5UEJQZYs+nCs+JXbATKOrZPS3TWrQ==
   dependencies:
     "@apm-js-collab/tracing-hooks" "^0.14.0"
     "@grpc/grpc-js" "^1.13.2"
     "@grpc/proto-loader" "^0.8.1"
-    "@newrelic/security-agent" "^3.0.0"
+    "@newrelic/security-agent" "^4.0.1"
     "@opentelemetry/api" "^1.10.0"
     "@opentelemetry/exporter-metrics-otlp-http" "^0.301.0"
     "@opentelemetry/otlp-exporter-base" "^0.301.0"
@@ -10167,7 +10167,7 @@ undici-types@~8.9.0:
   resolved "https://registry.yarnpkg.com/undici-types/-/undici-types-8.9.0.tgz#e240d97c8b5d85e5347ce73d25865c7906c1ec9f"
   integrity sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==
 
-undici@8.12.4, undici@^7.19.0:
+undici@8.12.4, undici@^7.30.1:
   version "8.12.4"
   resolved "https://registry.yarnpkg.com/undici/-/undici-8.12.4.tgz#0c0cabeafd9a9c3139f9ace62ee9436c0d355c72"
   integrity sha512-8Mx+uNKKER2bA4AdtedkqRbwUCIJFr2nJckXRe5yrDqzePqwLP7VNcctN8/XdmDSbF7mS+jJKIszlL+vbam1VA==
@@ -10508,10 +10508,15 @@ write-file-atomic@^5.0.1:
     imurmurhash "^0.1.4"
     signal-exit "^4.0.1"
 
-ws@^8.13.0, ws@^8.17.1:
+ws@^8.13.0:
   version "8.22.0"
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.22.0.tgz#40f16e1d7588ac0575041be5c49b8eb261c28e73"
   integrity sha512-Ydggc987+RO0AnWtZ/7Wq9FtNvcrL1b/RO0ud9mWjUPgDrsAAwQSF51sm2hm1XofbU/4jkpGEsLFsZZxU+1DOg==
+
+ws@^8.22.0:
+  version "8.23.0"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.23.0.tgz#e1af4314ad9d4cfde4684d08a9f09b322830e84e"
+  integrity sha512-wCkmX8QMOrKjgO8HW2WyDbTSGeqkocxgDzS9iR79rEAexty6/2qzilx3Ag8Tqf9ykop3irLKle0MtVn5qjVnoQ==
 
 ws@~8.21.0:
   version "8.21.3"
