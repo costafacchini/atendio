@@ -136,7 +136,7 @@
     "tar": "7.5.23",
     "shell-quote": "1.12.0",
     "postcss": "8.5.33",
-    "undici": "8.13.0",
+    "undici": "8.13.1",
     "ip-address": "10.7.6",
     "protobufjs": "8.8.1",
     "@opentelemetry/core": "3.1.1",
