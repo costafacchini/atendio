@@ -1,5 +1,6 @@
 FROM node:26-slim AS deps
 WORKDIR /app
+RUN npm install -g yarn@1.22.22
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile --production=false
 COPY client/package.json client/yarn.lock ./client/
@@ -7,6 +8,7 @@ RUN cd client && yarn install --frozen-lockfile
 
 FROM node:26-slim AS builder
 WORKDIR /app
+RUN npm install -g yarn@1.22.22
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/client/node_modules ./client/node_modules
 COPY . .
